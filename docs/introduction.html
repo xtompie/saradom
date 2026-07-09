@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Introduction · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Introduction">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a class="active" href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="introduction">Introduction<a class="anchor" href="#introduction" aria-hidden="true">#</a></h1>
+<h2 id="definition">Definition<a class="anchor" href="#definition" aria-hidden="true">#</a></h2>
+<p>Saradom is an architecture pattern. Not a framework. Not a library. Plain HTML and JavaScript. Little code to write. No extra layer. Nothing to learn beyond HTML and JavaScript. Scales to large frontends.</p>
+<p>Saradom does not say how to build, bundle, or deploy the code that reaches the page.</p>
+<h2 id="the-idea-behind-it">The idea behind it<a class="anchor" href="#the-idea-behind-it" aria-hidden="true">#</a></h2>
+<p>Its rules don't create the problems that later need frameworks, build systems, and always-changing mechanisms. The idea is that today's frontends are over-engineered, and that over-engineering isn't here. The extra complexity is gone, and what's left is what the interface actually does.</p>
+<h2 id="structure">Structure<a class="anchor" href="#structure" aria-hidden="true">#</a></h2>
+<p>First the foundations, the rules everything else builds on. From there: toolkits to drop in, complete examples to read and run, and longer topics that dig deeper into specific subjects.</p>
+<h2 id="audience">Audience<a class="anchor" href="#audience" aria-hidden="true">#</a></h2>
+<p>Saradom is for developers who want less code to write and less to maintain. It's also for the people who choose the stack, CTOs and product owners, who often pick a heavy framework because everyone does, not because the project needs it. That choice costs later: slower apps, and more time and money to change and maintain them.</p>
+<p class="doc-next"><a href="dom-state.html">Next: DOM State →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

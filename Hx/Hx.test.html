@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Hx tests</title></head>
+<body>
+
+<div id="fixture" style="display:none"></div>
+<pre id="summary"></pre>
+
+<script src="Hx.js"></script>
+<script>
+let pass = 0, fail = 0;
+const failures = [];
+const fixture = document.getElementById('fixture');
+
+const assert = (cond, msg) => { if (!cond) throw new Error(msg); };
+
+const waitFor = (fn, timeout = 2000) => new Promise((resolve, reject) => {
+    const start = performance.now();
+    (function check() {
+        const result = fn();
+        if (result) return resolve(result);
+        if (performance.now() - start > timeout) return reject(new Error('timeout waiting for condition'));
+        requestAnimationFrame(check);
+    })();
+});
+
+const test = async (name, fn) => {
+    try {
+        await fn();
+        pass++;
+        console.log(`PASS: ${name}`);
+    } catch (e) {
+        fail++;
+        failures.push(name);
+        console.error(`FAIL: ${name} — ${e.message}`);
+    }
+};
+
+(async () => {
+    await test('default target stays visible; hx-indicator shows during the request and hides after', async () => {
+        fixture.innerHTML = `
+            <div hx-indicator="find .spinner">
+                <button hx-get="fixtures/hello.html" onclick="hx(this, event)">Load</button>
+                <span class="spinner" style="display:none">Loading…</span>
+            </div>
+        `;
+        const btn = fixture.querySelector('button');
+        const spinner = fixture.querySelector('.spinner');
+        btn.click();
+        assert(getComputedStyle(btn).display !== 'none', 'button hidden right after the request starts');
+        assert(getComputedStyle(spinner).display !== 'none', 'indicator not shown while the request is in flight');
+        await waitFor(() => btn.textContent.includes('Hello'));
+        assert(getComputedStyle(btn).display !== 'none', 'button hidden after the request settles');
+        assert(getComputedStyle(spinner).display === 'none', 'indicator not hidden once the request settles');
+    });
+
+    await test('hx-target inherited from an ancestor, resolved with closest + subselector', async () => {
+        fixture.innerHTML = `
+            <div tab-space hx-target="closest [tab-space] [tab-content]" hx-swap="innerHTML">
+                <button hx-get="fixtures/tab-1.html" onclick="hx(this, event)">Tab 1</button>
+                <button hx-get="fixtures/tab-2.html" onclick="hx(this, event)">Tab 2</button>
+                <div tab-content></div>
+            </div>
+        `;
+        const [tab1, tab2] = fixture.querySelectorAll('button');
+        const content = fixture.querySelector('[tab-content]');
+        tab1.click();
+        await waitFor(() => content.textContent.includes('Tab 1'));
+        tab2.click();
+        await waitFor(() => content.textContent.includes('Tab 2'));
+    });
+
+    await test('load more: indicator, hx-target="this" on the wrapper, and outerHTML swap chain across pages', async () => {
+        fixture.innerHTML = `
+            <ul>
+                <li>Agent 1</li>
+                <li hx-target="this" hx-get="fixtures/contacts-page-2.html" hx-swap="outerHTML" hx-indicator="find .htmx-indicator">
+                    <button onclick="hx(this, event)">Load more</button>
+                    <img class="htmx-indicator" style="display:none">
+                </li>
+            </ul>
+        `;
+        const list = fixture.querySelector('ul');
+        const indicator = fixture.querySelector('.htmx-indicator');
+
+        fixture.querySelector('button').click();
+        assert(getComputedStyle(indicator).display !== 'none', 'indicator not shown while page 2 is in flight');
+        await waitFor(() => list.textContent.includes('Agent 2'));
+        assert(!list.innerHTML.includes('contacts-page-2'), 'old wrapper should be replaced, not left nested around the new content (hx-target="this" must resolve to the wrapper, not the button)');
+        assert(list.querySelectorAll('li').length === 3, 'expected Agent 1, Agent 2, and the next trigger — outerHTML swap must keep every element of the response, not just the first');
+
+        fixture.querySelector('button').click();
+        await waitFor(() => list.textContent.includes('Agent 3'));
+        assert(!list.querySelector('button'), 'last page has no further trigger');
+        assert(list.querySelectorAll('li').length === 3, 'expected Agent 1, 2, 3');
+    });
+
+    document.getElementById('summary').textContent =
+        `${pass} passed, ${fail} failed` + (failures.length ? `\n\nFailed:\n- ${failures.join('\n- ')}` : '');
+    window.__TEST_SUMMARY__ = { pass, fail, failures };
+})();
+</script>
+</body>
+</html>

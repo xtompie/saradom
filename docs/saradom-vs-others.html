@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Saradom vs Others · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Saradom vs Others">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a class="active" href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="saradom-vs-others">Saradom vs Others<a class="anchor" href="#saradom-vs-others" aria-hidden="true">#</a></h1>
+<h2 id="htmx">htmx<a class="anchor" href="#htmx" aria-hidden="true">#</a></h2>
+<p>Saradom is compatible with htmx, except for one thing: event binding. htmx does not use native HTML event attributes. It processes <code>hx-*</code> attributes itself, on its own pass over the page.</p>
+<p>htmx in Saradom implementation: <a href="hx.html">hx</a>.</p>
+<h2 id="distant-update">Distant update<a class="anchor" href="#distant-update" aria-hidden="true">#</a></h2>
+<p>An action in one widget needs to update a different widget somewhere else on the page.</p>
+<p>React answers this with a whole state-management layer, not a quick fix for one feature: Context, a Provider at the root, <code>useContext</code>, a selector, Redux, Zustand, actions, reducers, <code>React.memo</code>.</p>
+<p>In Saradom, this is solved with <a href="the-simple-way.html#change-reaction">change reaction</a>.</p>
+<h2 id="live-data">Live data<a class="anchor" href="#live-data" aria-hidden="true">#</a></h2>
+<p>Data arriving from outside the app, over a WebSocket or a server-sent event, needs to update the screen.</p>
+<p>React has its own mechanism for this, not a plain event listener: <code>useSyncExternalStore</code>, <code>subscribe</code>, <code>getSnapshot</code>, <code>getServerSnapshot</code>, stable references, manual teardown, reconnect logic, a rendering bug named tearing.</p>
+<p>In Saradom, a plain listener reads each message. It has its own reconnect logic. The update is whatever the message needs: append or replace a node. The message itself can carry an HTML fragment written straight into the page, or JSON written through <a href="val.html">Val</a>.</p>
+<h2 id="forms">Forms<a class="anchor" href="#forms" aria-hidden="true">#</a></h2>
+<p>A form needs to send its data to the server. Errors need to show next to the right field.</p>
+<p>React needs separate libraries with their own APIs for this, not just wired-up inputs: Zod, Yup, Formik, React Hook Form, <code>register</code>, <code>Controller</code>, field arrays, <code>value</code>, <code>onChange</code>, refs.</p>
+<p>In Saradom, this is solved with <a href="the-simple-way.html#forms">forms</a>.</p>
+<h2 id="seo">SEO<a class="anchor" href="#seo" aria-hidden="true">#</a></h2>
+<p>A search engine needs to read real content in the page, not an empty shell that JavaScript fills in later.</p>
+<p>Every framework pays for this the same way, with a second server that runs JavaScript, next to whatever the backend already is. Even a Java or PHP backend needs this new stack, on its own, just for this: server-side rendering, static site generation, <code>getServerSideProps</code>, <code>getStaticProps</code>, Next.js, Nuxt, SvelteKit, <code>react-helmet</code>, <code>next/head</code>, sitemap.xml, robots.txt, prerendering services.</p>
+<p>In Saradom, the page is already real HTML. It is the same page for a browser and for a crawler: <a href="dom-state.html#why">DOM State</a>.</p>
+<h2 id="onboarding">Onboarding<a class="anchor" href="#onboarding" aria-hidden="true">#</a></h2>
+<p>A new developer joins the project and needs to read the code and start making changes.</p>
+<p>Picking up a React, Vue, or Angular codebase means learning its rendering model, its hooks or reactivity rules, its state-management library, its routing library, its build tooling, before any of it touches business logic. None of it transfers to the next project, or even to this one two major versions later. The app itself carries extra complexity on top: solving problems the framework introduces, and following its particular style for solving them. That design is specific to whoever built it, and the framework does not teach it.</p>
+<p>In Saradom, the code is plain HTML and plain JavaScript. State is visible directly in the browser's Elements panel, not inside a framework's internal store. The mechanisms are generic and reused everywhere: understanding <a href="visible.html">Visible</a> once already covers tabs, accordions, dropdowns. There is no separate architecture to reverse-engineer on top.</p>
+<h2 id="time-to-interactive">Time to interactive<a class="anchor" href="#time-to-interactive" aria-hidden="true">#</a></h2>
+<p>How fast the page responds depends on how much JavaScript has to download, parse, and run before anything works.</p>
+<p>React's runtime adds its own weight before any business logic runs at all: itself and ReactDOM as a baseline, a router, a state library, a UI kit, icons, easily past 500KB before the app does anything. On top of that: code-splitting with <code>React.lazy</code>, tree-shaking that quietly fails on non-ESM packages, hydration adding its own gap between the page looking ready and the page actually responding to a click.</p>
+<p>In Saradom, there is no runtime to download, parse, or hydrate. The HTML the browser already parsed is the interactive page.</p>
+<h2 id="third-party-libraries">Third-party libraries<a class="anchor" href="#third-party-libraries" aria-hidden="true">#</a></h2>
+<p>Dropping in an existing library, a jQuery plugin, a D3 chart, a map widget, means letting it touch the same DOM nodes the framework manages.</p>
+<p>React's own docs warn about this directly: if the same DOM nodes are manipulated by another library, React gets confused and has no way to recover. Safe integration means treating the widget as a black box the framework is not allowed to touch: an empty div behind a ref, <code>shouldComponentUpdate</code> or <code>React.memo</code> forced to skip re-renders on that spot, manual teardown in a cleanup function.</p>
+<p>In Saradom, there is no virtual DOM to confuse. The plugin and the Saradom code write to the same real nodes. Wiring one in is just calling it.</p>
+<h2 id="model-duplication">Model duplication<a class="anchor" href="#model-duplication" aria-hidden="true">#</a></h2>
+<p>A domain model and its rules exist once, on the backend. The front end needs a second copy of it, to render and to validate.</p>
+<p>Any typed front end pays for this twice, kept in step by hand: TypeScript interfaces mirroring backend DTOs, a validation schema mirroring backend rules, a status check like active or inactive repeated in a client conditional. A new rule, a new status, or a new field means changing both copies, often across two teams, released in the right order so neither side breaks. OpenAPI codegen, GraphQL codegen, and tRPC exist just to stop the two copies from drifting apart.</p>
+<p>In Saradom, like in htmx, the model and its logic live once, on the backend. The front only receives HTML, a string that updates the DOM. The backend decides the if, at render time. The front only builds the mechanism around it. There is no second model to keep in step, only what changes on the page.</p>
+<h2 id="accidental-complexity">Accidental complexity<a class="anchor" href="#accidental-complexity" aria-hidden="true">#</a></h2>
+<p>There are two kinds of complexity: essential and accidental. Essential complexity is what must be done. It cannot be avoided, and without it nothing works. Accidental complexity is the chosen way of doing it: which framework, and everything that comes with it.</p>
+<p>A click that reveals a hidden tab is essential complexity. Something has to happen: the tab shows.</p>
+<p>In Saradom, an attribute marks the tab, a small function shows it, and <code>onclick</code> connects the two. Nothing else is needed.</p>
+<p>In React, the same click needs Node.js, npm, React and its build tooling installed, JSX as a syntax of its own to learn, a dev server running just to see the result, a root div for React to mount into, a component, knowledge of React itself and its rule that the DOM is never touched directly, a <code>useState</code> flag for whether the tab is open, and often a <code>useEffect</code> or a <code>useMemo</code> to keep the rest of the component from re-rendering more than it should. All of that is accidental complexity.</p>
+<h2 id="constant-change">Constant change<a class="anchor" href="#constant-change" aria-hidden="true">#</a></h2>
+<ul>
+<li>Three module systems: CommonJS, then AMD, then native <code>import</code>/<code>export</code>. Packages still ship both.</li>
+<li>2014 — new Angular, no migration path from the old version.</li>
+<li>2019 — React: class components out, hooks in.</li>
+<li>2020 — Vue 3 adds Composition API next to Options API. Community split.</li>
+<li>2022 — AngularJS support ends, eight years after its replacement.</li>
+<li>2023 — Vue 2 end of life. Teams pay for extended support.</li>
+<li>2023 — Angular and Svelte move to signals: &quot;we've come to the realisation that Knockout was right all along... Svelte 5's reactivity is powered by signals, which are essentially what Knockout was doing in 2010.&quot;</li>
+<li>SolidStart: years in beta, APIs changing the whole time.</li>
+<li>2025 — Create React App deprecated by React's own team: &quot;we're deprecating Create React App for new apps, and encouraging existing apps to migrate to a framework.&quot;</li>
+<li>Angular: new major every six months, ~18 months support.</li>
+</ul>
+<p>This is a fragment. Today's &quot;right way&quot; is just a stage. Every item on this list was once a stage too.</p>
+<p>A handler written in Saradom today would have worked almost thirty years ago: an attribute, a function, a DOM write.</p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

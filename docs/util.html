@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Util · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Util">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a class="active" href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="util">Util<a class="anchor" href="#util" aria-hidden="true">#</a></h1>
+<p>Helper methods on built-in objects like <code>HTMLElement</code> and <code>Array</code>.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a></p>
+<h2 id="without-util">Without Util<a class="anchor" href="#without-util" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-javascript"><span class="hljs-built_in">document</span>.querySelectorAll(<span class="hljs-string">'[todo-item]'</span>).forEach(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> {
+  <span class="hljs-keyword">const</span> status = el.getAttribute(<span class="hljs-string">'data-status'</span>);
+  el.setAttribute(<span class="hljs-string">'data-status'</span>, status === <span class="hljs-string">'done'</span> ? <span class="hljs-string">'active'</span> : <span class="hljs-string">'done'</span>);
+});</code></pre>
+<h2 id="with-util">With Util<a class="anchor" href="#with-util" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-javascript">dom.al(<span class="hljs-string">'[todo-item]'</span>).each(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> el.attrt(<span class="hljs-string">'data-status'</span>, <span class="hljs-string">'done'</span>, <span class="hljs-string">'active'</span>));</code></pre>
+<h2 id="selecting">Selecting<a class="anchor" href="#selecting" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-javascript">dom.al(<span class="hljs-string">'[todo-item]'</span>);    <span class="hljs-comment">// array of matches in the document</span>
+dom.one(<span class="hljs-string">'[todo-add]'</span>);    <span class="hljs-comment">// first match in the document</span>
+el.all(<span class="hljs-string">'[todo-item]'</span>);    <span class="hljs-comment">// array of matches inside el</span>
+el.one(<span class="hljs-string">'[todo-add]'</span>);     <span class="hljs-comment">// first match inside el</span>
+el.allfd(<span class="hljs-string">'[todo-item]'</span>);  <span class="hljs-comment">// matches inside el, without descending into a match</span>
+el.up(<span class="hljs-string">'[todo-space]'</span>);    <span class="hljs-comment">// el if it matches, else the nearest ancestor that does</span>
+el.up();                  <span class="hljs-comment">// the parent</span></code></pre>
+<h2 id="attributes">Attributes<a class="anchor" href="#attributes" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-javascript">el.attr(<span class="hljs-string">'data-status'</span>);                     <span class="hljs-comment">// read</span>
+el.attr(<span class="hljs-string">'data-status'</span>, <span class="hljs-string">'done'</span>);             <span class="hljs-comment">// set</span>
+el.attr(<span class="hljs-string">'data-status'</span>, <span class="hljs-literal">null</span>);               <span class="hljs-comment">// remove</span>
+el.attrt(<span class="hljs-string">'data-status'</span>, <span class="hljs-string">'done'</span>, <span class="hljs-string">'active'</span>);  <span class="hljs-comment">// toggle between two values</span>
+el.flag(<span class="hljs-string">'hidden'</span>);                          <span class="hljs-comment">// read as a boolean</span>
+el.flag(<span class="hljs-string">'hidden'</span>, <span class="hljs-literal">true</span>);                    <span class="hljs-comment">// add the attribute; false removes it</span></code></pre>
+<p>A whole namespace of attributes reads and writes as one object. <code>attrs('data')</code> is <code>dataset</code> for any prefix — kebab keys, not camelCased.</p>
+<pre><code class="hljs language-javascript">el.attrs();                            <span class="hljs-comment">// { every-attribute: value }</span>
+el.attrs(<span class="hljs-string">'card-val'</span>);                  <span class="hljs-comment">// { title, color } from card-val-* only</span>
+el.attrs(<span class="hljs-string">'card-val'</span>, { <span class="hljs-attr">color</span>: <span class="hljs-string">'red'</span> }); <span class="hljs-comment">// merge: sets card-val-color, keeps the rest</span></code></pre>
+<h2 id="visibility">Visibility<a class="anchor" href="#visibility" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-javascript">el.show();       <span class="hljs-comment">// show</span>
+el.hide();       <span class="hljs-comment">// hide, display:none</span>
+el.show(<span class="hljs-literal">false</span>);  <span class="hljs-comment">// hide</span></code></pre>
+<h2 id="content">Content<a class="anchor" href="#content" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-javascript">el.clear();  <span class="hljs-comment">// empty the element</span>
+tpl.tpl();   <span class="hljs-comment">// clone a &lt;template&gt;'s first child</span></code></pre>
+<h2 id="arrays">Arrays<a class="anchor" href="#arrays" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-javascript">arr.each(fn);  <span class="hljs-comment">// forEach</span>
+arr.any();     <span class="hljs-comment">// true when not empty</span>
+arr.none();    <span class="hljs-comment">// true when empty</span></code></pre>
+<h2 id="misc">Misc<a class="anchor" href="#misc" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-javascript">el.cls();                <span class="hljs-comment">// its classList</span>
+event.combo(<span class="hljs-string">'Ctrl+s'</span>);   <span class="hljs-comment">// true when the key combo matches</span>
+<span class="hljs-string">'a long title'</span>.cut(<span class="hljs-number">6</span>);   <span class="hljs-comment">// 'a long...'</span></code></pre>
+<p class="doc-next"><a href="val.html">Next: Val →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

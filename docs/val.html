@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Val · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Val">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a class="active" href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="val">Val<a class="anchor" href="#val" aria-hidden="true">#</a></h1>
+<p>In Saradom a screen updates by swapping a whole HTML fragment. A swap is the simplest and fastest way to update, so it comes first. When a swap cannot do the job, the work happens on individual values. Val is for that: two-way binding between a JavaScript object and the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model">DOM</a>. An element is marked, an object is written to it, and the same object is read back.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a></p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span>Cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Img"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"image"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"/cat.jpg"</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="actionscript">
+<span class="hljs-keyword">const</span> el = dom.one(<span class="hljs-string">'article'</span>);
+el.vset({ title: <span class="hljs-string">'Dog'</span>, image: <span class="hljs-string">'/dog.jpg'</span> });
+el.vget(); <span class="hljs-comment">// =&gt; { title: 'Dog', image: '/dog.jpg' }</span>
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+<p>Elements are marked with attributes, and values are read and written on them.</p>
+<h2 id="mechanism">Mechanism<a class="anchor" href="#mechanism" aria-hidden="true">#</a></h2>
+<p>The <code>val</code> attribute marks an element for binding. Two attributes define what happens. <code>val-set</code> writes data into the element. <code>val-get</code> reads data from it. Both run with <code>this</code> bound to the element.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span>
+      <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(data) =&gt; this.textContent = data.title"</span>
+      <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({ title: this.textContent })"</span>
+    &gt;</span>Cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span></code></pre>
+<p>Two element methods drive the binding. <code>vset</code> writes an object into the marked subtree. <code>vget</code> reads the current state back.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> article = dom.one(<span class="hljs-string">'article'</span>);
+
+article.vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span> });
+article.vget(); <span class="hljs-comment">// =&gt; { title: 'Dog' }</span></code></pre>
+<p>That is the whole mechanism. Everything else is convenience over these two calls.</p>
+<h3 id="multiple-fields-per-element">Multiple fields per element<a class="anchor" href="#multiple-fields-per-element" aria-hidden="true">#</a></h3>
+<p>One <code>val-set</code> can do more than one thing to the element. It is plain code, so it sets content, an attribute, or anything else in the same call. <code>val-get</code> reads the same fields back.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">val</span>
+   <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(data) =&gt; { this.textContent = data.label; this.setAttribute('href', data.url); }"</span>
+   <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({ label: this.textContent, url: this.getAttribute('href') })"</span>&gt;</span>Link<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> link = dom.one(<span class="hljs-string">'a'</span>);
+
+link.vset({ <span class="hljs-attr">label</span>: <span class="hljs-string">'Dog'</span>, <span class="hljs-attr">url</span>: <span class="hljs-string">'/dog'</span> }); <span class="hljs-comment">// sets text and href</span>
+link.vget(); <span class="hljs-comment">// =&gt; { label: 'Dog', url: '/dog' }</span></code></pre>
+<h3 id="without-val">Without Val<a class="anchor" href="#without-val" aria-hidden="true">#</a></h3>
+<p>Reading and writing by hand repeats the same lookups. Each field names an element, a property, and a value, twice.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> el = dom.one(<span class="hljs-string">'article'</span>);
+el.querySelector(<span class="hljs-string">'h1'</span>).textContent = data.title;
+el.querySelector(<span class="hljs-string">'img'</span>).src = data.image;
+<span class="hljs-comment">// reading it back is more of the same</span></code></pre>
+<h3 id="with-val">With Val<a class="anchor" href="#with-val" aria-hidden="true">#</a></h3>
+<p>The element carries its own read and write rules. The script works with the object.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span>
+      <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(data) =&gt; this.textContent = data.title"</span>
+      <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({ title: this.textContent })"</span>
+  &gt;</span>Cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript">dom.one(<span class="hljs-string">'article'</span>).vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span> });</code></pre>
+<p>A getter and setter per field becomes repetitive across a page. <a href="#fx">Fx</a> remove that repetition.</p>
+<h2 id="fx">Fx<a class="anchor" href="#fx" aria-hidden="true">#</a></h2>
+<p>An fx is a ready-made getter and setter. <code>val-fx</code> names it. That replaces <code>val-set</code> and <code>val-get</code>. <code>val-key</code> names the field to bind.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span>Cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> article = dom.one(<span class="hljs-string">'article'</span>);
+article.vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span> });
+article.vget(); <span class="hljs-comment">// =&gt; { title: 'Dog' }</span></code></pre>
+<h3 id="without-an-fx">Without an fx<a class="anchor" href="#without-an-fx" aria-hidden="true">#</a></h3>
+<p>The same getter and setter is written for every field.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span>
+    <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(v) =&gt; this.textContent = v.title"</span>
+    <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({ title: this.textContent })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">val</span>
+    <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(v) =&gt; this.textContent = v.description"</span>
+    <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({ description: this.textContent })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span></code></pre>
+<h3 id="with-an-fx">With an fx<a class="anchor" href="#with-an-fx" aria-hidden="true">#</a></h3>
+<p><code>val-fx</code> and <code>val-key</code> say the same thing in less markup.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"description"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span></code></pre>
+<h3 id="built-in-fx">Built-in fx<a class="anchor" href="#built-in-fx" aria-hidden="true">#</a></h3>
+<p>Each fx binds one value to one element property.</p>
+<ul>
+<li><code>Text</code> binds <code>textContent</code>.</li>
+<li><code>Html</code> binds <code>innerHTML</code>.</li>
+<li><code>Img</code> binds an image <code>src</code>.</li>
+<li><code>Input</code> binds a form field value.</li>
+<li><code>Attr</code> binds a named attribute, given in <code>val-attr</code>.</li>
+<li><code>Pattr</code> binds a named attribute on the parent element, given in <code>val-attr</code>.</li>
+<li><code>Show</code> shows the element when the value is true, and hides it otherwise.</li>
+<li><code>Hide</code> is the reverse of <code>Show</code>.</li>
+<li><code>If</code> shows a subtree when a field is set, and binds it only then.</li>
+</ul>
+<p><code>Obj</code>, <code>Arr</code>, and <code>Render</code> bind nested objects and lists. See <a href="#rendering">Rendering</a>.</p>
+<h3 id="showing-with-show-and-hide">Showing with <code>Show</code> and <code>Hide</code><a class="anchor" href="#showing-with-show-and-hide" aria-hidden="true">#</a></h3>
+<p><code>Show</code> sets <code>display</code> from a boolean. <code>Hide</code> does the reverse. On read both return the current visibility as a boolean.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Show"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"online"</span>&gt;</span>Online<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> badge = dom.one(<span class="hljs-string">'p'</span>);
+
+badge.vset({ <span class="hljs-attr">online</span>: <span class="hljs-literal">true</span> });  <span class="hljs-comment">// shows the element</span>
+badge.vget();                  <span class="hljs-comment">// =&gt; { online: true }</span>
+badge.vset({ <span class="hljs-attr">online</span>: <span class="hljs-literal">false</span> }); <span class="hljs-comment">// hides the element</span></code></pre>
+<p>Several fields bind in one tree. A single write fills them all, and a single read returns the same shape.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span>Cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Img"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"image"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"/cat.jpg"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"description"</span>&gt;</span>Cute animal<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> article = dom.one(<span class="hljs-string">'article'</span>);
+
+article.vset({
+  <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span>,
+  <span class="hljs-attr">image</span>: <span class="hljs-string">'/dog.jpg'</span>,
+  <span class="hljs-attr">description</span>: <span class="hljs-string">'Loyal friend'</span>,
+});
+
+article.vget();
+<span class="hljs-comment">// =&gt; { title: 'Dog', image: '/dog.jpg', description: 'Loyal friend' }</span></code></pre>
+<h3 id="conditional-with-if">Conditional with <code>If</code><a class="anchor" href="#conditional-with-if" aria-hidden="true">#</a></h3>
+<p><code>If</code> shows its element when a field is set, and hides it when the field is missing or false. While shown, the field's object binds the elements inside. A <code>val-value</code> narrows this to a match, so the element shows only when the field equals that value.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"If"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"error"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"text"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> box = dom.one(<span class="hljs-string">'[val-key="error"]'</span>);
+box.vset({ <span class="hljs-attr">error</span>: { <span class="hljs-attr">text</span>: <span class="hljs-string">'Not found'</span> } }); <span class="hljs-comment">// shows and fills the message</span>
+box.vset({ <span class="hljs-attr">error</span>: <span class="hljs-literal">false</span> });                 <span class="hljs-comment">// hides</span></code></pre>
+<p>The read side is asymmetric. A hidden element returns <code>{}</code>, so its key drops out of the <code>vget</code> result. Only a shown element contributes its field.</p>
+<p>An fx can also be defined by hand. See <a href="#custom-fx">Custom fx</a>.</p>
+<h2 id="rendering">Rendering<a class="anchor" href="#rendering" aria-hidden="true">#</a></h2>
+<p>Nested objects and lists bind with the same <code>val-fx</code> and <code>val-key</code>. Three fx cover them: <code>Obj</code> for a nested object, <code>Arr</code> for a list, and <code>Render</code> for one object from a template.</p>
+<h3 id="nested-objects">Nested objects<a class="anchor" href="#nested-objects" aria-hidden="true">#</a></h3>
+<p><code>val-fx=&quot;Obj&quot;</code> groups child fields under one key. Child elements read and write inside that key instead of the root object.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span>Cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Obj"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"author"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"name"</span>&gt;</span>Unknown<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"email"</span>&gt;</span>no-email<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> article = dom.one(<span class="hljs-string">'article'</span>);
+
+article.vset({
+  <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span>,
+  <span class="hljs-attr">author</span>: { <span class="hljs-attr">name</span>: <span class="hljs-string">'John Doe'</span>, <span class="hljs-attr">email</span>: <span class="hljs-string">'john@example.com'</span> },
+});
+
+article.vget();
+<span class="hljs-comment">// =&gt; { title: 'Dog', author: { name: 'John Doe', email: 'john@example.com' } }</span></code></pre>
+<h3 id="lists">Lists<a class="anchor" href="#lists" aria-hidden="true">#</a></h3>
+<p><code>val-fx=&quot;Arr&quot;</code> renders an array. Each item is built from a <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template"><code>&lt;template&gt;</code></a>. <code>val-tpl</code> selects the template. <code>val-key</code> names the array field.</p>
+<p><code>val-tpl</code> holds a CSS selector. Val passes its value to <code>document.querySelector</code> to find the template. The template must hold exactly one root element, since Val clones its first element child for each item.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">tag-item</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"name"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span>Cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">ul</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"tags"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[tag-item]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript">dom.one(<span class="hljs-string">'article'</span>).vset({
+  <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span>,
+  <span class="hljs-attr">tags</span>: [{ <span class="hljs-attr">name</span>: <span class="hljs-string">'pet'</span> }, { <span class="hljs-attr">name</span>: <span class="hljs-string">'animal'</span> }, { <span class="hljs-attr">name</span>: <span class="hljs-string">'loyal'</span> }],
+});</code></pre>
+<p>The list is rebuilt on the next write. One item per array entry, in order.</p>
+<h3 id="marking-the-root">Marking the root<a class="anchor" href="#marking-the-root" aria-hidden="true">#</a></h3>
+<p>A template holds one root element. Whether that root carries <code>val</code> decides how the item binds.</p>
+<p>When the root is the value, mark the root. A list item that only shows text binds on the root itself.</p>
+<p>When the root wraps several values, leave the root bare and mark the fields inside. Val applies the item to the root only when the root carries <code>val</code>. A bare root is read as a container, and Val binds the <code>[val]</code> elements within it.</p>
+<p>Each item is one object. The array never reaches a template. <code>Arr</code> takes it apart and hands one object to each clone, so at every marked element the data in scope is an object.</p>
+<h3 id="adding-to-a-list">Adding to a list<a class="anchor" href="#adding-to-a-list" aria-hidden="true">#</a></h3>
+<p><code>vappend</code> and <code>vprepend</code> add items without rewriting the whole list. Each takes the items and reuses the list's template.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> list = dom.one(<span class="hljs-string">'ul'</span>);
+
+list.vappend([{ <span class="hljs-attr">name</span>: <span class="hljs-string">'small'</span> }]);
+list.vprepend([{ <span class="hljs-attr">name</span>: <span class="hljs-string">'new'</span> }]);</code></pre>
+<p><code>vprepend</code> reverses the array in place with <code>data.reverse()</code> before inserting, so the first item ends up first in the list. The passed array is mutated.</p>
+<h3 id="rendering-one-object">Rendering one object<a class="anchor" href="#rendering-one-object" aria-hidden="true">#</a></h3>
+<p><code>val-fx=&quot;Render&quot;</code> clears an element and renders a single object from a template. It returns to empty when the value is missing.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">badge-card</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"label"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Render"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"badge"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[badge-card]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> box = dom.one(<span class="hljs-string">'[val-key="badge"]'</span>);
+
+box.vset({ <span class="hljs-attr">badge</span>: { <span class="hljs-attr">label</span>: <span class="hljs-string">'new'</span> } });       <span class="hljs-comment">// renders the card</span>
+box.vrender({ <span class="hljs-attr">label</span>: <span class="hljs-string">'sale'</span> }, <span class="hljs-string">'[badge-card]'</span>); <span class="hljs-comment">// renders one object directly</span></code></pre>
+<h2 id="custom-fx">Custom fx<a class="anchor" href="#custom-fx" aria-hidden="true">#</a></h2>
+<p>An fx is an object with two functions. <code>Get</code> reads a value from the element. <code>Set</code> writes a value into it. New fx are added to <code>Val.Fx</code> by name.</p>
+<pre><code class="hljs language-javascript">Val.Fx.Upper = {
+  <span class="hljs-attr">Get</span>: <span class="hljs-function">(<span class="hljs-params">el, params</span>) =&gt;</span> ({ [params.key]: el.textContent.toLowerCase() }),
+  <span class="hljs-attr">Set</span>: <span class="hljs-function">(<span class="hljs-params">el, data, params</span>) =&gt;</span> { el.textContent = <span class="hljs-built_in">String</span>(data[params.key]).toUpperCase(); },
+};</code></pre>
+<p>The name is then used like any built-in fx.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Upper"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span>cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> el = dom.one(<span class="hljs-string">'h1'</span>);
+el.vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'dog'</span> }); <span class="hljs-comment">// shows DOG</span>
+el.vget();                  <span class="hljs-comment">// =&gt; { title: 'dog' }</span></code></pre>
+<h3 id="parameters">Parameters<a class="anchor" href="#parameters" aria-hidden="true">#</a></h3>
+<p><code>params</code> holds every <code>val-*</code> attribute on the element, with the <code>val-</code> prefix removed. <code>val-set</code>, <code>val-get</code>, and <code>val-fx</code> are excluded. This passes options into an fx.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Money"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"price"</span> <span class="hljs-attr">val-currency</span>=<span class="hljs-string">"USD"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// params inside the fx:</span>
+<span class="hljs-comment">// { key: 'price', currency: 'USD' }</span></code></pre>
+<p>An fx reads its own options from <code>params</code> and applies them in <code>Get</code> and <code>Set</code>.</p>
+<pre><code class="hljs language-javascript">Val.Fx.Money = {
+  <span class="hljs-attr">Get</span>: <span class="hljs-function">(<span class="hljs-params">el, params</span>) =&gt;</span> ({ [params.key]: <span class="hljs-built_in">Number</span>(el.textContent.replace(<span class="hljs-regexp">/[^0-9.]/g</span>, <span class="hljs-string">''</span>)) }),
+  <span class="hljs-attr">Set</span>: <span class="hljs-function">(<span class="hljs-params">el, data, params</span>) =&gt;</span> {
+    el.textContent = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Intl</span>.NumberFormat(<span class="hljs-string">'en-US'</span>, {
+      <span class="hljs-attr">style</span>: <span class="hljs-string">'currency'</span>,
+      <span class="hljs-attr">currency</span>: params.currency,
+    }).format(data[params.key]);
+  },
+};</code></pre>
+<h3 id="composing-fx-with-fxs">Composing fx with <code>Fxs</code><a class="anchor" href="#composing-fx-with-fxs" aria-hidden="true">#</a></h3>
+<p><code>val-fx=&quot;Fxs&quot;</code> runs several fx on one element. The element holds a nested <code>[val-fxs]</code> container whose children each carry a single <code>val-fx</code> and its parameters. Each child fx acts on the outer element. A read merges every child result into one object. A write applies every child fx.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Fxs"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val-fxs</span> <span class="hljs-attr">hidden</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"url"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"href"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"tip"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  Link
+<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> link = dom.one(<span class="hljs-string">'a'</span>);
+
+link.vset({ <span class="hljs-attr">url</span>: <span class="hljs-string">'/dog'</span>, <span class="hljs-attr">tip</span>: <span class="hljs-string">'A dog'</span> });
+<span class="hljs-comment">// href="/dog" and title="A dog" on the same anchor</span>
+
+link.vget();
+<span class="hljs-comment">// =&gt; { url: '/dog', tip: 'A dog' }</span></code></pre>
+<p>The <code>[val-fxs]</code> container and its children hold no <code>val</code> attribute, so normal binding skips them and reads only the merged output.</p>
+<h3 id="calling-fx-by-hand">Calling fx by hand<a class="anchor" href="#calling-fx-by-hand" aria-hidden="true">#</a></h3>
+<p>The same result comes from a plain <code>val-set</code> and <code>val-get</code> that call the fx directly. Each fx is <code>Val.Fx.&lt;Name&gt;</code> with a <code>Get(el, params)</code> and a <code>Set(el, data, params)</code>. This trades the <code>[val-fxs]</code> markup for one line of code.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">val</span>
+   <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(data) =&gt; { Val.Fx.Text.Set(this, data, { key: 'label' }); Val.Fx.Attr.Set(this, data, { key: 'url', attr: 'href' }); }"</span>
+   <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({ ...Val.Fx.Text.Get(this, { key: 'label' }), ...Val.Fx.Attr.Get(this, { key: 'url', attr: 'href' }) })"</span>&gt;</span>Link<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> link = dom.one(<span class="hljs-string">'a'</span>);
+
+link.vset({ <span class="hljs-attr">label</span>: <span class="hljs-string">'Dog'</span>, <span class="hljs-attr">url</span>: <span class="hljs-string">'/dog'</span> }); <span class="hljs-comment">// sets text and href</span>
+link.vget(); <span class="hljs-comment">// =&gt; { label: 'Dog', url: '/dog' }</span></code></pre>
+<p>Built-in and custom fx mix freely in the same tree. See <a href="#methods">Methods</a> for the full surface.</p>
+<h2 id="methods">Methods<a class="anchor" href="#methods" aria-hidden="true">#</a></h2>
+<p>Val adds methods to <code>HTMLElement</code>. Each acts on the marked subtree of the element it is called on and returns the element, except the readers.</p>
+<ul>
+<li><code>vset(data)</code> writes an object into the subtree.</li>
+<li><code>vget()</code> reads the subtree back as an object. Reader.</li>
+<li><code>vpatch(data)</code> merges the object into the current state, then writes.</li>
+<li><code>vmodify(fn)</code> reads the state, passes it to <code>fn</code>, writes the result.</li>
+<li><code>vappend(items, tpl)</code> adds items to the end of a list.</li>
+<li><code>vprepend(items, tpl)</code> adds items to the start of a list.</li>
+<li><code>varr(data, tpl)</code> writes an array as list items. Called with no argument it reads the list back as an array. Reader in that form.</li>
+<li><code>vobj(data)</code> writes an object into the subtree. Called with no argument it reads the subtree as an object. Reader in that form.</li>
+<li><code>vrender(data, tpl)</code> clears the element and renders one object from a template.</li>
+<li><code>vval(data)</code> writes when given an argument and reads when called with none. Reader in that form.</li>
+</ul>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> article = dom.one(<span class="hljs-string">'article'</span>);
+
+article.vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span> });        <span class="hljs-comment">// write</span>
+article.vget();                        <span class="hljs-comment">// read</span>
+article.vpatch({ <span class="hljs-attr">image</span>: <span class="hljs-string">'/dog.jpg'</span> }); <span class="hljs-comment">// merge and write</span>
+article.vmodify(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">seen</span>: <span class="hljs-literal">true</span> }));</code></pre>
+<h3 id="attributes">Attributes<a class="anchor" href="#attributes" aria-hidden="true">#</a></h3>
+<ul>
+<li><code>val</code> marks an element for binding.</li>
+<li><code>val-set</code> writes data into the element.</li>
+<li><code>val-get</code> reads data from the element.</li>
+<li><code>val-fx</code> names an fx instead of <code>val-set</code> and <code>val-get</code>.</li>
+<li><code>val-key</code> names the field in the data object.</li>
+<li><code>val-attr</code> names the attribute for the <code>Attr</code> fx.</li>
+<li><code>val-tpl</code> selects the template for a list or render.</li>
+<li><code>val-value</code> gives the <code>If</code> fx a value to match, so the element shows only when the field equals it.</li>
+<li><code>val-fxs</code> marks the container that holds the child fx of the <code>Fxs</code> composition.</li>
+</ul>
+<p><code>val-set</code> and <code>val-get</code> run with <code>this</code> bound to the element. Any other <code>val-*</code> attribute is passed to an fx as a parameter.</p>
+<p><code>vset</code>, <code>vget</code>, and their kin act on the element itself when it carries the <code>val</code> attribute, and on its marked subtree when it does not.</p>
+<p>Each method wraps the public <code>Val.*</code> API: <code>Val.Get</code>, <code>Val.Set</code>, <code>Val.Obj</code>, <code>Val.Arr</code>, <code>Val.Render</code>, <code>Val.Patch</code>, <code>Val.Append</code>, <code>Val.Prepend</code>, and <code>Val.Modify</code>. The same calls are available on <code>Val</code> for use without an element method.</p>
+<p class="doc-next"><a href="hx.html">Next: Hx →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<div counter-onclick="(step) => this.ndown('counter-increment', step)">
+  <span counter-increment="(step) => this.textContent = +this.textContent + step">0</span>
+  <button onclick="this.nup('counter-onclick', 1)">+1</button>
+  <button onclick="this.nup('counter-onclick', 5)">+5</button>
+</div>

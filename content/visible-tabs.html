@@ -1,0 +1,9 @@
+<div visible-space visible-state="account">
+  <button onclick="Visible.Visible(this, ['account'])">Account</button>
+  <button onclick="Visible.Visible(this, ['billing'])">Billing</button>
+  <button onclick="Visible.Visible(this, ['team'])">Team</button>
+
+  <section visible-tag="account">Account settings.</section>
+  <section visible-tag="billing" style="display:none">Billing details.</section>
+  <section visible-tag="team" style="display:none">Team members.</section>
+</div>

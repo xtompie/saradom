@@ -1,0 +1,49 @@
+[todo-item][todo-item-status="done"] [todo-item-text] {
+    text-decoration: line-through;
+}
+
+.todo-demo [todo-space] { display:flex; flex-direction:column; gap:.55rem; max-width:24rem; margin:0 auto; }
+.todo-demo [todo-items] { display:flex; flex-direction:column; gap:.4rem; }
+.todo-demo [todo-item] {
+  display:flex; align-items:center; gap:.7rem; padding:.5rem .65rem;
+  background:var(--soft); border:1px solid var(--line); border-radius:var(--r-sm);
+}
+.todo-demo [todo-item-text] { flex:1; color:var(--ink); }
+.todo-demo [todo-add] { display:flex; gap:.5rem; margin-top:.35rem; }
+.todo-demo input[type=text] {
+  flex:1; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--r-sm);
+  color:var(--ink); font:inherit; padding:.5rem .65rem; outline:none; transition:border-color .12s ease;
+}
+.todo-demo input[type=text]:focus { border-color:var(--demo-accent); }
+.todo-demo input[type=checkbox] {
+  appearance:none; -webkit-appearance:none; margin:0; flex:none; cursor:pointer;
+  width:1.15rem; height:1.15rem; border:1px solid var(--line); border-radius:.35rem;
+  background:var(--code-bg); transition:border-color .12s ease, background-color .12s ease;
+}
+.todo-demo input[type=checkbox]:hover { border-color:var(--muted); }
+.todo-demo input[type=checkbox]:checked {
+  background-color:var(--demo-accent); border-color:var(--demo-accent);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-7'/%3E%3C/svg%3E");
+  background-size:.78rem; background-position:center; background-repeat:no-repeat;
+}
+.todo-demo input[type=checkbox]:focus-visible { outline:2px solid var(--demo-accent); outline-offset:2px; }
+.todo-demo button {
+  font:inherit; font-size:.92rem; cursor:pointer; border-radius:var(--r-sm); border:1px solid var(--line);
+  background:transparent; color:var(--muted); padding:.42rem .8rem; transition:color .12s ease, border-color .12s ease;
+}
+.todo-demo button:hover { color:var(--body); border-color:var(--muted); }
+.todo-demo [todo-add] button {
+  background:var(--soft); color:var(--ink); border-color:#262c37; font-weight:500;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 2px 0 rgba(0,0,0,.45), 0 6px 14px rgba(0,0,0,.3);
+  transition:transform .1s ease, box-shadow .15s ease, filter .15s ease;
+}
+.todo-demo [todo-add] button:hover { filter:brightness(1.18); color:var(--ink); border-color:#262c37; }
+.todo-demo [todo-add] button:active {
+  transform:translate(1px, 2px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 2px 5px rgba(0,0,0,.3);
+}
+.todo-demo [todo-output] {
+  margin:.35rem 0 0; font-family:var(--mono); font-size:.78rem; color:var(--muted);
+  background:var(--soft); border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:.75rem; overflow:auto; white-space:pre-wrap;
+}

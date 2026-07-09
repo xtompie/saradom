@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Rensen · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Rensen">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="rensen">Rensen<a class="anchor" href="#rensen" aria-hidden="true">#</a></h1>
+<p>Rensen is a reactive system for JavaScript. It creates values that update automatically when their dependencies change.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Rensen/Rensen.js" target="_blank" rel="noopener">Rensen.js</a></p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// values</span>
+<span class="hljs-keyword">const</span> a = R(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-number">1</span>);
+<span class="hljs-keyword">const</span> b = R(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-number">2</span>);
+
+<span class="hljs-comment">// computed</span>
+<span class="hljs-keyword">const</span> c = R(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> a() + b());
+
+<span class="hljs-comment">// effect</span>
+R(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`c: <span class="hljs-subst">${c()}</span>`</span>));
+
+<span class="hljs-comment">// Initial output:</span>
+<span class="hljs-comment">// c: 3</span>
+
+<span class="hljs-comment">// Change `a`</span>
+a(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-number">10</span>);
+
+<span class="hljs-comment">// Outputs:</span>
+<span class="hljs-comment">// c: 12</span></code></pre>
+<p><code>R(() =&gt; ...)</code> creates a reactive value. Its function runs once at creation, and again each time a value it reads changes. <code>c</code> reads <code>a</code> and <code>b</code>, so a change to either one recomputes <code>c</code>.</p>
+<p>This is the signals pattern. Most signal libraries split it into three primitives: a signal, a computed value, and an effect. Rensen uses one function, <code>R()</code>, for all three. <code>a</code> and <code>b</code> are signals, <code>c</code> is a computed value, and the <code>console.log</code> call is an effect.</p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

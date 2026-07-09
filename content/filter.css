@@ -1,0 +1,11 @@
+.filter-demo [filter-space] { display:flex; flex-direction:column; gap:.7rem; max-width:24rem; margin:0 auto; }
+.filter-demo input {
+  background:var(--code-bg); border:1px solid var(--line); border-radius:var(--r-sm);
+  color:var(--ink); font:inherit; padding:.5rem .65rem; outline:none; transition:border-color .12s ease;
+}
+.filter-demo input:focus { border-color:var(--demo-accent); }
+.filter-demo ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.35rem; }
+.filter-demo [filter-item] {
+  padding:.45rem .65rem; background:var(--soft); border:1px solid var(--line);
+  border-radius:var(--r-sm); color:var(--ink);
+}

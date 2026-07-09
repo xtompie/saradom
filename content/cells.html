@@ -1,0 +1,28 @@
+<div cells-space>
+    <div cells-row>
+        <div cells-rowhead></div>
+        <div cells-colheads></div>
+    </div>
+    <div cells-rows></div>
+
+    <template cells-colhead-tpl>
+        <div cells-colhead val val-fx="Attr" val-key="label" val-attr="cells-colhead">
+            <span val val-fx="Text" val-key="label"></span>
+            <div cells-resize onmousedown="Cells.ColResizeStart(this, event)"></div>
+        </div>
+    </template>
+
+    <template cells-row-tpl>
+        <div cells-row>
+            <div cells-rowhead val val-fx="Text" val-key="label"></div>
+            <div cells-cellrow val val-fx="Arr" val-key="cells" val-tpl="[cells-cell-tpl]"></div>
+        </div>
+    </template>
+
+    <template cells-cell-tpl>
+        <input val val-fx="Attr" val-key="id" val-attr="cells-cell" type="text"
+            onfocus="Cells.Focus(this)" onblur="Cells.Blur(this)" onkeydown="Cells.Key(this, event)">
+    </template>
+
+    <script>Cells.Init(document.currentScript, { rows: 10, cols: 10 });</script>
+</div>

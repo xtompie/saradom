@@ -1,0 +1,16 @@
+<div todo-space>
+    <template todo-item-tpl>
+        <div todo-item>
+            <i val val-fx="Pattr" val-key="status" val-attr="todo-item-status" hidden></i>
+            <input type="checkbox" todo-item-checkbox onchange="Todo.Check(this)" />
+            <span todo-item-text val val-fx="Text" val-key="text"></span>
+            <button onclick="Todo.Remove(this)">remove</button>
+        </div>
+    </template>
+    <div todo-items val-tpl="[todo-item-tpl]"></div>
+    <div todo-add val val-fx="Obj">
+        <input val val-fx="Input" val-key="text" type="text" />
+        <button onclick="Todo.Add(this)">add</button>
+    </div>
+    <pre todo-output></pre>
+</div>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Todo list · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Todo list">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a class="active" href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="todo-list">Todo list<a class="anchor" href="#todo-list" aria-hidden="true">#</a></h1>
+<div class="todo-demo">
+<div todo-space>
+    <template todo-item-tpl>
+        <div todo-item>
+            <i val val-fx="Pattr" val-key="status" val-attr="todo-item-status" hidden></i>
+            <input type="checkbox" todo-item-checkbox onchange="Todo.Check(this)" />
+            <span todo-item-text val val-fx="Text" val-key="text"></span>
+            <button onclick="Todo.Remove(this)">remove</button>
+        </div>
+    </template>
+    <div todo-items val-tpl="[todo-item-tpl]"></div>
+    <div todo-add val val-fx="Obj">
+        <input val val-fx="Input" val-key="text" type="text" />
+        <button onclick="Todo.Add(this)">add</button>
+    </div>
+    <pre todo-output></pre>
+</div>
+
+</div>
+<style>
+[todo-item][todo-item-status="done"] [todo-item-text] {
+    text-decoration: line-through;
+}
+
+.todo-demo [todo-space] { display:flex; flex-direction:column; gap:.55rem; max-width:24rem; margin:0 auto; }
+.todo-demo [todo-items] { display:flex; flex-direction:column; gap:.4rem; }
+.todo-demo [todo-item] {
+  display:flex; align-items:center; gap:.7rem; padding:.5rem .65rem;
+  background:var(--soft); border:1px solid var(--line); border-radius:var(--r-sm);
+}
+.todo-demo [todo-item-text] { flex:1; color:var(--ink); }
+.todo-demo [todo-add] { display:flex; gap:.5rem; margin-top:.35rem; }
+.todo-demo input[type=text] {
+  flex:1; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--r-sm);
+  color:var(--ink); font:inherit; padding:.5rem .65rem; outline:none; transition:border-color .12s ease;
+}
+.todo-demo input[type=text]:focus { border-color:var(--demo-accent); }
+.todo-demo input[type=checkbox] {
+  appearance:none; -webkit-appearance:none; margin:0; flex:none; cursor:pointer;
+  width:1.15rem; height:1.15rem; border:1px solid var(--line); border-radius:.35rem;
+  background:var(--code-bg); transition:border-color .12s ease, background-color .12s ease;
+}
+.todo-demo input[type=checkbox]:hover { border-color:var(--muted); }
+.todo-demo input[type=checkbox]:checked {
+  background-color:var(--demo-accent); border-color:var(--demo-accent);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-7'/%3E%3C/svg%3E");
+  background-size:.78rem; background-position:center; background-repeat:no-repeat;
+}
+.todo-demo input[type=checkbox]:focus-visible { outline:2px solid var(--demo-accent); outline-offset:2px; }
+.todo-demo button {
+  font:inherit; font-size:.92rem; cursor:pointer; border-radius:var(--r-sm); border:1px solid var(--line);
+  background:transparent; color:var(--muted); padding:.42rem .8rem; transition:color .12s ease, border-color .12s ease;
+}
+.todo-demo button:hover { color:var(--body); border-color:var(--muted); }
+.todo-demo [todo-add] button {
+  background:var(--soft); color:var(--ink); border-color:#262c37; font-weight:500;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 2px 0 rgba(0,0,0,.45), 0 6px 14px rgba(0,0,0,.3);
+  transition:transform .1s ease, box-shadow .15s ease, filter .15s ease;
+}
+.todo-demo [todo-add] button:hover { filter:brightness(1.18); color:var(--ink); border-color:#262c37; }
+.todo-demo [todo-add] button:active {
+  transform:translate(1px, 2px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 2px 5px rgba(0,0,0,.3);
+}
+.todo-demo [todo-output] {
+  margin:.35rem 0 0; font-family:var(--mono); font-size:.78rem; color:var(--muted);
+  background:var(--soft); border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:.75rem; overflow:auto; white-space:pre-wrap;
+}
+</style>
+<script>
+const dom = document;
+document.al = function(s) {
+    return Array.from(document.querySelectorAll(s));
+};
+document.one = function(s) {
+    return document.querySelector(s);
+};
+Array.prototype.each = function(f) {
+    return this.forEach(f);
+};
+Array.prototype.any = function() {
+    return this.length > 0;
+};
+Array.prototype.none = function() {
+    return this.length === 0;
+};
+DocumentFragment.prototype.one = function(s) {
+    return this.querySelector(s);
+};
+DocumentFragment.prototype.allfd = function(s) {
+    return Array.from(this.children).reduce((r, e) => {
+        return e.matches(s) ? r.concat(e) : r.concat(e.allfd(s));
+    }, []);
+}
+HTMLElement.prototype.all = function(s) {
+    return Array.from(this.querySelectorAll(s));
+}
+HTMLElement.prototype.allfd = function(s) {
+    return Array.from(this.children)
+        .filter(e => e instanceof HTMLElement)
+        .reduce((r, e) => {
+            return e.matches(s) ? r.concat(e) : r.concat(e.allfd(s));
+        }, []);
+}
+HTMLElement.prototype.attr = function(a, v) {
+    if (v === undefined) {
+        return this.getAttribute(a);
+    }
+    else if (v === null || v === false) {
+        this.removeAttribute(a);
+        return this;
+    } else {
+        this.setAttribute(a, v);
+        return this;
+    }
+}
+HTMLElement.prototype.attrt = function(a, v1, v2) {
+    this.attr(a, this.attr(a) === v1 ? v2 : v1);
+    return this;
+}
+HTMLElement.prototype.attrs = function(prefix, values) {
+    if (values === undefined) {
+        const pre = prefix === undefined ? '' : prefix + '-';
+        const out = {};
+        for (const a of this.attributes) {
+            if (a.name.startsWith(pre)) out[a.name.slice(pre.length)] = a.value;
+        }
+        return out;
+    }
+    const pre = prefix + '-';
+    Object.entries(values).each(([k, v]) => this.setAttribute(pre + k, v));
+    return this;
+}
+HTMLElement.prototype.clear = function() {
+    this.innerHTML = '';
+    return this;
+}
+HTMLElement.prototype.cls = function() {
+    return this.classList;
+}
+HTMLElement.prototype.flag = function(f, v = null) {
+    if (v === null) {
+        return this.hasAttribute(f);
+    }
+    v === true ? this.setAttribute(f, '') : this.removeAttribute(f);
+    return this;
+}
+HTMLElement.prototype.hide = function(v = true) {
+    this.style.display = v === true ? 'none' : '';
+    return this;
+}
+HTMLElement.prototype.one = function(s) {
+    return this.querySelector(s);
+}
+HTMLElement.prototype.tpl = function() {
+    return this.content.firstElementChild.cloneNode(true);
+}
+HTMLElement.prototype.show = function(v = true) {
+    this.style.display = v === true ? '' : 'none';
+    return this;
+}
+HTMLElement.prototype.up = function(s) {
+    if (s === undefined) {
+        return this.parentNode;
+    }
+    if (this.matches(s)) {
+        return this;
+    }
+    let node = this.closest(s);
+    if (node) {
+        return node;
+    }
+    return document.body;
+}
+KeyboardEvent.prototype.combo = function(combo) {
+    return `${this.altKey ? 'Alt+' : ''}${this.ctrlKey ? 'Ctrl+' : ''}${this.metaKey ? 'Meta+' : ''}${this.shiftKey ? 'Shift+' : ''}${this.key}` === combo;
+};
+String.prototype.cut = function(length) {
+    return this.length > length ? this.substring(0, length) + '...' : this;
+};
+</script>
+<script>
+const Val = (() => {
+    const Attr = (el, a, v) => {
+        if (v === undefined) return el.getAttribute(a);
+        if (v === null || v === false) { el.removeAttribute(a); return el; }
+        el.setAttribute(a, v);
+        return el;
+    };
+    const Allfd = (el, s) => Array.from(el.children)
+        .filter(e => e instanceof HTMLElement)
+        .reduce((r, e) => e.matches(s) ? r.concat(e) : r.concat(Allfd(e, s)), []);
+    const TplClone = t => t.content.firstElementChild.cloneNode(true);
+    const Tpl = tpl => typeof tpl === 'string' ? document.querySelector(tpl) : tpl;
+
+    const FxParams = (el) => {
+        const params = {};
+        Array.from(el.attributes).forEach(a => {
+            if (a.name.startsWith('val-') && !['val-set', 'val-get', 'val-fx', 'val-lane'].includes(a.name)) {
+                params[a.name.substring(4)] = a.value;
+            }
+        });
+        return params;
+    };
+    const Fx = (el, write, v = null) => {
+        const fx = Attr(el, 'val-fx');
+        if (fx && fx !== '' && api.Fx[fx]) {
+            return write ? api.Fx[fx].Set(el, v, FxParams(el)) : api.Fx[fx].Get(el, FxParams(el));
+        }
+    };
+    const Sg = (el, write, v = null) => {
+        const code = Attr(el, write ? 'val-set' : 'val-get');
+        if (code) {
+            return write
+                ? (function () { return eval(code).call(el, v); }).bind(el)()
+                : (function () { return eval(code).call(el); }).bind(el)()
+            ;
+        }
+    };
+    const Get = el => ({ ...Fx(el, false) || {}, ...Sg(el, false) || {} });
+    const Set = (el, v) => { Fx(el, true, v); Sg(el, true, v); };
+    const Frag = (tpl, data) => {
+        const frag = TplClone(tpl);
+        Obj(frag, data);
+        return frag;
+    };
+    const Iter = (el, tpl, data, method) => {
+        const t = Tpl(tpl);
+        data.forEach(d => el[method](Frag(t, d)));
+    };
+    const Obj = (el, data = null, lane = null) => {
+        const sel = lane ? `[val][val-lane="${lane}"]` : '[val]';
+        if (data === null) {
+            const d = {};
+            if (el.hasAttribute('val')) Object.assign(d, Get(el));
+            Allfd(el, sel).reduce((r, e) => Object.assign(r, Get(e)), d);
+            return Object.keys(d).length === 0 ? null : d;
+        }
+        if (el.hasAttribute('val')) Set(el, data);
+        Allfd(el, sel).forEach(e => Set(e, data));
+    };
+    const Arr = (el, data = undefined, tpl = null) => {
+        if (data === undefined && tpl === null) {
+            return Array.from(el.children).map(e => Obj(e));
+        }
+        el.innerHTML = '';
+        if (data?.length) Iter(el, tpl, data, 'appendChild');
+    };
+    const Render = (el, tpl, data) => {
+        el.innerHTML = '';
+        if (data !== undefined && data !== null) el.appendChild(Frag(Tpl(tpl), data));
+    };
+    const Patch = (el, data) => Obj(el, Object.assign(Obj(el), data));
+    const Append = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data, 'appendChild');
+    const Prepend = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data.reverse(), 'prepend');
+    const Modify = (el, callback) => Obj(el, callback(Obj(el)));
+
+    const api = { Get, Set, Patch, Append, Prepend, Modify, Obj, Arr, Render, FxParams };
+
+    api.Fx = {
+        Obj: {
+            Get: (el, params) => {
+                const d = {};
+                Allfd(el, '[val]').forEach(e => Object.assign(d, Get(e)));
+                return params.key ? { [params.key]: d } : d;
+            },
+            Set: (el, data, params) => {
+                const val = params.key ? data[params.key] : data;
+                if (val === undefined || val === null) return;
+                Allfd(el, '[val]').forEach(e => Set(e, val));
+            }
+        },
+        Arr: {
+            Get: (el, params) => ({ [params.key]: Arr(el) }),
+            Set: (el, data, params) => Arr(el, data[params.key], params.tpl)
+        },
+        Render: {
+            Get: (el, params) => {
+                const d = {};
+                Allfd(el, '[val]').forEach(e => Object.assign(d, Get(e)));
+                return { [params.key]: d };
+            },
+            Set: (el, data, params) => Render(el, params.tpl, data[params.key])
+        },
+        Text: {
+            Get: (el, params) => ({ [params.key]: el.textContent }),
+            Set: (el, data, params) => { el.textContent = data[params.key]; }
+        },
+        Html: {
+            Get: (el, params) => ({ [params.key]: el.innerHTML }),
+            Set: (el, data, params) => { el.innerHTML = data[params.key]; }
+        },
+        Input: {
+            Get: (el, params) => ({ [params.key]: el.value }),
+            Set: (el, data, params) => { el.value = data[params.key] || ''; }
+        },
+        Show: {
+            Get: (el, params) => ({ [params.key]: el.style.display !== 'none' }),
+            Set: (el, data, params) => { el.style.display = data[params.key] ? '' : 'none'; }
+        },
+        Hide: {
+            Get: (el, params) => ({ [params.key]: el.style.display === 'none' }),
+            Set: (el, data, params) => { el.style.display = data[params.key] ? 'none' : ''; }
+        },
+        Img: {
+            Get: (el, params) => ({ [params.key]: el.src }),
+            Set: (el, data, params) => { el.src = data[params.key]; }
+        },
+        Attr: {
+            Get: (el, params) => ({ [params.key]: Attr(el, params.attr) }),
+            Set: (el, data, params) => { Attr(el, params.attr, data[params.key]); }
+        },
+        Pattr: {
+            Get: (el, params) => ({ [params.key]: Attr(el.parentElement, params.attr) }),
+            Set: (el, data, params) => { Attr(el.parentElement, params.attr, data[params.key]); }
+        },
+        If: {
+            Get: (el, params) => {
+                const conditionMet = el.style.display !== 'none' && (!params.value || params.value === 'true');
+                if (!conditionMet) return {};
+                const result = Allfd(el, '[val]').reduce((r, e) => Object.assign(r, Get(e)), {});
+                return { [params.key]: result };
+            },
+            Set: (el, data, params) => {
+                const conditionMet = params.value ? params.value === data[params.key] : data[params.key];
+                el.style.display = conditionMet ? '' : 'none';
+                if (conditionMet && data[params.key]) {
+                    Allfd(el, '[val]').forEach(e => Set(e, data[params.key]));
+                }
+            }
+        },
+        Fxs: {
+            Get: (el, params) => {
+                return Array.from(el.querySelector('[val-fxs]')?.children ?? []).reduce((result, fxEl) => {
+                    const fx = Attr(fxEl, 'val-fx');
+                    return (fx && api.Fx[fx])
+                        ? Object.assign(result, api.Fx[fx].Get(el, FxParams(fxEl)))
+                        : result;
+                }, {});
+            },
+            Set: (el, data, params) => {
+                Array.from(el.querySelector('[val-fxs]')?.children ?? []).forEach(fxEl => {
+                    const fx = Attr(fxEl, 'val-fx');
+                    fx && api.Fx[fx] && api.Fx[fx].Set(el, data, FxParams(fxEl));
+                });
+            }
+        }
+    };
+
+    return api;
+})();
+
+HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, data, tpl); return this; };
+HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
+HTMLElement.prototype.vget = function (lane) { lane = lane ?? this.getAttribute('val-lane'); return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane); };
+HTMLElement.prototype.vmodify = function (f) { Val.Modify(this, f); return this; };
+HTMLElement.prototype.vobj = function (data = null, lane) { lane = lane ?? this.getAttribute('val-lane'); return Val.Obj(this, data, lane); };
+HTMLElement.prototype.vpatch = function (data) { Val.Patch(this, data); return this; };
+HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
+HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
+HTMLElement.prototype.vset = function (data, lane) {
+    lane = lane ?? this.getAttribute('val-lane');
+    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data, lane);
+    return this;
+};
+HTMLElement.prototype.vval = function (data) {
+    if (arguments.length === 0) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this);
+    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data);
+    return this;
+};
+</script>
+<script>
+const Todo = (() => {
+    const Add = (ctx) => {
+        const space = ctx.up('[todo-space]');
+        const add = space.one('[todo-add]');
+        space.one('[todo-items]').vappend([{ ...add.vget(), status: 'todo'}]);
+        add.vset({ text: '' });
+        Output(space);
+    };
+    const Check = (ctx) => {
+        ctx.up('[todo-item]').vmodify(d => ({ ...d, status: d.status === 'done' ? 'todo' : 'done' }));
+        Output(ctx.up('[todo-space]'));
+    };
+    const Remove = (ctx) => {
+        const space = ctx.up('[todo-space]');
+        ctx.up('[todo-item]').remove();
+        Output(space);
+    };
+    const Output = (space) => {
+        space.one('[todo-output]').textContent = JSON.stringify(space.one('[todo-items]').varr(), null, 4);
+    }
+    return {
+        Add,
+        Check,
+        Remove,
+    }
+})();
+</script>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">todo-space</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">todo-item-tpl</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">todo-item</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pattr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"status"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"todo-item-status"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"checkbox"</span> <span class="hljs-attr">todo-item-checkbox</span> <span class="hljs-attr">onchange</span>=<span class="hljs-string">"Todo.Check(this)"</span> /&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">todo-item-text</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"text"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Todo.Remove(this)"</span>&gt;</span>remove<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">todo-items</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[todo-item-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">todo-add</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Obj"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Input"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> /&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Todo.Add(this)"</span>&gt;</span>add<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">pre</span> <span class="hljs-attr">todo-output</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">pre</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> Todo = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> Add = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> space = ctx.up(<span class="hljs-string">'[todo-space]'</span>);
+        <span class="hljs-keyword">const</span> add = space.one(<span class="hljs-string">'[todo-add]'</span>);
+        space.one(<span class="hljs-string">'[todo-items]'</span>).vappend([{ ...add.vget(), <span class="hljs-attr">status</span>: <span class="hljs-string">'todo'</span>}]);
+        add.vset({ <span class="hljs-attr">text</span>: <span class="hljs-string">''</span> });
+        Output(space);
+    };
+    <span class="hljs-keyword">const</span> Check = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
+        ctx.up(<span class="hljs-string">'[todo-item]'</span>).vmodify(<span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> ({ ...d, <span class="hljs-attr">status</span>: d.status === <span class="hljs-string">'done'</span> ? <span class="hljs-string">'todo'</span> : <span class="hljs-string">'done'</span> }));
+        Output(ctx.up(<span class="hljs-string">'[todo-space]'</span>));
+    };
+    <span class="hljs-keyword">const</span> Remove = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> space = ctx.up(<span class="hljs-string">'[todo-space]'</span>);
+        ctx.up(<span class="hljs-string">'[todo-item]'</span>).remove();
+        Output(space);
+    };
+    <span class="hljs-keyword">const</span> Output = <span class="hljs-function">(<span class="hljs-params">space</span>) =&gt;</span> {
+        space.one(<span class="hljs-string">'[todo-output]'</span>).textContent = <span class="hljs-built_in">JSON</span>.stringify(space.one(<span class="hljs-string">'[todo-items]'</span>).varr(), <span class="hljs-literal">null</span>, <span class="hljs-number">4</span>);
+    }
+    <span class="hljs-keyword">return</span> {
+        Add,
+        Check,
+        Remove,
+    }
+})();</code></pre>
+<p>The <code>todo-item-status</code> attribute is a contract. The HTML, the JavaScript, and the CSS all use it. The CSS styles the done item straight from the attribute. There is no <code>active</code> class toggled in JavaScript, so changing the style never means changing the code.</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-attr">[todo-item]</span><span class="hljs-selector-attr">[todo-item-status=<span class="hljs-string">"done"</span>]</span> <span class="hljs-selector-attr">[todo-item-text]</span> {
+  <span class="hljs-attribute">text-decoration</span>: line-through;
+}</code></pre>
+<p class="doc-next"><a href="produce.html">Next: Produce →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

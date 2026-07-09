@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Visible · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Visible">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a class="active" href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="visible">Visible<a class="anchor" href="#visible" aria-hidden="true">#</a></h1>
+<p>Show one set of elements and hide the rest. The current mode is written to the DOM as <code>visible-state</code>. The active view is readable there, with no JavaScript variable holding it.</p>
+<p>Regions carry a <code>visible-tag</code> inside a shared <code>visible-space</code>. <code>Visible.Visible(ctx, tags)</code> shows every <code>[visible-tag]</code> listed in <code>tags</code>, hides the others, and writes <code>tags</code> to <code>visible-state</code>. <code>Visible.Toggle(ctx, when, then, otherwise)</code> reads that state. When it includes <code>when</code> the <code>then</code> set is shown, else the <code>otherwise</code> set.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Visible/Visible.js" target="_blank" rel="noopener">Visible.js</a></p>
+<h2 id="tabs">Tabs<a class="anchor" href="#tabs" aria-hidden="true">#</a></h2>
+<p>One panel shows at a time. Each button selects its tag.</p>
+<div class="demo">
+<div visible-space visible-state="account">
+  <button onclick="Visible.Visible(this, ['account'])">Account</button>
+  <button onclick="Visible.Visible(this, ['billing'])">Billing</button>
+  <button onclick="Visible.Visible(this, ['team'])">Team</button>
+
+  <section visible-tag="account">Account settings.</section>
+  <section visible-tag="billing" style="display:none">Billing details.</section>
+  <section visible-tag="team" style="display:none">Team members.</section>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-space</span> <span class="hljs-attr">visible-state</span>=<span class="hljs-string">"account"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, ['account'])"</span>&gt;</span>Account<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, ['billing'])"</span>&gt;</span>Billing<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, ['team'])"</span>&gt;</span>Team<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"account"</span>&gt;</span>Account settings.<span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"billing"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Billing details.<span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"team"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Team members.<span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="accordion">Accordion<a class="anchor" href="#accordion" aria-hidden="true">#</a></h2>
+<p>Each header toggles its panel. Opening one closes the rest.</p>
+<div class="demo">
+<div visible-space visible-state="shipping">
+  <button onclick="Visible.Toggle(this, 'shipping', [], ['shipping'])">Shipping</button>
+  <div visible-tag="shipping">Ships in two days.</div>
+
+  <button onclick="Visible.Toggle(this, 'returns', [], ['returns'])">Returns</button>
+  <div visible-tag="returns" style="display:none">Thirty day returns.</div>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-space</span> <span class="hljs-attr">visible-state</span>=<span class="hljs-string">"shipping"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Toggle(this, 'shipping', [], ['shipping'])"</span>&gt;</span>Shipping<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"shipping"</span>&gt;</span>Ships in two days.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Toggle(this, 'returns', [], ['returns'])"</span>&gt;</span>Returns<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"returns"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Thirty day returns.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="radio-with-an-other-option">Radio with an &quot;Other&quot; option<a class="anchor" href="#radio-with-an-other-option" aria-hidden="true">#</a></h2>
+<p>The extra input shows only when Other is selected.</p>
+<div class="demo">
+<div visible-space visible-state="">
+  <label><input type="radio" name="reason" onclick="Visible.Visible(this, [])"> Refund</label>
+  <label><input type="radio" name="reason" onclick="Visible.Visible(this, [])"> Exchange</label>
+  <label><input type="radio" name="reason" onclick="Visible.Visible(this, ['other'])"> Other</label>
+
+  <input visible-tag="other" style="display:none" placeholder="Tell us more">
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-space</span> <span class="hljs-attr">visible-state</span>=<span class="hljs-string">""</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"radio"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"reason"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, [])"</span>&gt;</span> Refund<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"radio"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"reason"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, [])"</span>&gt;</span> Exchange<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"radio"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"reason"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, ['other'])"</span>&gt;</span> Other<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"other"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"Tell us more"</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="lanes">Lanes<a class="anchor" href="#lanes" aria-hidden="true">#</a></h2>
+<p>Several <code>Visible</code> mechanisms can work on the same elements at once. A <code>visible-space</code> names a <code>visible-lane</code>, and each tag belongs to that lane; a call touches only the tags in its space's lane and leaves the others alone. Nest the spaces and a hidden outer layer hides its inner one, so an element shows only when every lane shows it — the intersection comes from the nesting, not from merging state on one node.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-space</span> <span class="hljs-attr">visible-lane</span>=<span class="hljs-string">"mode"</span> <span class="hljs-attr">visible-state</span>=<span class="hljs-string">"grid"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, ['grid'])"</span>&gt;</span>Grid<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, ['list'])"</span>&gt;</span>List<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"grid"</span> <span class="hljs-attr">visible-lane</span>=<span class="hljs-string">"mode"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-space</span> <span class="hljs-attr">visible-lane</span>=<span class="hljs-string">"size"</span> <span class="hljs-attr">visible-state</span>=<span class="hljs-string">"lg"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"lg"</span> <span class="hljs-attr">visible-lane</span>=<span class="hljs-string">"size"</span>&gt;</span>shown only when both lanes show it<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>Without <code>visible-lane</code>, a space touches every <code>[visible-tag]</code> inside it — the original behavior, unchanged.</p>
+<style>
+.demo [visible-space] { width:100%; max-width:22rem; text-align:left; }
+
+/* tabs: the panel is a card */
+.demo [visible-space] section[visible-tag] {
+  display:block; margin-top:.5rem; padding:.7rem .85rem;
+  background:var(--soft); border:1px solid var(--line); border-radius:var(--r-sm); color:var(--ink);
+}
+
+/* accordion: the header reads as a control, the panel as its value */
+.demo [visible-space] button[onclick*="Toggle"] {
+  display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; margin-top:.5rem;
+}
+.demo [visible-space] button[onclick*="Toggle"]::before {
+  content:"▸"; color:var(--muted); font-size:.75em;
+}
+.demo [visible-space] div[visible-tag] {
+  margin:.3rem 0 .1rem 1.5rem; color:var(--sub);
+}
+
+/* radio: the free-text input gets the demo input look */
+.demo [visible-space] input[visible-tag] {
+  display:block; width:100%; margin-top:.5rem;
+  background:var(--code-bg); border:1px solid var(--line); border-radius:var(--r-sm);
+  color:var(--ink); font:inherit; padding:.5rem .65rem; outline:none;
+}
+</style>
+<script>
+const Visible = (() => {
+    const up = (el, sel) => el.matches(sel) ? el : el.closest(sel);
+
+    const Visible = (ctx, tags) => {
+        const space = up(ctx, '[visible-space]');
+        const lane = space.getAttribute('visible-lane');
+        const selector = lane ? `[visible-tag][visible-lane="${lane}"]` : '[visible-tag]';
+        space.querySelectorAll(selector).forEach(el => {
+            el.style.display = tags.includes(el.getAttribute('visible-tag')) ? '' : 'none';
+        });
+        space.setAttribute('visible-state', tags.join(' '));
+    };
+
+    const Toggle = (ctx, when, then, otherwise) => {
+        const space = up(ctx, '[visible-space]');
+        Visible(space, space.getAttribute('visible-state').split(' ').includes(when) ? then : otherwise);
+    };
+
+    return { Visible, Toggle };
+})();
+</script>
+<p class="doc-next"><a href="filter.html">Next: Filter →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

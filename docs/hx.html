@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Hx · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Hx">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a class="active" href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="hx">Hx<a class="anchor" href="#hx" aria-hidden="true">#</a></h1>
+<p>Hx is <a href="https://htmx.org/">htmx</a>, implemented in the Saradom pattern. There is one difference between Hx and htmx: htmx scans the page itself and binds <code>hx-*</code> attributes, and Hx wires them through a plain event attribute instead.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Hx/Hx.js" target="_blank" rel="noopener">Hx.js</a></p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/hello"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"hx(this, event)"</span>&gt;</span>Load<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p>Clicking the button sends an HTTP GET to <code>/hello</code>. With no <code>hx-target</code> set, the response goes into the element that triggered the request, the button itself, replacing its content.</p>
+<p>Hx covers a subset of htmx.</p>
+<h2 id="attributes">Attributes<a class="anchor" href="#attributes" aria-hidden="true">#</a></h2>
+<ul>
+<li><code>hx-get</code>, <code>hx-post</code>, <code>hx-put</code>, <code>hx-delete</code>, <code>hx-patch</code> name the method and the URL.</li>
+<li><code>hx-target</code> names where the response goes.</li>
+<li><code>hx-swap</code> names how it goes in: <code>innerHTML</code>, <code>outerHTML</code>, <code>append</code>, <code>prepend</code>, or <code>none</code>.</li>
+<li><code>hx-select</code> picks part of the response out, by selector.</li>
+<li><code>hx-indicator</code> names an element shown while the request is in flight.</li>
+<li><code>hx-disable</code> stops the element from triggering a request at all.</li>
+</ul>
+<h2 id="event-binding">Event binding<a class="anchor" href="#event-binding" aria-hidden="true">#</a></h2>
+<p><code>hx(this, event)</code> is set in the event attribute, the same as any Saradom handler. <code>event</code> is optional. It is needed to stop a <code>&lt;form&gt;</code>, an <code>&lt;a&gt;</code>, or a <code>&lt;button&gt;</code> inside a <code>&lt;form&gt;</code> from also doing its own submit or navigation.</p>
+<h2 id="native-semantics">Native semantics<a class="anchor" href="#native-semantics" aria-hidden="true">#</a></h2>
+<p>A plain <code>&lt;a href&gt;</code> sends a GET to that URL, with no <code>hx-*</code> attribute needed. A plain <code>&lt;form&gt;</code> sends a POST to its <code>action</code>, or to the current URL if <code>action</code> is missing, with its fields serialized.</p>
+<h2 id="selectors">Selectors<a class="anchor" href="#selectors" aria-hidden="true">#</a></h2>
+<p><code>hx-target</code> and <code>hx-indicator</code> take a selector.</p>
+<p><code>this</code> is the triggering element.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/x"</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"this"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"hx(this, event)"</span>&gt;</span>Click<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p>The response replaces the button's own content, the same as leaving <code>hx-target</code> out entirely.</p>
+<p><code>find &lt;selector&gt;</code> looks inside the triggering element.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/x"</span> <span class="hljs-attr">hx-indicator</span>=<span class="hljs-string">"find .loading"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"loading"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Loading...<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p><code>hx-indicator</code> here is set on the <code>&lt;div&gt;</code>, so <code>find .loading</code> looks inside that <code>&lt;div&gt;</code> and finds the <code>&lt;span&gt;</code>. It is shown for the duration of the request and hidden again once it settles.</p>
+<p><code>closest &lt;selector&gt; [subselector]</code> walks up to the nearest matching ancestor, then optionally back down to a child of it.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"closest .panel .content"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p>This walks up from the button to the nearest <code>.panel</code>, then down into that same <code>.panel</code> for <code>.content</code>. The response lands in <code>.content</code>, not in <code>.panel</code> itself, and not in some other <code>.panel</code> elsewhere on the page.</p>
+<p>Anything else is a plain, page-wide selector.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"[output]"</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/x"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"hx(this, event)"</span>&gt;</span>Click<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">output</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p><code>[output]</code> is looked up across the whole document, so the response can land anywhere on the page, not just near the button.</p>
+<h2 id="tabs">Tabs<a class="anchor" href="#tabs" aria-hidden="true">#</a></h2>
+<p>Each button loads its own content into one shared container.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">tab-space</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"closest [tab-space] [tab-content]"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"innerHTML"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/tab/1"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"hx(this, event)"</span>&gt;</span>Tab 1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/tab/2"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"hx(this, event)"</span>&gt;</span>Tab 2<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">tab-content</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p><code>hx-target</code> is set once, on <code>[tab-space]</code>, and both buttons inherit it by walking up to the nearest ancestor that has it. Clicking <code>Tab 1</code> sends a GET to <code>/tab/1</code>; clicking <code>Tab 2</code> sends one to <code>/tab/2</code>. Either way the response walks up to the same <code>[tab-space]</code> and back down into <code>[tab-content]</code>, replacing it via <code>innerHTML</code>. The buttons that triggered the request are never touched.</p>
+<h2 id="load-more">Load more<a class="anchor" href="#load-more" aria-hidden="true">#</a></h2>
+<p>The triggering <code>&lt;li&gt;</code> replaces itself with the response, which carries its own next-page trigger.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Agent 1<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"this"</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/contacts/?page=2"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"outerHTML"</span> <span class="hljs-attr">hx-indicator</span>=<span class="hljs-string">"find .htmx-indicator"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"hx(this, event)"</span>&gt;</span>Load more<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"htmx-indicator"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"/img/bars.svg"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span></code></pre>
+<p>Clicking <code>Load more</code> sends a GET to <code>/contacts/?page=2</code> and shows <code>.htmx-indicator</code> for the duration. The response swaps in with <code>outerHTML</code>, so the whole <code>&lt;li&gt;</code>, button and all, is replaced rather than just its content.</p>
+<p>The response for <code>/contacts/?page=2</code> is itself an <code>&lt;li&gt;</code> shaped the same way, wired to page 3:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Agent 2<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"this"</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/contacts/?page=3"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"outerHTML"</span> <span class="hljs-attr">hx-indicator</span>=<span class="hljs-string">"find .htmx-indicator"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"hx(this, event)"</span>&gt;</span>Load more<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"htmx-indicator"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"/img/bars.svg"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span></code></pre>
+<p>Each response carries the next page's trigger, so &quot;load more&quot; keeps working for as many pages as the backend sends, with no extra wiring on the page.</p>
+<p class="doc-next"><a href="notify.html">Next: Notify →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

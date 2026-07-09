@@ -1,0 +1,15 @@
+<div configurator-space configurator-val-engine="standard"
+     configurator-onchange="(change) => this
+        .attrs('configurator-val', change)
+        .ndown('configurator-refresh')">
+  <select onchange="this.nup('configurator-onchange', { engine: this.value })">
+    <option value="standard" selected>Standard engine</option>
+    <option value="performance">Performance engine</option>
+  </select>
+  <label configurator-refresh="() =>
+    this.one('input').disabled =
+      this.up('[configurator-space]').attrs('configurator-val').engine === 'standard'
+  ">
+    <input type="checkbox" disabled> Sport package
+  </label>
+</div>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>DOM State · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="DOM State">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a class="active" href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="dom-state">DOM State<a class="anchor" href="#dom-state" aria-hidden="true">#</a></h1>
+<p>State is stored in the DOM.
+State is not stored in JavaScript variables.</p>
+<p><strong>In an attribute</strong></p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">todo-item-status</span>=<span class="hljs-string">"done"</span>&gt;</span></code></pre>
+<p><strong>In an input's value</strong></p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">todo-add-text</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"Buy milk"</span>/&gt;</span></code></pre>
+<p><strong>In the element's content</strong></p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">todo-item-text</span>&gt;</span>Take out the trash<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></code></pre>
+<p><strong>In a <code>data-*</code> attribute (<code>dataset</code>)</strong></p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">data-status</span>=<span class="hljs-string">"done"</span>&gt;</span></code></pre>
+<p><strong>On the element as a <code>_</code>-prefixed JS property</strong> (e.g. a timer handle)</p>
+<pre><code class="hljs language-javascript">el._timer = setTimeout(fn, <span class="hljs-number">2000</span>);
+clearTimeout(el._timer);</code></pre>
+<h2 id="why">Why<a class="anchor" href="#why" aria-hidden="true">#</a></h2>
+<p>State is only what has to change.
+A value in a field, an item marked done, a panel that opens. That is what the front holds,
+and nothing more. It does not mirror the backend model. When the interface only needs a
+piece of HTML, that piece is all it should know, not the private fields of the user behind
+it.</p>
+<p>No state to synchronize.
+When state lives in a JavaScript variable, the DOM is a copy of it, and every change
+has to be pushed from the variable to the DOM to keep the two in agreement. Keeping that
+copy in sync is the problem reactivity exists to solve. Here the DOM <em>is</em> the state, so
+there is one copy and nothing to synchronize.</p>
+<p>No reactivity runtime.
+React, Vue, and Alpine ship a runtime whose job is to watch state and re-render when it
+changes: a virtual-DOM diff, a reactive proxy, a dependency graph. That is code to
+download and work to do on every update. Saradom ships none of it. A handler writes straight
+to the element it already has.</p>
+<p>No initialization or hydration.
+A framework has to boot its UI: build the component tree, attach the state, and hydrate
+server HTML by re-running the components on the client. Until hydration finishes the page
+can look ready while not responding. There is nothing to boot here. The HTML the browser
+parsed is already the live, stateful UI.</p>
+<p>State arrives as HTML from the backend.
+State travels inside the markup, so a fragment from the server already carries it. The
+fragment goes straight into the page and works, with no extra step to load the data first.</p>
+<p>Search-engine ready.
+A server-rendered page is real, crawlable HTML, because the state is already text and
+attributes in the markup. Search engines read it directly, with no client render to wait
+for.</p>
+<p>State survives moving and cloning.
+It lives on the node, so moving an element, cloning a <code>&lt;template&gt;</code>, or reordering a list
+carries the state along with it. There is no external map keyed by id to update whenever
+the structure changes.</p>
+<p>Visible in the browser.
+The current state is right there in the browser's Elements panel. Reading it means looking
+at the DOM, not inspecting a framework's internal store.</p>
+<p class="doc-next"><a href="event-attributes.html">Next: Event attributes →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

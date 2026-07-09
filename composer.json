@@ -1,0 +1,15 @@
+{
+    "scripts": {
+        "build": "php build/build.php",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "php build/build.php",
+            "php -S 127.0.0.1:8000"
+        ]
+    },
+    "require": {
+        "league/commonmark": "^2.8",
+        "symfony/yaml": "^8.1",
+        "scrivo/highlight.php": "^9.18"
+    }
+}

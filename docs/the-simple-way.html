@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>The simple way · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="The simple way">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a class="active" href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="the-simple-way">The simple way<a class="anchor" href="#the-simple-way" aria-hidden="true">#</a></h1>
+<h2 id="global-scope">Global scope<a class="anchor" href="#global-scope" aria-hidden="true">#</a></h2>
+<p>Every module on the global scope means many names, and the risk of a collision. One <code>App</code> object holds them all. It can also nest deeper, into its own namespace under <code>App</code>, when a project wants more separation.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> App = {};
+App.Visible = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> { <span class="hljs-comment">/* ... */</span> })();
+App.Filter = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> { <span class="hljs-comment">/* ... */</span> })();
+App.Configurator = App.Configurator || {};
+App.Configurator.Package = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> { <span class="hljs-comment">/* ... */</span> })();</code></pre>
+<h2 id="module-reuse">Module reuse<a class="anchor" href="#module-reuse" aria-hidden="true">#</a></h2>
+<p>The same file can serve more than one instance, by taking its config through the shared <code>exports</code> variable.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// tabs.js</span>
+exports = (<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">config = {}</span>) </span>{
+    <span class="hljs-keyword">const</span> p = config.prefix || <span class="hljs-string">'tabs'</span>;
+    <span class="hljs-keyword">const</span> Select = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> { <span class="hljs-comment">/* uses ${p}-space, ${p}-tab */</span> };
+    <span class="hljs-keyword">return</span> { Select };
+})(exports);</code></pre>
+<pre><code class="hljs language-php"><span class="hljs-keyword">const</span> App = {};
+
+exports = { prefix: <span class="hljs-string">'account'</span> };
+<span class="hljs-meta">&lt;?php</span> <span class="hljs-keyword">echo</span> file_get_contents(<span class="hljs-string">'tabs.js'</span>) <span class="hljs-meta">?&gt;</span>
+App.Account = exports;
+
+exports = { prefix: <span class="hljs-string">'billing'</span> };
+<span class="hljs-meta">&lt;?php</span> <span class="hljs-keyword">echo</span> file_get_contents(<span class="hljs-string">'tabs.js'</span>) <span class="hljs-meta">?&gt;</span>
+App.Billing = exports;</code></pre>
+<h2 id="global-reclamation">Global reclamation<a class="anchor" href="#global-reclamation" aria-hidden="true">#</a></h2>
+<p>jQuery sets <code>window.jQuery</code> and <code>window.$</code> when it loads. Both names are in the global
+scope, open to a collision with anything else that wants <code>$</code>.</p>
+<pre><code class="hljs language-javascript">App.jQuery = jQuery;
+<span class="hljs-keyword">delete</span> <span class="hljs-built_in">window</span>.$;
+<span class="hljs-keyword">delete</span> <span class="hljs-built_in">window</span>.jQuery;</code></pre>
+<h2 id="theme">Theme<a class="anchor" href="#theme" aria-hidden="true">#</a></h2>
+<p>Dark and light, one global bit of state, without the flash of unstyled content.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">app-theme</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">const</span> App = {};
+App.Theme = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> Apply = <span class="hljs-function">(<span class="hljs-params">name</span>) =&gt;</span> <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'[app-theme]'</span>).setAttribute(<span class="hljs-string">'app-theme'</span>, name);
+    <span class="hljs-keyword">const</span> Init = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> Apply(localStorage.getItem(<span class="hljs-string">'theme'</span>) || <span class="hljs-string">'light'</span>);
+    <span class="hljs-keyword">const</span> <span class="hljs-built_in">Set</span> = <span class="hljs-function">(<span class="hljs-params">name</span>) =&gt;</span> { Apply(name); localStorage.setItem(<span class="hljs-string">'theme'</span>, name); };
+    <span class="hljs-keyword">return</span> { Init, <span class="hljs-built_in">Set</span> };
+})();
+App.Theme.Init();
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+<span class="hljs-selector-attr">[app-theme=<span class="hljs-string">"dark"</span>]</span> { <span class="hljs-attribute">background</span>: <span class="hljs-number">#111</span>; <span class="hljs-attribute">color</span>: <span class="hljs-number">#eee</span>; }
+<span class="hljs-selector-attr">[app-theme=<span class="hljs-string">"light"</span>]</span> { <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">color</span>: <span class="hljs-number">#111</span>; }
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span></code></pre>
+<h2 id="change-reaction">Change reaction<a class="anchor" href="#change-reaction" aria-hidden="true">#</a></h2>
+<p>A badge in the header has to stay in sync with the cart, wherever the cart changes.</p>
+<p>Option 1. <code>Cart</code> catches every <code>cart-onchange</code> element and runs it.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">cart-onchange</span>=<span class="hljs-string">"this.textContent = App.Cart.Count()"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></code></pre>
+<p>Option 2. <code>Cart</code> writes the count directly into every <code>cart-val-count</code> element.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">cart-val-count</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></code></pre>
+<p>Option 3. <code>App.Info</code> assumes one instance on the page, which is fine for a widget like this. <code>Refresh</code> reads the cart and writes the count into <code>app-info-count</code>, and <code>Cart</code> calls it on every change.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">app-info-count</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+App.Cart.OnChange(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> App.Info.Refresh());
+App.Info.Refresh();
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+<h2 id="public-state-attributes">Public state attributes<a class="anchor" href="#public-state-attributes" aria-hidden="true">#</a></h2>
+<p><code>Cart</code> owns these attributes, and updates the DOM to match its state.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">cart-val-hasdata</span>=<span class="hljs-string">"yes"</span>&gt;</span>Cart: <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">cart-val-count</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">cart-val-hasdata</span>=<span class="hljs-string">"no"</span>&gt;</span>Cart empty<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></code></pre>
+<h2 id="forms">Forms<a class="anchor" href="#forms" aria-hidden="true">#</a></h2>
+<p>Option 1. A plain form, submitted normally.</p>
+<p>Option 2. Form data is sent, and the HTML response is swapped in, the way htmx does it.</p>
+<p>Option 3. Val reads the fields, sends JSON, and renders the returned errors under the field.</p>
+<p>Option 4. <a href="vld.html">Vld</a> runs validation rules against the fields before any of the above, so the network only sees a submit once the shape is right.</p>
+<h2 id="toasts">Toasts<a class="anchor" href="#toasts" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+App.Toast = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> Add = <span class="hljs-function">(<span class="hljs-params">kind, text</span>) =&gt;</span> {
+        dom.one(<span class="hljs-string">'[toast-space]'</span>).vappend([{ kind, text }]);
+    };
+    <span class="hljs-keyword">const</span> Remove = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> ctx.up(<span class="hljs-string">'[toast-item]'</span>).remove();
+    <span class="hljs-keyword">const</span> <span class="hljs-built_in">Error</span> = <span class="hljs-function">(<span class="hljs-params">text</span>) =&gt;</span> Add(<span class="hljs-string">'error'</span>, text);
+    <span class="hljs-keyword">const</span> Info = <span class="hljs-function">(<span class="hljs-params">text</span>) =&gt;</span> Add(<span class="hljs-string">'info'</span>, text);
+    <span class="hljs-keyword">const</span> Success = <span class="hljs-function">(<span class="hljs-params">text</span>) =&gt;</span> Add(<span class="hljs-string">'success'</span>, text);
+    <span class="hljs-keyword">return</span> { Add, <span class="hljs-built_in">Error</span>, Info, Success, Remove };
+})();
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">toast-space</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[toast-item-tpl]"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">toast-item-tpl</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">toast-item</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pattr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"kind"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"toast-item-kind"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"text"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"App.Toast.Remove(this)"</span>&gt;</span>×<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="ancestor-context">Ancestor context<a class="anchor" href="#ancestor-context" aria-hidden="true">#</a></h2>
+<p>Two modules can react to each other without knowing about each other, as long as they
+share one ancestor. The ancestor gives out two things: a call that writes a value, and an
+attribute name that marks who wants to hear about it.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">configurator-space</span> <span class="hljs-attr">configurator-engine</span>=<span class="hljs-string">"standard"</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">select</span> <span class="hljs-attr">onchange</span>=<span class="hljs-string">"Configurator.Update(this, {engine: this.value})"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"standard"</span> <span class="hljs-attr">selected</span>&gt;</span>Standard engine<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"performance"</span>&gt;</span>Performance engine<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">select</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">configurator-onchange</span>=<span class="hljs-string">"Package.Sync(this)"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"checkbox"</span> <span class="hljs-attr">package-sport</span>&gt;</span>
+    Sport package
+  <span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>Picking an engine calls <code>Configurator.Update</code>. It writes the new engine onto
+<code>configurator-space</code>. It then finds every <code>configurator-onchange</code> element inside that
+space and runs it.</p>
+<p><code>Package.Sync</code> is one such listener. It reads the engine from <code>configurator-space</code>. It
+decides on its own whether the sport package stays enabled. <code>Configurator</code> never mentions
+<code>Package</code> by name. <code>Package</code> only knows that it was woken up.</p>
+<p>The whole block can repeat on one page. A page that compares two builds holds two
+<code>configurator-space</code> blocks, each with its own engine and its own package.</p>
+<h2 id="modals">Modals<a class="anchor" href="#modals" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-xml"><span class="hljs-comment">&lt;!-- parent page --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">const</span> Modal = (<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">let</span> callback;
+    <span class="hljs-keyword">const</span> Open = <span class="hljs-function">(<span class="hljs-params">url, cb</span>) =&gt;</span> {
+        callback = cb;
+        <span class="hljs-built_in">document</span>.body.insertAdjacentHTML(
+            <span class="hljs-string">'beforeend'</span>,
+            <span class="hljs-string">`&lt;modal&gt;&lt;iframe src="<span class="hljs-subst">${url}</span>" style="width:100%;height:100%;border:0"&gt;&lt;/iframe&gt;&lt;/modal&gt;`</span>
+        );
+    };
+    <span class="hljs-keyword">const</span> Close = <span class="hljs-function">(<span class="hljs-params">data</span>) =&gt;</span> {
+        <span class="hljs-keyword">if</span> (data !== <span class="hljs-literal">undefined</span>) callback(data);
+        <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'modal'</span>).remove();
+    };
+    <span class="hljs-keyword">return</span> { Open, Close };
+})();
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Modal.Open('/items', (i) =&gt; this.textContent = i.name)"</span>&gt;</span>Choose<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<pre><code class="hljs language-xml"><span class="hljs-comment">&lt;!-- list page --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"window.parent.Modal.Close({ id: 1, name: 'Item 1' })"</span>&gt;</span>Item 1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"window.parent.Modal.Close({ id: 2, name: 'Item 2' })"</span>&gt;</span>Item 2<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p class="doc-next"><a href="saradom-vs-others.html">Next: Saradom vs Others →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

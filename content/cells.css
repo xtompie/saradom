@@ -1,0 +1,67 @@
+[cells-space] {
+    font-family: var(--mono);
+    font-size: .82rem;
+}
+[cells-row] {
+    display: flex;
+}
+[cells-rowhead] {
+    width: 28px;
+    min-width: 28px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    box-sizing: border-box;
+}
+[cells-colhead] {
+    position: relative;
+    min-width: 32px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+[cells-colhead] > span {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+[cells-colheads], [cells-cellrow] {
+    display: flex;
+}
+[cells-resize] {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 1;
+}
+[cells-resize]:hover, [cells-resize]:active {
+    background: var(--accent);
+    opacity: .6;
+}
+[cells-cellrow] input {
+    min-width: 32px;
+    height: 22px;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 0 4px;
+    font: inherit;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+[cells-cellrow] input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}

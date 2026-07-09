@@ -1,0 +1,20 @@
+<div ttt-space ttt-turn="X" ttt-winner="">
+    <div ttt-status>
+        <div val val-fx="If" val-key="next">Next player: <span val val-fx="Text" val-key="mark">X</span></div>
+        <div val val-fx="If" val-key="winner" style="display:none">Winner: <span val val-fx="Text" val-key="mark"></span></div>
+        <div val val-fx="If" val-key="draw" style="display:none">Draw</div>
+    </div>
+    <div ttt-board val-tpl="[ttt-cell-tpl]"></div>
+    <template ttt-cell-tpl>
+        <button ttt-cell val val-fx="Text" val-key="mark" onclick="Ttt.Play(this)"></button>
+    </template>
+    <ol ttt-history val-tpl="[ttt-move-tpl]"></ol>
+    <template ttt-move-tpl>
+        <li ttt-move>
+            <i val val-fx="Attr" val-key="board" val-attr="ttt-move-board" hidden></i>
+            <i val val-fx="Attr" val-key="turn" val-attr="ttt-move-turn" hidden></i>
+            <button val val-fx="Text" val-key="label" onclick="Ttt.Jump(this)"></button>
+        </li>
+    </template>
+    <script>Ttt.Init(document.currentScript);</script>
+</div>

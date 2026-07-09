@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Saradom — frontend architecture pattern · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Saradom — frontend architecture pattern">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body class="landing"><main class="content"><header class="hero">
+<p class="eyebrow">Frontend architecture pattern</p>
+<h1 class="wordmark">Sara<span class="mark">dom</span></h1>
+<p class="sub">Build modular, scalable frontends in plain HTML and JavaScript.<br>No framework, no npm, no build step.</p>
+<div class="cta-row">
+<a class="cta" href="introduction.html">Get started</a>
+<a class="cta-ghost" href="https://github.com/xtompie/saradom">★ GitHub</a>
+</div>
+</header>
+<div class="demo">
+<div counter-space>
+  <output counter-value>0</output>
+  <button onclick="Counter.Inc(this)">+1</button>
+</div>
+</div>
+<script>
+const Counter = (() => {
+  const Inc = (ctx) => {
+    const el = ctx.closest('[counter-space]').querySelector('[counter-value]');
+    el.textContent = +el.textContent + 1;
+  };
+  return { Inc };
+})();
+</script>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">counter-space</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">output</span> <span class="hljs-attr">counter-value</span>&gt;</span>0<span class="hljs-tag">&lt;/<span class="hljs-name">output</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Counter.Inc(this)"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">const</span> Counter = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
+  <span class="hljs-keyword">const</span> Inc = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> el = ctx.closest(<span class="hljs-string">'[counter-space]'</span>).querySelector(<span class="hljs-string">'[counter-value]'</span>);
+    el.textContent = +el.textContent + <span class="hljs-number">1</span>;
+  };
+  <span class="hljs-keyword">return</span> { Inc };
+})();
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+<p class="kicker">Foundation</p>
+<div class="rules">
+<div class="rule"><div class="rule-name"><span class="rule-no">1</span> DOM State</div><div class="rule-text">State is stored in the DOM. State is not stored in JavaScript variables.</div></div>
+<div class="rule"><div class="rule-name"><span class="rule-no">2</span> Event attributes</div><div class="rule-text">Events are set in HTML attributes. Events are not dynamically bound with addEventListener.</div></div>
+<div class="rule"><div class="rule-name"><span class="rule-no">3</span> Action in context</div><div class="rule-text">The event has a current DOM element from which the operating space is determined.</div></div>
+<div class="rule"><div class="rule-name"><span class="rule-no">4</span> Modularization</div><div class="rule-text">A module is an object built by an IIFE: private inside, public API out. Its name namespaces its attributes.</div></div>
+<div class="rule"><div class="rule-name"><span class="rule-no">5</span> High UX Performance</div><div class="rule-text">Instant initialization, seamless loading interface, responsive interaction.</div></div>
+</div>
+<p class="doc-next"><a href="introduction.html">Next: Introduction →</a></p>
+<footer class="site-footer">
+<div class="foot-brand"><span class="mark">Saradom</span> — frontend architecture pattern</div>
+<nav class="foot-links">
+<a href="https://github.com/xtompie/saradom">GitHub</a>
+</nav>
+</footer>
+</main></body>
+</html>

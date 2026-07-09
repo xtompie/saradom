@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Filter · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Filter">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a class="active" href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="filter">Filter<a class="anchor" href="#filter" aria-hidden="true">#</a></h1>
+<div class="filter-demo">
+<div filter-space>
+    <input filter-query type="text" oninput="Filter.Filter(this)">
+    <ul>
+        <li filter-item="apple fruit">Apple</li>
+        <li filter-item="banana fruit">Banana</li>
+        <li filter-item="cherry fruit">Cherry</li>
+        <li filter-item="carrot vegetable">Carrot</li>
+        <li filter-item="potato vegetable">Potato</li>
+    </ul>
+</div>
+
+</div>
+<style>
+.filter-demo [filter-space] { display:flex; flex-direction:column; gap:.7rem; max-width:24rem; margin:0 auto; }
+.filter-demo input {
+  background:var(--code-bg); border:1px solid var(--line); border-radius:var(--r-sm);
+  color:var(--ink); font:inherit; padding:.5rem .65rem; outline:none; transition:border-color .12s ease;
+}
+.filter-demo input:focus { border-color:var(--demo-accent); }
+.filter-demo ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.35rem; }
+.filter-demo [filter-item] {
+  padding:.45rem .65rem; background:var(--soft); border:1px solid var(--line);
+  border-radius:var(--r-sm); color:var(--ink);
+}
+</style>
+<script>
+const Filter = (() => {
+    const up = (el, sel) => el.matches(sel) ? el : el.closest(sel);
+
+    const Filter = (ctx) => {
+        const space = up(ctx, '[filter-space]');
+        const lane = space.getAttribute('filter-lane');
+        const query = space.querySelector('[filter-query]').value.trim().toLowerCase();
+        const selector = lane ? `[filter-item][filter-lane="${lane}"]` : '[filter-item]';
+        space.querySelectorAll(selector).forEach(el => {
+            el.style.display = el.getAttribute('filter-item').toLowerCase().includes(query) ? '' : 'none';
+        });
+    };
+
+    return { Filter };
+})();
+</script>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">filter-space</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">filter-query</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">oninput</span>=<span class="hljs-string">"Filter.Filter(this)"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">filter-item</span>=<span class="hljs-string">"apple fruit"</span>&gt;</span>Apple<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">filter-item</span>=<span class="hljs-string">"banana fruit"</span>&gt;</span>Banana<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">filter-item</span>=<span class="hljs-string">"cherry fruit"</span>&gt;</span>Cherry<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">filter-item</span>=<span class="hljs-string">"carrot vegetable"</span>&gt;</span>Carrot<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">filter-item</span>=<span class="hljs-string">"potato vegetable"</span>&gt;</span>Potato<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> Filter = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> up = <span class="hljs-function">(<span class="hljs-params">el, sel</span>) =&gt;</span> el.matches(sel) ? el : el.closest(sel);
+
+    <span class="hljs-keyword">const</span> Filter = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> space = up(ctx, <span class="hljs-string">'[filter-space]'</span>);
+        <span class="hljs-keyword">const</span> lane = space.getAttribute(<span class="hljs-string">'filter-lane'</span>);
+        <span class="hljs-keyword">const</span> query = space.querySelector(<span class="hljs-string">'[filter-query]'</span>).value.trim().toLowerCase();
+        <span class="hljs-keyword">const</span> selector = lane ? <span class="hljs-string">`[filter-item][filter-lane="<span class="hljs-subst">${lane}</span>"]`</span> : <span class="hljs-string">'[filter-item]'</span>;
+        space.querySelectorAll(selector).forEach(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> {
+            el.style.display = el.getAttribute(<span class="hljs-string">'filter-item'</span>).toLowerCase().includes(query) ? <span class="hljs-string">''</span> : <span class="hljs-string">'none'</span>;
+        });
+    };
+
+    <span class="hljs-keyword">return</span> { Filter };
+})();</code></pre>
+<p>The input is marked with <code>filter-query</code>. The handler goes up to the space and reads that element, so it never assumes it was called from the input itself. The trigger can be on the input, on a button next to it, or anywhere inside the space.</p>
+<p>Each item carries its search text in the <code>filter-item</code> attribute. The query matches that value, not the visible text. So an item can match words it does not show, like a category. Typing <code>fruit</code> keeps Apple, Banana, and Cherry.</p>
+<h2 id="lanes">Lanes<a class="anchor" href="#lanes" aria-hidden="true">#</a></h2>
+<p>Like <code>Visible</code>, <code>Filter</code> can share a space with other mechanisms. A <code>filter-space</code> names a <code>filter-lane</code>, and each item belongs to that lane; the filter touches only its own lane's items. Without <code>filter-lane</code> it filters every <code>[filter-item]</code> in the space, unchanged.</p>
+<p class="doc-next"><a href="todo.html">Next: Todo list →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

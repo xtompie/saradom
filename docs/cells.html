@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<title>Cells · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:title" content="Cells">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="cells">Cells<a class="anchor" href="#cells" aria-hidden="true">#</a></h1>
+<p>A small spreadsheet.</p>
+<div class="cells-demo">
+<style>
+[cells-space] {
+    font-family: var(--mono);
+    font-size: .82rem;
+}
+[cells-row] {
+    display: flex;
+}
+[cells-rowhead] {
+    width: 28px;
+    min-width: 28px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    box-sizing: border-box;
+}
+[cells-colhead] {
+    position: relative;
+    min-width: 32px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+[cells-colhead] > span {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+[cells-colheads], [cells-cellrow] {
+    display: flex;
+}
+[cells-resize] {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 1;
+}
+[cells-resize]:hover, [cells-resize]:active {
+    background: var(--accent);
+    opacity: .6;
+}
+[cells-cellrow] input {
+    min-width: 32px;
+    height: 22px;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 0 4px;
+    font: inherit;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+[cells-cellrow] input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+</style>
+<script>
+const dom = document;
+document.al = function(s) {
+    return Array.from(document.querySelectorAll(s));
+};
+document.one = function(s) {
+    return document.querySelector(s);
+};
+Array.prototype.each = function(f) {
+    return this.forEach(f);
+};
+Array.prototype.any = function() {
+    return this.length > 0;
+};
+Array.prototype.none = function() {
+    return this.length === 0;
+};
+DocumentFragment.prototype.one = function(s) {
+    return this.querySelector(s);
+};
+DocumentFragment.prototype.allfd = function(s) {
+    return Array.from(this.children).reduce((r, e) => {
+        return e.matches(s) ? r.concat(e) : r.concat(e.allfd(s));
+    }, []);
+}
+HTMLElement.prototype.all = function(s) {
+    return Array.from(this.querySelectorAll(s));
+}
+HTMLElement.prototype.allfd = function(s) {
+    return Array.from(this.children)
+        .filter(e => e instanceof HTMLElement)
+        .reduce((r, e) => {
+            return e.matches(s) ? r.concat(e) : r.concat(e.allfd(s));
+        }, []);
+}
+HTMLElement.prototype.attr = function(a, v) {
+    if (v === undefined) {
+        return this.getAttribute(a);
+    }
+    else if (v === null || v === false) {
+        this.removeAttribute(a);
+        return this;
+    } else {
+        this.setAttribute(a, v);
+        return this;
+    }
+}
+HTMLElement.prototype.attrt = function(a, v1, v2) {
+    this.attr(a, this.attr(a) === v1 ? v2 : v1);
+    return this;
+}
+HTMLElement.prototype.attrs = function(prefix, values) {
+    if (values === undefined) {
+        const pre = prefix === undefined ? '' : prefix + '-';
+        const out = {};
+        for (const a of this.attributes) {
+            if (a.name.startsWith(pre)) out[a.name.slice(pre.length)] = a.value;
+        }
+        return out;
+    }
+    const pre = prefix + '-';
+    Object.entries(values).each(([k, v]) => this.setAttribute(pre + k, v));
+    return this;
+}
+HTMLElement.prototype.clear = function() {
+    this.innerHTML = '';
+    return this;
+}
+HTMLElement.prototype.cls = function() {
+    return this.classList;
+}
+HTMLElement.prototype.flag = function(f, v = null) {
+    if (v === null) {
+        return this.hasAttribute(f);
+    }
+    v === true ? this.setAttribute(f, '') : this.removeAttribute(f);
+    return this;
+}
+HTMLElement.prototype.hide = function(v = true) {
+    this.style.display = v === true ? 'none' : '';
+    return this;
+}
+HTMLElement.prototype.one = function(s) {
+    return this.querySelector(s);
+}
+HTMLElement.prototype.tpl = function() {
+    return this.content.firstElementChild.cloneNode(true);
+}
+HTMLElement.prototype.show = function(v = true) {
+    this.style.display = v === true ? '' : 'none';
+    return this;
+}
+HTMLElement.prototype.up = function(s) {
+    if (s === undefined) {
+        return this.parentNode;
+    }
+    if (this.matches(s)) {
+        return this;
+    }
+    let node = this.closest(s);
+    if (node) {
+        return node;
+    }
+    return document.body;
+}
+KeyboardEvent.prototype.combo = function(combo) {
+    return `${this.altKey ? 'Alt+' : ''}${this.ctrlKey ? 'Ctrl+' : ''}${this.metaKey ? 'Meta+' : ''}${this.shiftKey ? 'Shift+' : ''}${this.key}` === combo;
+};
+String.prototype.cut = function(length) {
+    return this.length > length ? this.substring(0, length) + '...' : this;
+};
+</script>
+<script>
+const Val = (() => {
+    const Attr = (el, a, v) => {
+        if (v === undefined) return el.getAttribute(a);
+        if (v === null || v === false) { el.removeAttribute(a); return el; }
+        el.setAttribute(a, v);
+        return el;
+    };
+    const Allfd = (el, s) => Array.from(el.children)
+        .filter(e => e instanceof HTMLElement)
+        .reduce((r, e) => e.matches(s) ? r.concat(e) : r.concat(Allfd(e, s)), []);
+    const TplClone = t => t.content.firstElementChild.cloneNode(true);
+    const Tpl = tpl => typeof tpl === 'string' ? document.querySelector(tpl) : tpl;
+
+    const FxParams = (el) => {
+        const params = {};
+        Array.from(el.attributes).forEach(a => {
+            if (a.name.startsWith('val-') && !['val-set', 'val-get', 'val-fx', 'val-lane'].includes(a.name)) {
+                params[a.name.substring(4)] = a.value;
+            }
+        });
+        return params;
+    };
+    const Fx = (el, write, v = null) => {
+        const fx = Attr(el, 'val-fx');
+        if (fx && fx !== '' && api.Fx[fx]) {
+            return write ? api.Fx[fx].Set(el, v, FxParams(el)) : api.Fx[fx].Get(el, FxParams(el));
+        }
+    };
+    const Sg = (el, write, v = null) => {
+        const code = Attr(el, write ? 'val-set' : 'val-get');
+        if (code) {
+            return write
+                ? (function () { return eval(code).call(el, v); }).bind(el)()
+                : (function () { return eval(code).call(el); }).bind(el)()
+            ;
+        }
+    };
+    const Get = el => ({ ...Fx(el, false) || {}, ...Sg(el, false) || {} });
+    const Set = (el, v) => { Fx(el, true, v); Sg(el, true, v); };
+    const Frag = (tpl, data) => {
+        const frag = TplClone(tpl);
+        Obj(frag, data);
+        return frag;
+    };
+    const Iter = (el, tpl, data, method) => {
+        const t = Tpl(tpl);
+        data.forEach(d => el[method](Frag(t, d)));
+    };
+    const Obj = (el, data = null, lane = null) => {
+        const sel = lane ? `[val][val-lane="${lane}"]` : '[val]';
+        if (data === null) {
+            const d = {};
+            if (el.hasAttribute('val')) Object.assign(d, Get(el));
+            Allfd(el, sel).reduce((r, e) => Object.assign(r, Get(e)), d);
+            return Object.keys(d).length === 0 ? null : d;
+        }
+        if (el.hasAttribute('val')) Set(el, data);
+        Allfd(el, sel).forEach(e => Set(e, data));
+    };
+    const Arr = (el, data = undefined, tpl = null) => {
+        if (data === undefined && tpl === null) {
+            return Array.from(el.children).map(e => Obj(e));
+        }
+        el.innerHTML = '';
+        if (data?.length) Iter(el, tpl, data, 'appendChild');
+    };
+    const Render = (el, tpl, data) => {
+        el.innerHTML = '';
+        if (data !== undefined && data !== null) el.appendChild(Frag(Tpl(tpl), data));
+    };
+    const Patch = (el, data) => Obj(el, Object.assign(Obj(el), data));
+    const Append = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data, 'appendChild');
+    const Prepend = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data.reverse(), 'prepend');
+    const Modify = (el, callback) => Obj(el, callback(Obj(el)));
+
+    const api = { Get, Set, Patch, Append, Prepend, Modify, Obj, Arr, Render, FxParams };
+
+    api.Fx = {
+        Obj: {
+            Get: (el, params) => {
+                const d = {};
+                Allfd(el, '[val]').forEach(e => Object.assign(d, Get(e)));
+                return params.key ? { [params.key]: d } : d;
+            },
+            Set: (el, data, params) => {
+                const val = params.key ? data[params.key] : data;
+                if (val === undefined || val === null) return;
+                Allfd(el, '[val]').forEach(e => Set(e, val));
+            }
+        },
+        Arr: {
+            Get: (el, params) => ({ [params.key]: Arr(el) }),
+            Set: (el, data, params) => Arr(el, data[params.key], params.tpl)
+        },
+        Render: {
+            Get: (el, params) => {
+                const d = {};
+                Allfd(el, '[val]').forEach(e => Object.assign(d, Get(e)));
+                return { [params.key]: d };
+            },
+            Set: (el, data, params) => Render(el, params.tpl, data[params.key])
+        },
+        Text: {
+            Get: (el, params) => ({ [params.key]: el.textContent }),
+            Set: (el, data, params) => { el.textContent = data[params.key]; }
+        },
+        Html: {
+            Get: (el, params) => ({ [params.key]: el.innerHTML }),
+            Set: (el, data, params) => { el.innerHTML = data[params.key]; }
+        },
+        Input: {
+            Get: (el, params) => ({ [params.key]: el.value }),
+            Set: (el, data, params) => { el.value = data[params.key] || ''; }
+        },
+        Show: {
+            Get: (el, params) => ({ [params.key]: el.style.display !== 'none' }),
+            Set: (el, data, params) => { el.style.display = data[params.key] ? '' : 'none'; }
+        },
+        Hide: {
+            Get: (el, params) => ({ [params.key]: el.style.display === 'none' }),
+            Set: (el, data, params) => { el.style.display = data[params.key] ? 'none' : ''; }
+        },
+        Img: {
+            Get: (el, params) => ({ [params.key]: el.src }),
+            Set: (el, data, params) => { el.src = data[params.key]; }
+        },
+        Attr: {
+            Get: (el, params) => ({ [params.key]: Attr(el, params.attr) }),
+            Set: (el, data, params) => { Attr(el, params.attr, data[params.key]); }
+        },
+        Pattr: {
+            Get: (el, params) => ({ [params.key]: Attr(el.parentElement, params.attr) }),
+            Set: (el, data, params) => { Attr(el.parentElement, params.attr, data[params.key]); }
+        },
+        If: {
+            Get: (el, params) => {
+                const conditionMet = el.style.display !== 'none' && (!params.value || params.value === 'true');
+                if (!conditionMet) return {};
+                const result = Allfd(el, '[val]').reduce((r, e) => Object.assign(r, Get(e)), {});
+                return { [params.key]: result };
+            },
+            Set: (el, data, params) => {
+                const conditionMet = params.value ? params.value === data[params.key] : data[params.key];
+                el.style.display = conditionMet ? '' : 'none';
+                if (conditionMet && data[params.key]) {
+                    Allfd(el, '[val]').forEach(e => Set(e, data[params.key]));
+                }
+            }
+        },
+        Fxs: {
+            Get: (el, params) => {
+                return Array.from(el.querySelector('[val-fxs]')?.children ?? []).reduce((result, fxEl) => {
+                    const fx = Attr(fxEl, 'val-fx');
+                    return (fx && api.Fx[fx])
+                        ? Object.assign(result, api.Fx[fx].Get(el, FxParams(fxEl)))
+                        : result;
+                }, {});
+            },
+            Set: (el, data, params) => {
+                Array.from(el.querySelector('[val-fxs]')?.children ?? []).forEach(fxEl => {
+                    const fx = Attr(fxEl, 'val-fx');
+                    fx && api.Fx[fx] && api.Fx[fx].Set(el, data, FxParams(fxEl));
+                });
+            }
+        }
+    };
+
+    return api;
+})();
+
+HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, data, tpl); return this; };
+HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
+HTMLElement.prototype.vget = function (lane) { lane = lane ?? this.getAttribute('val-lane'); return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane); };
+HTMLElement.prototype.vmodify = function (f) { Val.Modify(this, f); return this; };
+HTMLElement.prototype.vobj = function (data = null, lane) { lane = lane ?? this.getAttribute('val-lane'); return Val.Obj(this, data, lane); };
+HTMLElement.prototype.vpatch = function (data) { Val.Patch(this, data); return this; };
+HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
+HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
+HTMLElement.prototype.vset = function (data, lane) {
+    lane = lane ?? this.getAttribute('val-lane');
+    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data, lane);
+    return this;
+};
+HTMLElement.prototype.vval = function (data) {
+    if (arguments.length === 0) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this);
+    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data);
+    return this;
+};
+</script>
+<script>
+const Rensen = (() => {
+    class Rensen {
+        static watchers = new Map();
+        static inputs = new Map();
+        static stack = [];
+        static instances = new Map();
+        static nextId = 1;
+        constructor(compute) {
+            this.id = Rensen.nextId++;
+            Rensen.instances.set(this.id, this);
+            this.compute = compute;
+            this.value = undefined;
+            this.destroyed = false;
+            this.recompute();
+        }
+        get() {
+            if (this.destroyed) {
+                throw new Error('Rensen: read of a destroyed reactive value');
+            }
+            if (Rensen.stack.length > 0) {
+                const current = Rensen.stack[Rensen.stack.length - 1];
+                if (!Rensen.watchers.has(this.id)) {
+                    Rensen.watchers.set(this.id, []);
+                }
+                Rensen.watchers.get(this.id).push(current.id);
+                if (!Rensen.inputs.has(current.id)) {
+                    Rensen.inputs.set(current.id, []);
+                }
+                Rensen.inputs.get(current.id).push(this.id);
+            }
+            return this.value;
+        }
+        set(newCompute) {
+            if (this.destroyed) {
+                throw new Error('Rensen: write to a destroyed reactive value');
+            }
+            this.compute = newCompute;
+            this.recompute();
+        }
+        clearDependencies() {
+            if (Rensen.inputs.has(this.id)) {
+                const inputIds = Rensen.inputs.get(this.id);
+                inputIds.forEach((inputId) => {
+                    if (Rensen.watchers.has(inputId)) {
+                        const watchersForInput = Rensen.watchers.get(inputId);
+                        Rensen.watchers.set(
+                            inputId,
+                            watchersForInput.filter((watcherId) => watcherId !== this.id)
+                        );
+                    }
+                });
+                Rensen.inputs.delete(this.id);
+            }
+        }
+        recompute() {
+            this.clearDependencies();
+            Rensen.stack.push(this);
+
+            try {
+                const newValue = this.compute ? this.compute() : undefined;
+                if (newValue !== this.value) {
+                    this.value = newValue;
+                    this.notifyWatchers();
+                }
+            } finally {
+                Rensen.stack.pop();
+            }
+        }
+        notifyWatchers() {
+            if (Rensen.watchers.has(this.id)) {
+                const watchersList = Rensen.watchers.get(this.id);
+                watchersList.forEach((watcherId) => {
+                    const watcherObj = Rensen.instances.get(watcherId);
+                    if (watcherObj) {
+                        try {
+                            watcherObj.recompute();
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+                });
+            }
+        }
+        static R(compute) {
+            const core = new Rensen(compute);
+
+            function reactive(...args) {
+                if (args.length > 0) {
+
+                    core.set(args[0]);
+                } else {
+
+                    return core.get();
+                }
+            }
+            reactive.__core = core;
+            return reactive;
+        }
+
+        static destroy(reactive) {
+            if (!reactive.__core) return;
+            const core = reactive.__core;
+            if (core.destroyed) return;
+
+            const watcherIds = Rensen.watchers.get(core.id) || [];
+
+            core.clearDependencies();
+            core.destroyed = true;
+            core.compute = null;
+            core.value = null;
+            Rensen.watchers.delete(core.id);
+            Rensen.inputs.delete(core.id);
+            Rensen.instances.delete(core.id);
+
+            watcherIds.forEach((watcherId) => {
+                const watcherObj = Rensen.instances.get(watcherId);
+                if (watcherObj) {
+                    try {
+                        watcherObj.recompute();
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            });
+        }
+    }
+    return Rensen;
+})();
+const R = (c) => Rensen.R(c);
+</script>
+<script>
+const Cells = (() => {
+    const CELL_RE = /^[A-Z]+[0-9]+$/;
+
+    // Column letters, spreadsheet-style: 0 -> A, 25 -> Z, 26 -> AA, ...
+    function colName(n) {
+        let name = '';
+        n++;
+        while (n > 0) {
+            n--;
+            name = String.fromCharCode(65 + (n % 26)) + name;
+            n = Math.floor(n / 26);
+        }
+        return name;
+    }
+
+    // Inverse of colName: 'A' -> 0, 'AA' -> 26, ...
+    function colIndex(name) {
+        let n = 0;
+        for (const ch of name) n = n * 26 + (ch.charCodeAt(0) - 64);
+        return n - 1;
+    }
+
+    // Each [cells-space] instance owns one of these, kept on the element itself.
+    // No id, no registry: the space anchors its own state, the same way its markup does.
+    function createSheet(cols, rows) {
+        const sheet = {};
+        const raw = {};
+        const dependsOn = {};
+        cols.forEach(c => rows.forEach(r => {
+            const id = c + r;
+            sheet[id] = R(() => '');
+            raw[id] = '';
+            dependsOn[id] = new Set();
+        }));
+        return { sheet, raw, dependsOn };
+    }
+
+    // --- coercion ---
+
+    function toNum(v) {
+        if (v === '#ERR' || v === '#CIRC') throw new Error('propagated error');
+        if (v === '' || v === undefined || v === null) return 0;
+        const n = typeof v === 'number' ? v : parseFloat(v);
+        if (isNaN(n)) throw new Error('not a number: ' + v);
+        return n;
+    }
+
+    function flatten(args) {
+        const out = [];
+        args.forEach(a => Array.isArray(a) ? out.push(...a) : out.push(a));
+        return out;
+    }
+
+    const FUNCTIONS = {
+        SUM: args => flatten(args).reduce((s, v) => s + toNum(v), 0),
+        CONCAT: args => flatten(args).map(v => v === undefined ? '' : String(v)).join(''),
+        UPPER: args => String(args[0] ?? '').toUpperCase(),
+        LOWER: args => String(args[0] ?? '').toLowerCase(),
+        LEN: args => String(args[0] ?? '').length,
+    };
+
+    // --- tokenizer + parser (recursive descent) ---
+
+    function tokenize(src) {
+        const tokens = [];
+        let i = 0;
+        while (i < src.length) {
+            const ch = src[i];
+            if (/\s/.test(ch)) { i++; continue; }
+            if (/[0-9.]/.test(ch)) {
+                let j = i;
+                while (j < src.length && /[0-9.]/.test(src[j])) j++;
+                tokens.push({ type: 'NUMBER', value: parseFloat(src.slice(i, j)) });
+                i = j;
+                continue;
+            }
+            if (ch === '"') {
+                let j = i + 1;
+                while (j < src.length && src[j] !== '"') j++;
+                tokens.push({ type: 'STRING', value: src.slice(i + 1, j) });
+                i = j + 1;
+                continue;
+            }
+            if (/[A-Za-z]/.test(ch)) {
+                let j = i;
+                while (j < src.length && /[A-Za-z0-9]/.test(src[j])) j++;
+                tokens.push({ type: 'IDENT', value: src.slice(i, j).toUpperCase() });
+                i = j;
+                continue;
+            }
+            if ('+-*/(),:'.includes(ch)) {
+                tokens.push({ type: ch });
+                i++;
+                continue;
+            }
+            throw new Error('unexpected character: ' + ch);
+        }
+        return tokens;
+    }
+
+    function parse(src) {
+        const tokens = tokenize(src);
+        let pos = 0;
+        const peek = () => tokens[pos];
+        const next = () => tokens[pos++];
+
+        function parseExpr() {
+            let node = parseTerm();
+            while (peek() && (peek().type === '+' || peek().type === '-')) {
+                const op = next().type;
+                node = { type: 'BINOP', op, left: node, right: parseTerm() };
+            }
+            return node;
+        }
+        function parseTerm() {
+            let node = parseFactor();
+            while (peek() && (peek().type === '*' || peek().type === '/')) {
+                const op = next().type;
+                node = { type: 'BINOP', op, left: node, right: parseFactor() };
+            }
+            return node;
+        }
+        function parseFactor() {
+            const t = peek();
+            if (!t) throw new Error('unexpected end of formula');
+            if (t.type === '-') { next(); return { type: 'NEG', node: parseFactor() }; }
+            if (t.type === '(') {
+                next();
+                const node = parseExpr();
+                if (!peek() || peek().type !== ')') throw new Error('expected )');
+                next();
+                return node;
+            }
+            if (t.type === 'NUMBER') { next(); return { type: 'NUM', value: t.value }; }
+            if (t.type === 'STRING') { next(); return { type: 'STR', value: t.value }; }
+            if (t.type === 'IDENT') {
+                next();
+                if (peek() && peek().type === '(') {
+                    next();
+                    const args = [];
+                    if (peek() && peek().type !== ')') {
+                        args.push(parseExpr());
+                        while (peek() && peek().type === ',') { next(); args.push(parseExpr()); }
+                    }
+                    if (!peek() || peek().type !== ')') throw new Error('expected )');
+                    next();
+                    return { type: 'CALL', name: t.value, args };
+                }
+                if (CELL_RE.test(t.value)) {
+                    if (peek() && peek().type === ':') {
+                        next();
+                        const endTok = next();
+                        if (!endTok || endTok.type !== 'IDENT' || !CELL_RE.test(endTok.value)) throw new Error('expected cell after :');
+                        return { type: 'RANGE', from: t.value, to: endTok.value };
+                    }
+                    return { type: 'CELL', id: t.value };
+                }
+                throw new Error('unknown identifier: ' + t.value);
+            }
+            throw new Error('unexpected token');
+        }
+
+        const ast = parseExpr();
+        if (pos !== tokens.length) throw new Error('unexpected trailing tokens');
+        return ast;
+    }
+
+    // --- evaluation ---
+
+    function splitCell(id) {
+        const m = id.match(/^([A-Z]+)([0-9]+)$/);
+        return [m[1], parseInt(m[2], 10)];
+    }
+
+    function evalRangeIds(node) {
+        const [colFrom, rowFrom] = splitCell(node.from);
+        const [colTo, rowTo] = splitCell(node.to);
+        const colStart = Math.min(colIndex(colFrom), colIndex(colTo));
+        const colEnd = Math.max(colIndex(colFrom), colIndex(colTo));
+        const rowStart = Math.min(rowFrom, rowTo);
+        const rowEnd = Math.max(rowFrom, rowTo);
+        const ids = [];
+        for (let c = colStart; c <= colEnd; c++)
+            for (let r = rowStart; r <= rowEnd; r++)
+                ids.push(colName(c) + r);
+        return ids;
+    }
+
+    function evalRange(node, sheet) {
+        return evalRangeIds(node).map(id => sheet[id] ? sheet[id]() : '');
+    }
+
+    function collectRefs(node, out = new Set()) {
+        switch (node.type) {
+            case 'CELL': out.add(node.id); break;
+            case 'RANGE': evalRangeIds(node).forEach(id => out.add(id)); break;
+            case 'NEG': collectRefs(node.node, out); break;
+            case 'BINOP': collectRefs(node.left, out); collectRefs(node.right, out); break;
+            case 'CALL': node.args.forEach(a => collectRefs(a, out)); break;
+        }
+        return out;
+    }
+
+    function evalNode(node, sheet) {
+        switch (node.type) {
+            case 'NUM': return node.value;
+            case 'STR': return node.value;
+            case 'CELL': return sheet[node.id] ? sheet[node.id]() : '';
+            case 'NEG': return -toNum(evalNode(node.node, sheet));
+            case 'BINOP': {
+                const l = evalNode(node.left, sheet), r = evalNode(node.right, sheet);
+                if (node.op === '+') return toNum(l) + toNum(r);
+                if (node.op === '-') return toNum(l) - toNum(r);
+                if (node.op === '*') return toNum(l) * toNum(r);
+                if (node.op === '/') {
+                    const rv = toNum(r);
+                    if (rv === 0) throw new Error('division by zero');
+                    return toNum(l) / rv;
+                }
+                break;
+            }
+            case 'CALL': {
+                const fn = FUNCTIONS[node.name];
+                if (!fn) throw new Error('unknown function: ' + node.name);
+                const args = node.args.map(a => a.type === 'RANGE' ? evalRange(a, sheet) : evalNode(a, sheet));
+                return fn(args);
+            }
+            case 'RANGE': throw new Error('range not allowed here');
+        }
+        throw new Error('bad node');
+    }
+
+    // --- cycle detection (own graph, checked before ever touching Rensen) ---
+
+    function reaches(dependsOn, from, to, visited) {
+        if (from === to) return true;
+        if (visited.has(from)) return false;
+        visited.add(from);
+        for (const next of dependsOn[from]) {
+            if (reaches(dependsOn, next, to, visited)) return true;
+        }
+        return false;
+    }
+
+    // --- commit: raw text -> sheet compute ---
+
+    function commit(state, id, text) {
+        const { sheet, raw, dependsOn } = state;
+        raw[id] = text;
+
+        if (text.startsWith('=')) {
+            let ast;
+            try {
+                ast = parse(text.slice(1));
+            } catch (e) {
+                dependsOn[id] = new Set();
+                sheet[id](() => '#ERR');
+                return;
+            }
+            const refs = collectRefs(ast);
+            const cyclic = [...refs].some(ref => reaches(dependsOn, ref, id, new Set()));
+            if (cyclic) {
+                dependsOn[id] = new Set();
+                sheet[id](() => '#CIRC');
+                return;
+            }
+            dependsOn[id] = refs;
+            sheet[id](() => {
+                try { return evalNode(ast, sheet); } catch (e) { return '#ERR'; }
+            });
+            return;
+        }
+
+        dependsOn[id] = new Set();
+        const trimmed = text.trim();
+        if (trimmed !== '' && !isNaN(trimmed)) {
+            const n = parseFloat(trimmed);
+            sheet[id](() => n);
+            return;
+        }
+        sheet[id](() => text);
+    }
+
+    // --- display ---
+
+    function display(v) {
+        if (v === '' || v === undefined) return '';
+        if (typeof v === 'number') {
+            return Number.isInteger(v) ? String(v) : String(Math.round(v * 10000) / 10000);
+        }
+        return String(v);
+    }
+
+    // --- DOM: grid generated by Val, from templates + data (array of rows, each with an array of cells) ---
+
+    // rows, cols: how many of each. Column letters are generated, A..Z then AA, AB, ...
+    function Init(ctx, { rows, cols }) {
+        const space = ctx.up('[cells-space]');
+        const colLabels = Array.from({ length: cols }, (_, i) => colName(i));
+        const rowLabels = Array.from({ length: rows }, (_, i) => i + 1);
+        const state = createSheet(colLabels, rowLabels);
+        space.cellsState = state;
+
+        space.one('[cells-colheads]').varr(colLabels.map(c => ({ label: c })), '[cells-colhead-tpl]');
+        space.one('[cells-rows]').varr(rowLabels.map(r => ({
+            label: String(r),
+            cells: colLabels.map(c => ({ id: c + r })),
+        })), '[cells-row-tpl]');
+
+        // Column width lives as one CSS variable per column, on the space itself. Every
+        // cell of that column points its own width at the same variable, so resizing one
+        // cell is really just changing the variable: the whole column follows.
+        space.all('[cells-colhead]').forEach(head => {
+            head.style.width = `var(--cells-w-${head.attr('cells-colhead')}, 72px)`;
+        });
+        space.all('[cells-cell]').forEach(input => {
+            const id = input.attr('cells-cell');
+            const col = id.match(/^[A-Z]+/)[0];
+            input.style.width = `var(--cells-w-${col}, 72px)`;
+            R(() => {
+                const v = state.sheet[id]();
+                if (document.activeElement !== input) {
+                    input.value = display(v);
+                    input.style.textAlign = typeof v === 'number' ? 'right' : 'left';
+                }
+            });
+        });
+    }
+
+    function Focus(ctx) {
+        const cell = ctx.up('[cells-cell]');
+        const state = cell.up('[cells-space]').cellsState;
+        cell.value = state.raw[cell.attr('cells-cell')];
+        cell.style.textAlign = 'left';
+    }
+
+    function Blur(ctx) {
+        const cell = ctx.up('[cells-cell]');
+        const state = cell.up('[cells-space]').cellsState;
+        const id = cell.attr('cells-cell');
+        commit(state, id, cell.value);
+        cell.value = display(state.sheet[id]());
+    }
+
+    function Key(ctx, event) {
+        if (event.key === 'Enter') ctx.up('[cells-cell]').blur();
+    }
+
+    // Dragging the handle between two headers changes one CSS variable on the space.
+    // Every cell in that column reads its width from that variable, so they all resize
+    // together without the drag code ever touching a cell.
+    function ColResizeStart(ctx, event) {
+        event.preventDefault();
+        const head = ctx.up('[cells-colhead]');
+        const space = head.up('[cells-space]');
+        const varName = `--cells-w-${head.attr('cells-colhead')}`;
+        const startX = event.clientX;
+        const startWidth = head.getBoundingClientRect().width;
+
+        const onMove = (e) => {
+            space.style.setProperty(varName, Math.max(32, startWidth + e.clientX - startX) + 'px');
+        };
+        const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    }
+
+    return { Init, Focus, Blur, Key, ColResizeStart };
+})();
+</script>
+<div cells-space>
+    <div cells-row>
+        <div cells-rowhead></div>
+        <div cells-colheads></div>
+    </div>
+    <div cells-rows></div>
+
+    <template cells-colhead-tpl>
+        <div cells-colhead val val-fx="Attr" val-key="label" val-attr="cells-colhead">
+            <span val val-fx="Text" val-key="label"></span>
+            <div cells-resize onmousedown="Cells.ColResizeStart(this, event)"></div>
+        </div>
+    </template>
+
+    <template cells-row-tpl>
+        <div cells-row>
+            <div cells-rowhead val val-fx="Text" val-key="label"></div>
+            <div cells-cellrow val val-fx="Arr" val-key="cells" val-tpl="[cells-cell-tpl]"></div>
+        </div>
+    </template>
+
+    <template cells-cell-tpl>
+        <input val val-fx="Attr" val-key="id" val-attr="cells-cell" type="text"
+            onfocus="Cells.Focus(this)" onblur="Cells.Blur(this)" onkeydown="Cells.Key(this, event)">
+    </template>
+
+    <script>Cells.Init(document.currentScript, { rows: 10, cols: 10 });</script>
+</div>
+
+</div>
+<h2 id="formulas">Formulas<a class="anchor" href="#formulas" aria-hidden="true">#</a></h2>
+<p>A cell holds a number, a text, or a formula starting with <code>=</code>, such as <code>=A1+B2</code> or <code>=SUM(A1:A5)</code>.</p>
+<ul>
+<li>Arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, and parentheses.</li>
+<li>A cell reference, such as <code>A1</code>.</li>
+<li>A range, such as <code>A1:A5</code>, meaning every cell from <code>A1</code> to <code>A5</code>.</li>
+<li><code>SUM(range)</code>: adds the numbers in a range.</li>
+<li><code>CONCAT(a, b, ...)</code>: joins values into one string.</li>
+<li><code>UPPER(text)</code>: makes a string upper case.</li>
+<li><code>LOWER(text)</code>: makes a string lower case.</li>
+<li><code>LEN(text)</code>: the length of a string.</li>
+</ul>
+<p>A formula that fails to parse, or throws while it runs, such as dividing by a string, shows <code>#ERR</code>. A formula that reads its own cell, directly or through others, shows <code>#CIRC</code> instead.</p>
+<p>A number is right-aligned. Anything else, a string or an error code, is left-aligned.</p>
+<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Rensen/Rensen.js" target="_blank" rel="noopener">Rensen.js</a></p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-space</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-row</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-rowhead</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-colheads</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-rows</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">cells-colhead-tpl</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-colhead</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"label"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"cells-colhead"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"label"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-resize</span> <span class="hljs-attr">onmousedown</span>=<span class="hljs-string">"Cells.ColResizeStart(this, event)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">cells-row-tpl</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-row</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-rowhead</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"label"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">cells-cellrow</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"cells"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[cells-cell-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">cells-cell-tpl</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"id"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"cells-cell"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span>
+            <span class="hljs-attr">onfocus</span>=<span class="hljs-string">"Cells.Focus(this)"</span> <span class="hljs-attr">onblur</span>=<span class="hljs-string">"Cells.Blur(this)"</span> <span class="hljs-attr">onkeydown</span>=<span class="hljs-string">"Cells.Key(this, event)"</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">Cells.Init(<span class="hljs-built_in">document</span>.currentScript, { <span class="hljs-attr">rows</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">cols</span>: <span class="hljs-number">10</span> });</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> Cells = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> CELL_RE = <span class="hljs-regexp">/^[A-Z]+[0-9]+$/</span>;
+
+    <span class="hljs-comment">// Column letters, spreadsheet-style: 0 -&gt; A, 25 -&gt; Z, 26 -&gt; AA, ...</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">colName</span>(<span class="hljs-params">n</span>) </span>{
+        <span class="hljs-keyword">let</span> name = <span class="hljs-string">''</span>;
+        n++;
+        <span class="hljs-keyword">while</span> (n &gt; <span class="hljs-number">0</span>) {
+            n--;
+            name = <span class="hljs-built_in">String</span>.fromCharCode(<span class="hljs-number">65</span> + (n % <span class="hljs-number">26</span>)) + name;
+            n = <span class="hljs-built_in">Math</span>.floor(n / <span class="hljs-number">26</span>);
+        }
+        <span class="hljs-keyword">return</span> name;
+    }
+
+    <span class="hljs-comment">// Inverse of colName: 'A' -&gt; 0, 'AA' -&gt; 26, ...</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">colIndex</span>(<span class="hljs-params">name</span>) </span>{
+        <span class="hljs-keyword">let</span> n = <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> ch <span class="hljs-keyword">of</span> name) n = n * <span class="hljs-number">26</span> + (ch.charCodeAt(<span class="hljs-number">0</span>) - <span class="hljs-number">64</span>);
+        <span class="hljs-keyword">return</span> n - <span class="hljs-number">1</span>;
+    }
+
+    <span class="hljs-comment">// Each [cells-space] instance owns one of these, kept on the element itself.</span>
+    <span class="hljs-comment">// No id, no registry: the space anchors its own state, the same way its markup does.</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createSheet</span>(<span class="hljs-params">cols, rows</span>) </span>{
+        <span class="hljs-keyword">const</span> sheet = {};
+        <span class="hljs-keyword">const</span> raw = {};
+        <span class="hljs-keyword">const</span> dependsOn = {};
+        cols.forEach(<span class="hljs-function"><span class="hljs-params">c</span> =&gt;</span> rows.forEach(<span class="hljs-function"><span class="hljs-params">r</span> =&gt;</span> {
+            <span class="hljs-keyword">const</span> id = c + r;
+            sheet[id] = R(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-string">''</span>);
+            raw[id] = <span class="hljs-string">''</span>;
+            dependsOn[id] = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>();
+        }));
+        <span class="hljs-keyword">return</span> { sheet, raw, dependsOn };
+    }
+
+    <span class="hljs-comment">// --- coercion ---</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toNum</span>(<span class="hljs-params">v</span>) </span>{
+        <span class="hljs-keyword">if</span> (v === <span class="hljs-string">'#ERR'</span> || v === <span class="hljs-string">'#CIRC'</span>) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'propagated error'</span>);
+        <span class="hljs-keyword">if</span> (v === <span class="hljs-string">''</span> || v === <span class="hljs-literal">undefined</span> || v === <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">const</span> n = <span class="hljs-keyword">typeof</span> v === <span class="hljs-string">'number'</span> ? v : <span class="hljs-built_in">parseFloat</span>(v);
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">isNaN</span>(n)) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'not a number: '</span> + v);
+        <span class="hljs-keyword">return</span> n;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">flatten</span>(<span class="hljs-params">args</span>) </span>{
+        <span class="hljs-keyword">const</span> out = [];
+        args.forEach(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> <span class="hljs-built_in">Array</span>.isArray(a) ? out.push(...a) : out.push(a));
+        <span class="hljs-keyword">return</span> out;
+    }
+
+    <span class="hljs-keyword">const</span> FUNCTIONS = {
+        <span class="hljs-attr">SUM</span>: <span class="hljs-function"><span class="hljs-params">args</span> =&gt;</span> flatten(args).reduce(<span class="hljs-function">(<span class="hljs-params">s, v</span>) =&gt;</span> s + toNum(v), <span class="hljs-number">0</span>),
+        <span class="hljs-attr">CONCAT</span>: <span class="hljs-function"><span class="hljs-params">args</span> =&gt;</span> flatten(args).map(<span class="hljs-function"><span class="hljs-params">v</span> =&gt;</span> v === <span class="hljs-literal">undefined</span> ? <span class="hljs-string">''</span> : <span class="hljs-built_in">String</span>(v)).join(<span class="hljs-string">''</span>),
+        <span class="hljs-attr">UPPER</span>: <span class="hljs-function"><span class="hljs-params">args</span> =&gt;</span> <span class="hljs-built_in">String</span>(args[<span class="hljs-number">0</span>] ?? <span class="hljs-string">''</span>).toUpperCase(),
+        <span class="hljs-attr">LOWER</span>: <span class="hljs-function"><span class="hljs-params">args</span> =&gt;</span> <span class="hljs-built_in">String</span>(args[<span class="hljs-number">0</span>] ?? <span class="hljs-string">''</span>).toLowerCase(),
+        <span class="hljs-attr">LEN</span>: <span class="hljs-function"><span class="hljs-params">args</span> =&gt;</span> <span class="hljs-built_in">String</span>(args[<span class="hljs-number">0</span>] ?? <span class="hljs-string">''</span>).length,
+    };
+
+    <span class="hljs-comment">// --- tokenizer + parser (recursive descent) ---</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">tokenize</span>(<span class="hljs-params">src</span>) </span>{
+        <span class="hljs-keyword">const</span> tokens = [];
+        <span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">while</span> (i &lt; src.length) {
+            <span class="hljs-keyword">const</span> ch = src[i];
+            <span class="hljs-keyword">if</span> (<span class="hljs-regexp">/\s/</span>.test(ch)) { i++; <span class="hljs-keyword">continue</span>; }
+            <span class="hljs-keyword">if</span> (<span class="hljs-regexp">/[0-9.]/</span>.test(ch)) {
+                <span class="hljs-keyword">let</span> j = i;
+                <span class="hljs-keyword">while</span> (j &lt; src.length &amp;&amp; <span class="hljs-regexp">/[0-9.]/</span>.test(src[j])) j++;
+                tokens.push({ <span class="hljs-attr">type</span>: <span class="hljs-string">'NUMBER'</span>, <span class="hljs-attr">value</span>: <span class="hljs-built_in">parseFloat</span>(src.slice(i, j)) });
+                i = j;
+                <span class="hljs-keyword">continue</span>;
+            }
+            <span class="hljs-keyword">if</span> (ch === <span class="hljs-string">'"'</span>) {
+                <span class="hljs-keyword">let</span> j = i + <span class="hljs-number">1</span>;
+                <span class="hljs-keyword">while</span> (j &lt; src.length &amp;&amp; src[j] !== <span class="hljs-string">'"'</span>) j++;
+                tokens.push({ <span class="hljs-attr">type</span>: <span class="hljs-string">'STRING'</span>, <span class="hljs-attr">value</span>: src.slice(i + <span class="hljs-number">1</span>, j) });
+                i = j + <span class="hljs-number">1</span>;
+                <span class="hljs-keyword">continue</span>;
+            }
+            <span class="hljs-keyword">if</span> (<span class="hljs-regexp">/[A-Za-z]/</span>.test(ch)) {
+                <span class="hljs-keyword">let</span> j = i;
+                <span class="hljs-keyword">while</span> (j &lt; src.length &amp;&amp; <span class="hljs-regexp">/[A-Za-z0-9]/</span>.test(src[j])) j++;
+                tokens.push({ <span class="hljs-attr">type</span>: <span class="hljs-string">'IDENT'</span>, <span class="hljs-attr">value</span>: src.slice(i, j).toUpperCase() });
+                i = j;
+                <span class="hljs-keyword">continue</span>;
+            }
+            <span class="hljs-keyword">if</span> (<span class="hljs-string">'+-*/(),:'</span>.includes(ch)) {
+                tokens.push({ <span class="hljs-attr">type</span>: ch });
+                i++;
+                <span class="hljs-keyword">continue</span>;
+            }
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'unexpected character: '</span> + ch);
+        }
+        <span class="hljs-keyword">return</span> tokens;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">parse</span>(<span class="hljs-params">src</span>) </span>{
+        <span class="hljs-keyword">const</span> tokens = tokenize(src);
+        <span class="hljs-keyword">let</span> pos = <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">const</span> peek = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> tokens[pos];
+        <span class="hljs-keyword">const</span> next = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> tokens[pos++];
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">parseExpr</span>(<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">let</span> node = parseTerm();
+            <span class="hljs-keyword">while</span> (peek() &amp;&amp; (peek().type === <span class="hljs-string">'+'</span> || peek().type === <span class="hljs-string">'-'</span>)) {
+                <span class="hljs-keyword">const</span> op = next().type;
+                node = { <span class="hljs-attr">type</span>: <span class="hljs-string">'BINOP'</span>, op, <span class="hljs-attr">left</span>: node, <span class="hljs-attr">right</span>: parseTerm() };
+            }
+            <span class="hljs-keyword">return</span> node;
+        }
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">parseTerm</span>(<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">let</span> node = parseFactor();
+            <span class="hljs-keyword">while</span> (peek() &amp;&amp; (peek().type === <span class="hljs-string">'*'</span> || peek().type === <span class="hljs-string">'/'</span>)) {
+                <span class="hljs-keyword">const</span> op = next().type;
+                node = { <span class="hljs-attr">type</span>: <span class="hljs-string">'BINOP'</span>, op, <span class="hljs-attr">left</span>: node, <span class="hljs-attr">right</span>: parseFactor() };
+            }
+            <span class="hljs-keyword">return</span> node;
+        }
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">parseFactor</span>(<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">const</span> t = peek();
+            <span class="hljs-keyword">if</span> (!t) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'unexpected end of formula'</span>);
+            <span class="hljs-keyword">if</span> (t.type === <span class="hljs-string">'-'</span>) { next(); <span class="hljs-keyword">return</span> { <span class="hljs-attr">type</span>: <span class="hljs-string">'NEG'</span>, <span class="hljs-attr">node</span>: parseFactor() }; }
+            <span class="hljs-keyword">if</span> (t.type === <span class="hljs-string">'('</span>) {
+                next();
+                <span class="hljs-keyword">const</span> node = parseExpr();
+                <span class="hljs-keyword">if</span> (!peek() || peek().type !== <span class="hljs-string">')'</span>) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'expected )'</span>);
+                next();
+                <span class="hljs-keyword">return</span> node;
+            }
+            <span class="hljs-keyword">if</span> (t.type === <span class="hljs-string">'NUMBER'</span>) { next(); <span class="hljs-keyword">return</span> { <span class="hljs-attr">type</span>: <span class="hljs-string">'NUM'</span>, <span class="hljs-attr">value</span>: t.value }; }
+            <span class="hljs-keyword">if</span> (t.type === <span class="hljs-string">'STRING'</span>) { next(); <span class="hljs-keyword">return</span> { <span class="hljs-attr">type</span>: <span class="hljs-string">'STR'</span>, <span class="hljs-attr">value</span>: t.value }; }
+            <span class="hljs-keyword">if</span> (t.type === <span class="hljs-string">'IDENT'</span>) {
+                next();
+                <span class="hljs-keyword">if</span> (peek() &amp;&amp; peek().type === <span class="hljs-string">'('</span>) {
+                    next();
+                    <span class="hljs-keyword">const</span> args = [];
+                    <span class="hljs-keyword">if</span> (peek() &amp;&amp; peek().type !== <span class="hljs-string">')'</span>) {
+                        args.push(parseExpr());
+                        <span class="hljs-keyword">while</span> (peek() &amp;&amp; peek().type === <span class="hljs-string">','</span>) { next(); args.push(parseExpr()); }
+                    }
+                    <span class="hljs-keyword">if</span> (!peek() || peek().type !== <span class="hljs-string">')'</span>) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'expected )'</span>);
+                    next();
+                    <span class="hljs-keyword">return</span> { <span class="hljs-attr">type</span>: <span class="hljs-string">'CALL'</span>, <span class="hljs-attr">name</span>: t.value, args };
+                }
+                <span class="hljs-keyword">if</span> (CELL_RE.test(t.value)) {
+                    <span class="hljs-keyword">if</span> (peek() &amp;&amp; peek().type === <span class="hljs-string">':'</span>) {
+                        next();
+                        <span class="hljs-keyword">const</span> endTok = next();
+                        <span class="hljs-keyword">if</span> (!endTok || endTok.type !== <span class="hljs-string">'IDENT'</span> || !CELL_RE.test(endTok.value)) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'expected cell after :'</span>);
+                        <span class="hljs-keyword">return</span> { <span class="hljs-attr">type</span>: <span class="hljs-string">'RANGE'</span>, <span class="hljs-attr">from</span>: t.value, <span class="hljs-attr">to</span>: endTok.value };
+                    }
+                    <span class="hljs-keyword">return</span> { <span class="hljs-attr">type</span>: <span class="hljs-string">'CELL'</span>, <span class="hljs-attr">id</span>: t.value };
+                }
+                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'unknown identifier: '</span> + t.value);
+            }
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'unexpected token'</span>);
+        }
+
+        <span class="hljs-keyword">const</span> ast = parseExpr();
+        <span class="hljs-keyword">if</span> (pos !== tokens.length) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'unexpected trailing tokens'</span>);
+        <span class="hljs-keyword">return</span> ast;
+    }
+
+    <span class="hljs-comment">// --- evaluation ---</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">splitCell</span>(<span class="hljs-params">id</span>) </span>{
+        <span class="hljs-keyword">const</span> m = id.match(<span class="hljs-regexp">/^([A-Z]+)([0-9]+)$/</span>);
+        <span class="hljs-keyword">return</span> [m[<span class="hljs-number">1</span>], <span class="hljs-built_in">parseInt</span>(m[<span class="hljs-number">2</span>], <span class="hljs-number">10</span>)];
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">evalRangeIds</span>(<span class="hljs-params">node</span>) </span>{
+        <span class="hljs-keyword">const</span> [colFrom, rowFrom] = splitCell(node.from);
+        <span class="hljs-keyword">const</span> [colTo, rowTo] = splitCell(node.to);
+        <span class="hljs-keyword">const</span> colStart = <span class="hljs-built_in">Math</span>.min(colIndex(colFrom), colIndex(colTo));
+        <span class="hljs-keyword">const</span> colEnd = <span class="hljs-built_in">Math</span>.max(colIndex(colFrom), colIndex(colTo));
+        <span class="hljs-keyword">const</span> rowStart = <span class="hljs-built_in">Math</span>.min(rowFrom, rowTo);
+        <span class="hljs-keyword">const</span> rowEnd = <span class="hljs-built_in">Math</span>.max(rowFrom, rowTo);
+        <span class="hljs-keyword">const</span> ids = [];
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> c = colStart; c &lt;= colEnd; c++)
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> r = rowStart; r &lt;= rowEnd; r++)
+                ids.push(colName(c) + r);
+        <span class="hljs-keyword">return</span> ids;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">evalRange</span>(<span class="hljs-params">node, sheet</span>) </span>{
+        <span class="hljs-keyword">return</span> evalRangeIds(node).map(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> sheet[id] ? sheet[id]() : <span class="hljs-string">''</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">collectRefs</span>(<span class="hljs-params">node, out = new Set(</span>)) </span>{
+        <span class="hljs-keyword">switch</span> (node.type) {
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'CELL'</span>: out.add(node.id); <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'RANGE'</span>: evalRangeIds(node).forEach(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> out.add(id)); <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'NEG'</span>: collectRefs(node.node, out); <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'BINOP'</span>: collectRefs(node.left, out); collectRefs(node.right, out); <span class="hljs-keyword">break</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'CALL'</span>: node.args.forEach(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> collectRefs(a, out)); <span class="hljs-keyword">break</span>;
+        }
+        <span class="hljs-keyword">return</span> out;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">evalNode</span>(<span class="hljs-params">node, sheet</span>) </span>{
+        <span class="hljs-keyword">switch</span> (node.type) {
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'NUM'</span>: <span class="hljs-keyword">return</span> node.value;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'STR'</span>: <span class="hljs-keyword">return</span> node.value;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'CELL'</span>: <span class="hljs-keyword">return</span> sheet[node.id] ? sheet[node.id]() : <span class="hljs-string">''</span>;
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'NEG'</span>: <span class="hljs-keyword">return</span> -toNum(evalNode(node.node, sheet));
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'BINOP'</span>: {
+                <span class="hljs-keyword">const</span> l = evalNode(node.left, sheet), r = evalNode(node.right, sheet);
+                <span class="hljs-keyword">if</span> (node.op === <span class="hljs-string">'+'</span>) <span class="hljs-keyword">return</span> toNum(l) + toNum(r);
+                <span class="hljs-keyword">if</span> (node.op === <span class="hljs-string">'-'</span>) <span class="hljs-keyword">return</span> toNum(l) - toNum(r);
+                <span class="hljs-keyword">if</span> (node.op === <span class="hljs-string">'*'</span>) <span class="hljs-keyword">return</span> toNum(l) * toNum(r);
+                <span class="hljs-keyword">if</span> (node.op === <span class="hljs-string">'/'</span>) {
+                    <span class="hljs-keyword">const</span> rv = toNum(r);
+                    <span class="hljs-keyword">if</span> (rv === <span class="hljs-number">0</span>) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'division by zero'</span>);
+                    <span class="hljs-keyword">return</span> toNum(l) / rv;
+                }
+                <span class="hljs-keyword">break</span>;
+            }
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'CALL'</span>: {
+                <span class="hljs-keyword">const</span> fn = FUNCTIONS[node.name];
+                <span class="hljs-keyword">if</span> (!fn) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'unknown function: '</span> + node.name);
+                <span class="hljs-keyword">const</span> args = node.args.map(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> a.type === <span class="hljs-string">'RANGE'</span> ? evalRange(a, sheet) : evalNode(a, sheet));
+                <span class="hljs-keyword">return</span> fn(args);
+            }
+            <span class="hljs-keyword">case</span> <span class="hljs-string">'RANGE'</span>: <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'range not allowed here'</span>);
+        }
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'bad node'</span>);
+    }
+
+    <span class="hljs-comment">// --- cycle detection (own graph, checked before ever touching Rensen) ---</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reaches</span>(<span class="hljs-params">dependsOn, from, to, visited</span>) </span>{
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">from</span> === to) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+        <span class="hljs-keyword">if</span> (visited.has(<span class="hljs-keyword">from</span>)) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        visited.add(<span class="hljs-keyword">from</span>);
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> next <span class="hljs-keyword">of</span> dependsOn[<span class="hljs-keyword">from</span>]) {
+            <span class="hljs-keyword">if</span> (reaches(dependsOn, next, to, visited)) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    }
+
+    <span class="hljs-comment">// --- commit: raw text -&gt; sheet compute ---</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">commit</span>(<span class="hljs-params">state, id, text</span>) </span>{
+        <span class="hljs-keyword">const</span> { sheet, raw, dependsOn } = state;
+        raw[id] = text;
+
+        <span class="hljs-keyword">if</span> (text.startsWith(<span class="hljs-string">'='</span>)) {
+            <span class="hljs-keyword">let</span> ast;
+            <span class="hljs-keyword">try</span> {
+                ast = parse(text.slice(<span class="hljs-number">1</span>));
+            } <span class="hljs-keyword">catch</span> (e) {
+                dependsOn[id] = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>();
+                sheet[id](<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-string">'#ERR'</span>);
+                <span class="hljs-keyword">return</span>;
+            }
+            <span class="hljs-keyword">const</span> refs = collectRefs(ast);
+            <span class="hljs-keyword">const</span> cyclic = [...refs].some(<span class="hljs-function"><span class="hljs-params">ref</span> =&gt;</span> reaches(dependsOn, ref, id, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()));
+            <span class="hljs-keyword">if</span> (cyclic) {
+                dependsOn[id] = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>();
+                sheet[id](<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-string">'#CIRC'</span>);
+                <span class="hljs-keyword">return</span>;
+            }
+            dependsOn[id] = refs;
+            sheet[id](<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+                <span class="hljs-keyword">try</span> { <span class="hljs-keyword">return</span> evalNode(ast, sheet); } <span class="hljs-keyword">catch</span> (e) { <span class="hljs-keyword">return</span> <span class="hljs-string">'#ERR'</span>; }
+            });
+            <span class="hljs-keyword">return</span>;
+        }
+
+        dependsOn[id] = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>();
+        <span class="hljs-keyword">const</span> trimmed = text.trim();
+        <span class="hljs-keyword">if</span> (trimmed !== <span class="hljs-string">''</span> &amp;&amp; !<span class="hljs-built_in">isNaN</span>(trimmed)) {
+            <span class="hljs-keyword">const</span> n = <span class="hljs-built_in">parseFloat</span>(trimmed);
+            sheet[id](<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> n);
+            <span class="hljs-keyword">return</span>;
+        }
+        sheet[id](<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> text);
+    }
+
+    <span class="hljs-comment">// --- display ---</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">display</span>(<span class="hljs-params">v</span>) </span>{
+        <span class="hljs-keyword">if</span> (v === <span class="hljs-string">''</span> || v === <span class="hljs-literal">undefined</span>) <span class="hljs-keyword">return</span> <span class="hljs-string">''</span>;
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> v === <span class="hljs-string">'number'</span>) {
+            <span class="hljs-keyword">return</span> <span class="hljs-built_in">Number</span>.isInteger(v) ? <span class="hljs-built_in">String</span>(v) : <span class="hljs-built_in">String</span>(<span class="hljs-built_in">Math</span>.round(v * <span class="hljs-number">10000</span>) / <span class="hljs-number">10000</span>);
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">String</span>(v);
+    }
+
+    <span class="hljs-comment">// --- DOM: grid generated by Val, from templates + data (array of rows, each with an array of cells) ---</span>
+
+    <span class="hljs-comment">// rows, cols: how many of each. Column letters are generated, A..Z then AA, AB, ...</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Init</span>(<span class="hljs-params">ctx, { rows, cols }</span>) </span>{
+        <span class="hljs-keyword">const</span> space = ctx.up(<span class="hljs-string">'[cells-space]'</span>);
+        <span class="hljs-keyword">const</span> colLabels = <span class="hljs-built_in">Array</span>.from({ <span class="hljs-attr">length</span>: cols }, (_, i) =&gt; colName(i));
+        <span class="hljs-keyword">const</span> rowLabels = <span class="hljs-built_in">Array</span>.from({ <span class="hljs-attr">length</span>: rows }, (_, i) =&gt; i + <span class="hljs-number">1</span>);
+        <span class="hljs-keyword">const</span> state = createSheet(colLabels, rowLabels);
+        space.cellsState = state;
+
+        space.one(<span class="hljs-string">'[cells-colheads]'</span>).varr(colLabels.map(<span class="hljs-function"><span class="hljs-params">c</span> =&gt;</span> ({ <span class="hljs-attr">label</span>: c })), <span class="hljs-string">'[cells-colhead-tpl]'</span>);
+        space.one(<span class="hljs-string">'[cells-rows]'</span>).varr(rowLabels.map(<span class="hljs-function"><span class="hljs-params">r</span> =&gt;</span> ({
+            <span class="hljs-attr">label</span>: <span class="hljs-built_in">String</span>(r),
+            <span class="hljs-attr">cells</span>: colLabels.map(<span class="hljs-function"><span class="hljs-params">c</span> =&gt;</span> ({ <span class="hljs-attr">id</span>: c + r })),
+        })), <span class="hljs-string">'[cells-row-tpl]'</span>);
+
+        <span class="hljs-comment">// Column width lives as one CSS variable per column, on the space itself. Every</span>
+        <span class="hljs-comment">// cell of that column points its own width at the same variable, so resizing one</span>
+        <span class="hljs-comment">// cell is really just changing the variable: the whole column follows.</span>
+        space.all(<span class="hljs-string">'[cells-colhead]'</span>).forEach(<span class="hljs-function"><span class="hljs-params">head</span> =&gt;</span> {
+            head.style.width = <span class="hljs-string">`var(--cells-w-<span class="hljs-subst">${head.attr(<span class="hljs-string">'cells-colhead'</span>)}</span>, 72px)`</span>;
+        });
+        space.all(<span class="hljs-string">'[cells-cell]'</span>).forEach(<span class="hljs-function"><span class="hljs-params">input</span> =&gt;</span> {
+            <span class="hljs-keyword">const</span> id = input.attr(<span class="hljs-string">'cells-cell'</span>);
+            <span class="hljs-keyword">const</span> col = id.match(<span class="hljs-regexp">/^[A-Z]+/</span>)[<span class="hljs-number">0</span>];
+            input.style.width = <span class="hljs-string">`var(--cells-w-<span class="hljs-subst">${col}</span>, 72px)`</span>;
+            R(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+                <span class="hljs-keyword">const</span> v = state.sheet[id]();
+                <span class="hljs-keyword">if</span> (<span class="hljs-built_in">document</span>.activeElement !== input) {
+                    input.value = display(v);
+                    input.style.textAlign = <span class="hljs-keyword">typeof</span> v === <span class="hljs-string">'number'</span> ? <span class="hljs-string">'right'</span> : <span class="hljs-string">'left'</span>;
+                }
+            });
+        });
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Focus</span>(<span class="hljs-params">ctx</span>) </span>{
+        <span class="hljs-keyword">const</span> cell = ctx.up(<span class="hljs-string">'[cells-cell]'</span>);
+        <span class="hljs-keyword">const</span> state = cell.up(<span class="hljs-string">'[cells-space]'</span>).cellsState;
+        cell.value = state.raw[cell.attr(<span class="hljs-string">'cells-cell'</span>)];
+        cell.style.textAlign = <span class="hljs-string">'left'</span>;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Blur</span>(<span class="hljs-params">ctx</span>) </span>{
+        <span class="hljs-keyword">const</span> cell = ctx.up(<span class="hljs-string">'[cells-cell]'</span>);
+        <span class="hljs-keyword">const</span> state = cell.up(<span class="hljs-string">'[cells-space]'</span>).cellsState;
+        <span class="hljs-keyword">const</span> id = cell.attr(<span class="hljs-string">'cells-cell'</span>);
+        commit(state, id, cell.value);
+        cell.value = display(state.sheet[id]());
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Key</span>(<span class="hljs-params">ctx, event</span>) </span>{
+        <span class="hljs-keyword">if</span> (event.key === <span class="hljs-string">'Enter'</span>) ctx.up(<span class="hljs-string">'[cells-cell]'</span>).blur();
+    }
+
+    <span class="hljs-comment">// Dragging the handle between two headers changes one CSS variable on the space.</span>
+    <span class="hljs-comment">// Every cell in that column reads its width from that variable, so they all resize</span>
+    <span class="hljs-comment">// together without the drag code ever touching a cell.</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ColResizeStart</span>(<span class="hljs-params">ctx, event</span>) </span>{
+        event.preventDefault();
+        <span class="hljs-keyword">const</span> head = ctx.up(<span class="hljs-string">'[cells-colhead]'</span>);
+        <span class="hljs-keyword">const</span> space = head.up(<span class="hljs-string">'[cells-space]'</span>);
+        <span class="hljs-keyword">const</span> varName = <span class="hljs-string">`--cells-w-<span class="hljs-subst">${head.attr(<span class="hljs-string">'cells-colhead'</span>)}</span>`</span>;
+        <span class="hljs-keyword">const</span> startX = event.clientX;
+        <span class="hljs-keyword">const</span> startWidth = head.getBoundingClientRect().width;
+
+        <span class="hljs-keyword">const</span> onMove = <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+            space.style.setProperty(varName, <span class="hljs-built_in">Math</span>.max(<span class="hljs-number">32</span>, startWidth + e.clientX - startX) + <span class="hljs-string">'px'</span>);
+        };
+        <span class="hljs-keyword">const</span> onUp = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+            <span class="hljs-built_in">document</span>.removeEventListener(<span class="hljs-string">'mousemove'</span>, onMove);
+            <span class="hljs-built_in">document</span>.removeEventListener(<span class="hljs-string">'mouseup'</span>, onUp);
+        };
+        <span class="hljs-built_in">document</span>.addEventListener(<span class="hljs-string">'mousemove'</span>, onMove);
+        <span class="hljs-built_in">document</span>.addEventListener(<span class="hljs-string">'mouseup'</span>, onUp);
+    }
+
+    <span class="hljs-keyword">return</span> { Init, Focus, Blur, Key, ColResizeStart };
+})();</code></pre>
+<p><code>Cells.Init(ctx, { rows, cols })</code> generates the column letters itself, A to Z then AA, AB, and on. Every cell exists from the start. None is created on demand.</p>
+<p>A column's width lives as one CSS custom property on the space element, such as <code>--cells-w-A</code>. Every cell in that column reads its width from that same variable, so dragging the handle between two headers resizes the whole column at once, not one cell at a time.</p>
+<p>Each cell is a <a href="rensen.html">Rensen</a> value: <code>sheet['A1'] = R(() =&gt; ...)</code>. A formula reads other cells by calling them, so <code>R(() =&gt; sheet['A1']() + sheet['B1']())</code> recomputes whenever <code>A1</code> or <code>B1</code> changes. Rensen tracks that dependency. Cells never wires it by hand.</p>
+<p>A formula is read by a small parser written for this page, not by <code>eval</code>. A cycle never reaches Rensen: Cells keeps its own map of which cell reads which, and checks it for a cycle before a new formula is written in.</p>
+<p>The reactive graph cannot be written as an HTML attribute, so it is kept as a plain object, <code>{ sheet, raw, dependsOn }</code>, stored as a property on the space element: <code>space.cellsState</code>. Two <code>[cells-space]</code> elements on one page hold two separate sheets. Neither an id nor a registry is used.</p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>
