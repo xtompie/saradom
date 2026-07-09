@@ -10,12 +10,12 @@ status: draft
 ---
 
 <header class="hero">
-<p class="eyebrow">Frontend architecture pattern</p>
-<h1 class="wordmark">Sara<span class="mark">dom</span></h1>
+<h1 class="wordmark">Saradom</h1>
+<p class="tagline">Frontend architecture pattern</p>
 <p class="sub">Build modular, scalable frontends in plain HTML and JavaScript.<br>No framework, no npm, no build step.</p>
 <div class="cta-row">
-<a class="cta" href="introduction.html">Get started</a>
-<a class="cta-ghost" href="https://github.com/xtompie/saradom">★ GitHub</a>
+<a class="cta" href="introduction.html">Get started <span class="cta-arrow">→</span></a>
+<a class="cta-ghost" href="https://github.com/xtompie/saradom">GitHub <span class="cta-ext">↗</span></a>
 </div>
 </header>
 

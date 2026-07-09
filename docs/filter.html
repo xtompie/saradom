@@ -14,7 +14,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
-<link rel="stylesheet" href="style.css"></head>
+<link rel="stylesheet" href="style.css">
+</head>
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
@@ -48,10 +49,8 @@
 </style>
 <script>
 const Filter = (() => {
-    const up = (el, sel) => el.matches(sel) ? el : el.closest(sel);
-
     const Filter = (ctx) => {
-        const space = up(ctx, '[filter-space]');
+        const space = ctx.closest('[filter-space]');
         const lane = space.getAttribute('filter-lane');
         const query = space.querySelector('[filter-query]').value.trim().toLowerCase();
         const selector = lane ? `[filter-item][filter-lane="${lane}"]` : '[filter-item]';
@@ -74,10 +73,8 @@ const Filter = (() => {
     <span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
 <pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> Filter = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> up = <span class="hljs-function">(<span class="hljs-params">el, sel</span>) =&gt;</span> el.matches(sel) ? el : el.closest(sel);
-
     <span class="hljs-keyword">const</span> Filter = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> space = up(ctx, <span class="hljs-string">'[filter-space]'</span>);
+        <span class="hljs-keyword">const</span> space = ctx.closest(<span class="hljs-string">'[filter-space]'</span>);
         <span class="hljs-keyword">const</span> lane = space.getAttribute(<span class="hljs-string">'filter-lane'</span>);
         <span class="hljs-keyword">const</span> query = space.querySelector(<span class="hljs-string">'[filter-query]'</span>).value.trim().toLowerCase();
         <span class="hljs-keyword">const</span> selector = lane ? <span class="hljs-string">`[filter-item][filter-lane="<span class="hljs-subst">${lane}</span>"]`</span> : <span class="hljs-string">'[filter-item]'</span>;

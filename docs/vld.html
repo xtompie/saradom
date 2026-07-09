@@ -14,7 +14,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
-<link rel="stylesheet" href="style.css"></head>
+<link rel="stylesheet" href="style.css">
+</head>
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
@@ -77,11 +78,12 @@
       <span class="hljs-attr">key</span>: <span class="hljs-string">'unique'</span> },
 ] }</code></pre>
 <h2 id="attaching-to-a-form">Attaching to a form<a class="anchor" href="#attaching-to-a-form" aria-hidden="true">#</a></h2>
-<p>Three pieces connect <code>Validate</code> to a form: <code>vld-space</code> marks the scope — the same idiom as <code>counter-space</code> in <a href="action-in-context.html">Action in context</a> and <code>accordion-space</code> in <a href="modularization.html">Modularization</a>: climb from the triggering element to its nearest space, so two instances on the same page never share state. <code>vld-error=&quot;name&quot;</code> marks where an error for that name renders. <code>Vld.Submit(ctx, event, rules, data)</code> ties them together — it stops the native submit, climbs from <code>ctx</code> to the nearest <code>[vld-space]</code>, validates, and clears and refills every <code>[vld-error]</code> inside it.</p>
-<p><code>rules</code> and <code>data</code> are both optional. Left out, <code>Vld.Submit</code> reads <code>data</code> from the form's named fields with <code>FormData</code>, and reads <code>rules</code> off the space itself, as <code>space.vldRules</code>. That property is set once, by an inline <code>&lt;script&gt;</code> anchored to its own space with <code>document.currentScript</code> — the same pattern <a href="ux-performance.html#why">High UX Performance</a> uses for per-instance setup: state kept on the element itself, so a second instance on the same page never has a name to collide with.</p>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">vld-space</span> <span class="hljs-attr">onsubmit</span>=<span class="hljs-string">"Vld.Submit(this, event)"</span>&gt;</span>
+<p>Four pieces connect <code>Validate</code> to a form: <code>vld-space</code> marks the scope — the same idiom as <code>counter-space</code> in <a href="action-in-context.html">Action in context</a> and <code>accordion-space</code> in <a href="modularization.html">Modularization</a>: climb from the triggering element to its nearest space, so two instances on the same page never share state. <code>vld-form</code> marks the <code>&lt;form&gt;</code> whose named fields supply the data. <code>vld-error=&quot;name&quot;</code> marks where an error for that name renders. <code>Vld.Submit(ctx, event, rules, data)</code> ties them together — it stops the native submit, climbs from <code>ctx</code> to the nearest <code>[vld-space]</code>, validates, and clears and refills every <code>[vld-error]</code> inside it.</p>
+<p><code>data</code> is optional — left out, <code>Vld.Submit</code> reads it from the form's named fields with <code>FormData</code>. <code>rules</code> you always hand in. Where those rules are kept is your call, not the mechanism's: <code>Vld.Submit</code> never names a property or reaches for one, it just validates whatever <code>rules</code> the call passes it. The demo below keeps them on the space with an inline <code>&lt;script&gt;</code> anchored by <code>document.currentScript</code> — the same per-instance setup <a href="ux-performance.html#why">High UX Performance</a> uses — and the handler reads them straight back with <code>this._vldRules</code>. That <code>_vldRules</code> name lives entirely in this page's markup; nothing in Vld knows about it.</p>
+<p>The form the data comes from is found from the space: if the space itself carries <code>vld-form</code>, it <em>is</em> the form; otherwise the single <code>[vld-form]</code> inside it is used. That keeps the space free to sit on a wrapper above the form, or on the <code>&lt;form&gt;</code> directly — put both attributes on one element when they coincide. Repeated field names (checkboxes, multi-selects) collect into an array rather than collapsing to the last value.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">vld-space</span> <span class="hljs-attr">vld-form</span> <span class="hljs-attr">onsubmit</span>=<span class="hljs-string">"Vld.Submit(this, event, this._vldRules)"</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-    <span class="hljs-built_in">document</span>.currentScript.closest(<span class="hljs-string">'[vld-space]'</span>).vldRules = [
+    <span class="hljs-built_in">document</span>.currentScript.closest(<span class="hljs-string">'[vld-space]'</span>)._vldRules = [
         [
             { <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, <span class="hljs-string">'email'</span>] },
             { <span class="hljs-attr">path</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, { <span class="hljs-attr">rule</span>: <span class="hljs-string">'min'</span>, <span class="hljs-attr">arg</span>: <span class="hljs-number">3</span> }] },
@@ -106,20 +108,21 @@
 
     <span class="hljs-tag">&lt;<span class="hljs-name">button</span>&gt;</span>Sign up<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span></code></pre>
-<p>A plain JS variable named <code>rules</code> would have to live somewhere a second form could reach it too — a global, almost always, and a second form on the same page would either share it by accident or fight over the name. Keeping it on the space itself means two forms are just two elements, each carrying its own rules, with nothing to collide.</p>
+<p>Keeping the rules on the element is one way to solve a real problem, not a rule Vld imposes. A plain JS variable named <code>rules</code> would have to live somewhere a second form could reach it too — a global, almost always, and a second form on the same page would either share it by accident or fight over the name. Hanging them off the space instead means two forms are just two elements, each carrying its own rules, with nothing to collide — and the handler passes them in like any other argument.</p>
 <p>The error markup comes from <code>&lt;template vld-error-tpl&gt;</code>, read once per submit. <code>{key}</code>, <code>{message}</code>, and <code>{path}</code> are replaced from the matching error. Without a template in the space, <code>Vld.Form</code> falls back to <code>&lt;div class=&quot;vld-error&quot;&gt;{message}&lt;/div&gt;</code>.</p>
-<p><code>ctx</code> doesn't have to be the form. Calling it from a plain button works the same way, since <code>Vld.Submit</code> climbs to <code>[vld-space]</code> from wherever it's called, not just from the form itself:</p>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Vld.Submit(this, event)"</span>&gt;</span>Sign up<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
-<p>Passing <code>rules</code> or <code>data</code> explicitly overrides the DOM state — for a one-off form, or values that don't come from named inputs:</p>
+<p><code>ctx</code> doesn't have to be the form. Calling it from a plain button works the same way, since <code>Vld.Submit</code> climbs to <code>[vld-space]</code> from wherever it's called, not just from the form itself — climb to the space to reach the rules kept there:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Vld.Submit(this, event, this.closest('[vld-space]')._vldRules)"</span>&gt;</span>Sign up<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p><code>rules</code> is always passed; passing <code>data</code> too skips the <code>FormData</code> read — for a one-off form, or values that don't come from named inputs:</p>
 <pre><code class="hljs language-javascript">Vld.Submit(<span class="hljs-keyword">this</span>, event, rules, { <span class="hljs-attr">email</span>: state.email, <span class="hljs-attr">password</span>: state.password })</code></pre>
 <p><code>Vld.Submit</code> returns the errors, so a caller can act once validation settles:</p>
-<pre><code class="hljs language-javascript">Vld.Submit(<span class="hljs-keyword">this</span>, event).then(<span class="hljs-function">(<span class="hljs-params">errors</span>) =&gt;</span> {
+<pre><code class="hljs language-javascript">Vld.Submit(<span class="hljs-keyword">this</span>, event, <span class="hljs-keyword">this</span>._vldRules).then(<span class="hljs-function">(<span class="hljs-params">errors</span>) =&gt;</span> {
     <span class="hljs-keyword">if</span> (!errors.length) { <span class="hljs-comment">/* proceed */</span> }
 });</code></pre>
 <p>This is one option among a few for handling a form. <a href="the-simple-way.html#forms">The simple way</a> lays out the others — a plain submit, an htmx-style swap, sending JSON and rendering whatever errors the server sends back. Reach for Vld for the shape checks that should show before any of those fire, not as a replacement for them.</p>
 <h2 id="attributes">Attributes<a class="anchor" href="#attributes" aria-hidden="true">#</a></h2>
 <ul>
-<li><code>vld-space</code> marks the scope <code>Vld.Submit</code> climbs to, and the element <code>space.vldRules</code> lives on.</li>
+<li><code>vld-space</code> marks the scope <code>Vld.Submit</code> climbs to.</li>
+<li><code>vld-form</code> marks the <code>&lt;form&gt;</code> whose named fields supply <code>data</code>. It sits on the space itself, or on the single form inside it.</li>
 <li><code>vld-error=&quot;name&quot;</code> marks where the error for that <code>path</code> renders. An empty value (<code>vld-error=&quot;&quot;</code>) catches errors with <code>path: null</code>.</li>
 <li><code>vld-error-tpl</code>, on a <code>&lt;template&gt;</code> inside the space, gives the error markup. Optional — a default is used when it's missing.</li>
 </ul>
@@ -127,7 +130,7 @@
 <ul>
 <li><code>Vld.Validate(rules, data)</code> runs the rules against the data, headless. Returns <code>Promise&lt;errors&gt;</code>.</li>
 <li><code>Vld.Form(root, rules, data, tpl, attr)</code> validates and renders into <code>root</code>'s <code>[vld-error]</code> elements.</li>
-<li><code>Vld.Submit(ctx, event, rules, data)</code> resolves the space from <code>ctx</code>, falls back to <code>space.vldRules</code> and <code>FormData</code> when <code>rules</code>/<code>data</code> are omitted, and calls <code>Form</code>.</li>
+<li><code>Vld.Submit(ctx, event, rules, data)</code> resolves the space from <code>ctx</code>, validates the given <code>rules</code>, defaults <code>data</code> to <code>FormData</code> off the space's <code>[vld-form]</code> when omitted, and calls <code>Form</code>.</li>
 <li><code>Vld.Rule</code> holds the rule registry. Add to it directly to register a new one.</li>
 </ul>
 <p class="doc-next"><a href="visible.html">Next: Visible →</a></p>

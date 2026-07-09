@@ -1,8 +1,6 @@
 const Visible = (() => {
-    const up = (el, sel) => el.matches(sel) ? el : el.closest(sel);
-
     const Visible = (ctx, tags) => {
-        const space = up(ctx, '[visible-space]');
+        const space = ctx.closest('[visible-space]');
         const lane = space.getAttribute('visible-lane');
         const selector = lane ? `[visible-tag][visible-lane="${lane}"]` : '[visible-tag]';
         space.querySelectorAll(selector).forEach(el => {
@@ -12,7 +10,7 @@ const Visible = (() => {
     };
 
     const Toggle = (ctx, when, then, otherwise) => {
-        const space = up(ctx, '[visible-space]');
+        const space = ctx.closest('[visible-space]');
         Visible(space, space.getAttribute('visible-state').split(' ').includes(when) ? then : otherwise);
     };
 

@@ -1,5 +1,5 @@
 <?php
-// Page layout. In scope from page(): $title, $desc, $body, $landing, $current, $nav.
+// Page layout. In scope from page(): $title, $desc, $body, $landing, $current, $nav, $css.
 // One template, one if: landing has no sidebar, every other page does.
 $icon  = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>";
 $ogImg = BASE_URL . 'og.png';
@@ -19,7 +19,9 @@ $ogImg = BASE_URL . 'og.png';
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="<?= $ogImg ?>">
 <link rel="icon" href="<?= $icon ?>">
-<link rel="stylesheet" href="style.css"></head>
+<link rel="stylesheet" href="style.css">
+<?php foreach ($css as $href): ?><link rel="stylesheet" href="<?= htmlspecialchars($href) ?>">
+<?php endforeach ?></head>
 <?php if ($landing): ?>
 <body class="landing"><main class="content"><?= $body ?></main></body>
 <?php else: ?>

@@ -129,7 +129,7 @@ Option 2. Form data is sent, and the HTML response is swapped in, the way htmx d
 
 Option 3. Val reads the fields, sends JSON, and renders the returned errors under the field.
 
-Option 4. [Vld](vld.html) runs validation rules against the fields before any of the above, so the network only sees a submit once the shape is right.
+Option 4. [Vld](vld.html) validates the fields in the browser, before any of the above — instant, in-page errors with no request at all — so when you want validation on the page right away, it's the one to reach for. It layers on top of options 1–3: the network only sees a submit once the shape is already right.
 
 ## Toasts
 

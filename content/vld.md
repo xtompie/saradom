@@ -113,14 +113,16 @@ A rule can also return a promise, for a check that has to ask a server something
 
 ## Attaching to a form
 
-Three pieces connect `Validate` to a form: `vld-space` marks the scope — the same idiom as `counter-space` in [Action in context](action-in-context.html) and `accordion-space` in [Modularization](modularization.html): climb from the triggering element to its nearest space, so two instances on the same page never share state. `vld-error="name"` marks where an error for that name renders. `Vld.Submit(ctx, event, rules, data)` ties them together — it stops the native submit, climbs from `ctx` to the nearest `[vld-space]`, validates, and clears and refills every `[vld-error]` inside it.
+Four pieces connect `Validate` to a form: `vld-space` marks the scope — the same idiom as `counter-space` in [Action in context](action-in-context.html) and `accordion-space` in [Modularization](modularization.html): climb from the triggering element to its nearest space, so two instances on the same page never share state. `vld-form` marks the `<form>` whose named fields supply the data. `vld-error="name"` marks where an error for that name renders. `Vld.Submit(ctx, event, rules, data)` ties them together — it stops the native submit, climbs from `ctx` to the nearest `[vld-space]`, validates, and clears and refills every `[vld-error]` inside it.
 
-`rules` and `data` are both optional. Left out, `Vld.Submit` reads `data` from the form's named fields with `FormData`, and reads `rules` off the space itself, as `space.vldRules`. That property is set once, by an inline `<script>` anchored to its own space with `document.currentScript` — the same pattern [High UX Performance](ux-performance.html#why) uses for per-instance setup: state kept on the element itself, so a second instance on the same page never has a name to collide with.
+`data` is optional — left out, `Vld.Submit` reads it from the form's named fields with `FormData`. `rules` you always hand in. Where those rules are kept is your call, not the mechanism's: `Vld.Submit` never names a property or reaches for one, it just validates whatever `rules` the call passes it. The demo below keeps them on the space with an inline `<script>` anchored by `document.currentScript` — the same per-instance setup [High UX Performance](ux-performance.html#why) uses — and the handler reads them straight back with `this._vldRules`. That `_vldRules` name lives entirely in this page's markup; nothing in Vld knows about it.
+
+The form the data comes from is found from the space: if the space itself carries `vld-form`, it *is* the form; otherwise the single `[vld-form]` inside it is used. That keeps the space free to sit on a wrapper above the form, or on the `<form>` directly — put both attributes on one element when they coincide. Repeated field names (checkboxes, multi-selects) collect into an array rather than collapsing to the last value.
 
 ```html
-<form vld-space onsubmit="Vld.Submit(this, event)">
+<form vld-space vld-form onsubmit="Vld.Submit(this, event, this._vldRules)">
     <script>
-    document.currentScript.closest('[vld-space]').vldRules = [
+    document.currentScript.closest('[vld-space]')._vldRules = [
         [
             { path: 'email', rules: ['required', 'email'] },
             { path: 'password', rules: ['required', { rule: 'min', arg: 3 }] },
@@ -147,17 +149,17 @@ Three pieces connect `Validate` to a form: `vld-space` marks the scope — the s
 </form>
 ```
 
-A plain JS variable named `rules` would have to live somewhere a second form could reach it too — a global, almost always, and a second form on the same page would either share it by accident or fight over the name. Keeping it on the space itself means two forms are just two elements, each carrying its own rules, with nothing to collide.
+Keeping the rules on the element is one way to solve a real problem, not a rule Vld imposes. A plain JS variable named `rules` would have to live somewhere a second form could reach it too — a global, almost always, and a second form on the same page would either share it by accident or fight over the name. Hanging them off the space instead means two forms are just two elements, each carrying its own rules, with nothing to collide — and the handler passes them in like any other argument.
 
 The error markup comes from `<template vld-error-tpl>`, read once per submit. `{key}`, `{message}`, and `{path}` are replaced from the matching error. Without a template in the space, `Vld.Form` falls back to `<div class="vld-error">{message}</div>`.
 
-`ctx` doesn't have to be the form. Calling it from a plain button works the same way, since `Vld.Submit` climbs to `[vld-space]` from wherever it's called, not just from the form itself:
+`ctx` doesn't have to be the form. Calling it from a plain button works the same way, since `Vld.Submit` climbs to `[vld-space]` from wherever it's called, not just from the form itself — climb to the space to reach the rules kept there:
 
 ```html
-<button type="button" onclick="Vld.Submit(this, event)">Sign up</button>
+<button type="button" onclick="Vld.Submit(this, event, this.closest('[vld-space]')._vldRules)">Sign up</button>
 ```
 
-Passing `rules` or `data` explicitly overrides the DOM state — for a one-off form, or values that don't come from named inputs:
+`rules` is always passed; passing `data` too skips the `FormData` read — for a one-off form, or values that don't come from named inputs:
 
 ```javascript
 Vld.Submit(this, event, rules, { email: state.email, password: state.password })
@@ -166,7 +168,7 @@ Vld.Submit(this, event, rules, { email: state.email, password: state.password })
 `Vld.Submit` returns the errors, so a caller can act once validation settles:
 
 ```javascript
-Vld.Submit(this, event).then((errors) => {
+Vld.Submit(this, event, this._vldRules).then((errors) => {
     if (!errors.length) { /* proceed */ }
 });
 ```
@@ -175,7 +177,8 @@ This is one option among a few for handling a form. [The simple way](the-simple-
 
 ## Attributes
 
-- `vld-space` marks the scope `Vld.Submit` climbs to, and the element `space.vldRules` lives on.
+- `vld-space` marks the scope `Vld.Submit` climbs to.
+- `vld-form` marks the `<form>` whose named fields supply `data`. It sits on the space itself, or on the single form inside it.
 - `vld-error="name"` marks where the error for that `path` renders. An empty value (`vld-error=""`) catches errors with `path: null`.
 - `vld-error-tpl`, on a `<template>` inside the space, gives the error markup. Optional — a default is used when it's missing.
 
@@ -183,5 +186,5 @@ This is one option among a few for handling a form. [The simple way](the-simple-
 
 - `Vld.Validate(rules, data)` runs the rules against the data, headless. Returns `Promise<errors>`.
 - `Vld.Form(root, rules, data, tpl, attr)` validates and renders into `root`'s `[vld-error]` elements.
-- `Vld.Submit(ctx, event, rules, data)` resolves the space from `ctx`, falls back to `space.vldRules` and `FormData` when `rules`/`data` are omitted, and calls `Form`.
+- `Vld.Submit(ctx, event, rules, data)` resolves the space from `ctx`, validates the given `rules`, defaults `data` to `FormData` off the space's `[vld-form]` when omitted, and calls `Form`.
 - `Vld.Rule` holds the rule registry. Add to it directly to register a new one.

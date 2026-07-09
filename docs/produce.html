@@ -14,7 +14,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
-<link rel="stylesheet" href="style.css"></head>
+<link rel="stylesheet" href="style.css">
+</head>
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
@@ -325,10 +326,8 @@ HTMLElement.prototype.vval = function (data) {
 </script>
 <script>
 const Visible = (() => {
-    const up = (el, sel) => el.matches(sel) ? el : el.closest(sel);
-
     const Visible = (ctx, tags) => {
-        const space = up(ctx, '[visible-space]');
+        const space = ctx.closest('[visible-space]');
         const lane = space.getAttribute('visible-lane');
         const selector = lane ? `[visible-tag][visible-lane="${lane}"]` : '[visible-tag]';
         space.querySelectorAll(selector).forEach(el => {
@@ -338,7 +337,7 @@ const Visible = (() => {
     };
 
     const Toggle = (ctx, when, then, otherwise) => {
-        const space = up(ctx, '[visible-space]');
+        const space = ctx.closest('[visible-space]');
         Visible(space, space.getAttribute('visible-state').split(' ').includes(when) ? then : otherwise);
     };
 
@@ -347,10 +346,8 @@ const Visible = (() => {
 </script>
 <script>
 const Filter = (() => {
-    const up = (el, sel) => el.matches(sel) ? el : el.closest(sel);
-
     const Filter = (ctx) => {
-        const space = up(ctx, '[filter-space]');
+        const space = ctx.closest('[filter-space]');
         const lane = space.getAttribute('filter-lane');
         const query = space.querySelector('[filter-query]').value.trim().toLowerCase();
         const selector = lane ? `[filter-item][filter-lane="${lane}"]` : '[filter-item]';

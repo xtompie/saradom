@@ -42,6 +42,13 @@ function page(array $fm, string $body, string $current, array $nav): string
     $desc    = $fm['description'] ?? DESC;
     $landing = ($fm['layout'] ?? '') === 'landing';
     $next    = nav_next($nav, $current);
+    // Per-page stylesheet, by convention: a page named foo (foo.html) loads assets/foo.css
+    // if it exists — same name as the page, no front-matter needed. Extra shared sheets can
+    // still be listed under `css:` in front matter.
+    $name = pathinfo($current, PATHINFO_FILENAME);
+    $css  = (array)($fm['css'] ?? []);
+    if (is_file(dirname(__DIR__) . "/assets/$name.css")) $css[] = "$name.css";
+    $css  = array_values(array_unique($css));
     ob_start();
     include __DIR__ . '/page.php';
     return ob_get_clean();

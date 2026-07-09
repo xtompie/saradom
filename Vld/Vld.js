@@ -1,6 +1,4 @@
 const Vld = (() => {
-    const up = (el, sel) => el.matches(sel) ? el : el.closest(sel);
-
     const Rule = {
         required: (input) => (input !== undefined && input !== null && input !== '') ? null : 'This field is required',
         email: (input) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input) ? null : 'Not a valid email address',
@@ -46,17 +44,27 @@ const Vld = (() => {
         root.querySelectorAll(`[${attr}]`).forEach(el => { el.innerHTML = ''; });
 
         errors.forEach(e => {
-            const el = root.querySelector(`[${attr}="${e.path ?? ''}"]`);
+            const el = root.querySelector(`[${attr}="${CSS.escape(e.path ?? '')}"]`);
             el?.insertAdjacentHTML('beforeend', template.replace(/\{(\w+)\}/g, (_, k) => escapeHtml(e[k] ?? '')));
         });
 
         return errors;
     };
 
+    const formEl = (space) => space.matches('[vld-form]') ? space : space.querySelector('[vld-form]');
+
+    const formData = (form) => {
+        const data = {};
+        for (const [name, value] of new FormData(form)) {
+            data[name] = name in data ? [].concat(data[name], value) : value;
+        }
+        return data;
+    };
+
     const Submit = async (ctx, event, rules, data) => {
         event?.preventDefault();
-        const space = up(ctx, '[vld-space]');
-        return Form(space, rules ?? space.vldRules, data ?? Object.fromEntries(new FormData(space)));
+        const space = ctx.closest('[vld-space]');
+        return Form(space, rules, data ?? formData(formEl(space)));
     };
 
     return { Rule, Validate, Form, Submit };

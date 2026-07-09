@@ -1,0 +1,76 @@
+/* index page — styles used only by index.md (layout: landing).
+   Auto-loaded by the build because its name matches the page (index → index.css),
+   so nothing here reaches any other page. Shared bits (.mark, .demo box, syntax,
+   nav …) stay in style.css. */
+
+/* ambient — soft gradient wash + faint grain */
+body.landing::before {
+  content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background:
+    radial-gradient(70rem 36rem at 25% -12rem, var(--glow), transparent 70%),
+    radial-gradient(46rem 30rem at 90% 6rem, rgba(120,90,220,.03), transparent 75%);
+}
+body.landing::after {
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* landing layout — full-width, centred, no sidebar */
+body.landing { display:block; }
+.topbar { display:flex; justify-content:space-between; align-items:center; max-width:60rem; margin:0 auto; padding:1.5rem 1.5rem; }
+.topbar-brand { font-weight:800; font-size:1.15rem; letter-spacing:-.02em; color:var(--ink); text-decoration:none; }
+.topbar-nav { display:flex; gap:1.6rem; }
+.topbar-nav a { color:var(--muted); text-decoration:none; font-size:.9rem; }
+.topbar-nav a:hover { color:var(--ink); }
+body.landing .content { max-width:60rem; margin:0 auto; padding:2.5rem 1.5rem 2rem; }
+body.landing .content > * { max-width:60rem; }
+
+/* hero */
+.hero { padding:2.5rem 0 3rem; }
+.hero h1 { font-size:clamp(2.4rem, 6vw, 3.6rem); font-weight:400; letter-spacing:-.03em; line-height:1.08; color:var(--ink); margin:0 0 1.1rem; max-width:24ch; }
+
+/* hero, three levels — size + colour do all the hierarchy, no weight jumps:
+   name (orange, huge) → what it is (ink) → description (muted). */
+.hero h1.wordmark { font-size:clamp(3.2rem, 10vw, 5.5rem); font-weight:400; letter-spacing:-.045em; line-height:1; max-width:none; margin:0 0 .55rem;
+  background:linear-gradient(180deg, #f7a45c, #e07a2f); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
+.hero .tagline { font-size:clamp(1.4rem, 3.5vw, 1.75rem); font-weight:400; letter-spacing:-.015em; line-height:1.2; color:var(--ink); margin:0 0 1.5rem; }
+.hero .sub { font-size:1.2rem; font-weight:400; line-height:1.5; color:var(--sub); max-width:38rem; margin:0 0 1.9rem; }
+
+body.landing h3 { font-size:1.12rem; font-weight:400; color:var(--ink); margin:2rem 0 .35rem; }
+body.landing h3 + p { margin:0 0 0; color:var(--body); }
+
+/* CTAs — minimal, no boxes, no bold. Hierarchy by colour + size + an arrow,
+   same rule as everywhere: primary is accent + underline, secondary a muted link. */
+.cta-row { display:flex; gap:1.4rem; align-items:center; flex-wrap:wrap; margin-top:1.9rem; }
+.content .cta { display:inline-flex; align-items:center; gap:.5rem; background:none; color:var(--accent); border:0; border-bottom:1px solid var(--accent); border-radius:0; padding:.5rem .1rem; font-size:1.05rem; font-weight:400; text-decoration:none; }
+.content .cta:hover { text-decoration:none; }
+.content .cta .cta-arrow { transition:transform .18s ease; }
+.content .cta:hover .cta-arrow { transform:translateX(3px); }
+.content .cta-ghost { display:inline-flex; align-items:center; gap:.4rem; background:none; border:0; color:var(--sub); border-radius:0; padding:.5rem .3rem; font-size:1.05rem; font-weight:400; text-decoration:none; transition:color .15s; }
+.content .cta-ghost:hover { color:var(--ink); background:none; text-decoration:none; }
+.content .cta:focus-visible, .content .cta-ghost:focus-visible { outline:2px solid var(--accent); outline-offset:3px; border-radius:3px; }
+/* Val themed sub-site override — only meaningful where .cta exists (here). */
+.theme-val .content .cta { color:var(--accent); border-bottom-color:var(--accent); }
+
+/* foundation — the numbered rules list */
+.kicker { font-size:.8rem; font-weight:400; text-transform:uppercase; letter-spacing:.14em; color:var(--sub); margin:3.5rem 0 1.25rem; }
+.rules { margin-top:.75rem; border-top:1px solid var(--line); }
+.rule { display:grid; grid-template-columns:12.5rem 1fr; gap:1.5rem; padding:1.2rem .75rem; border-bottom:1px solid var(--line); align-items:baseline; transition:background .15s; }
+.rule:hover { background:color-mix(in srgb, var(--accent) 5%, transparent); }
+.rule-name { display:flex; gap:1.15rem; align-items:baseline; font-size:1.02rem; font-weight:500; color:var(--ink); }
+.rule-no { font-family:var(--mono); font-size:.8rem; font-weight:500; color:var(--accent); }
+.rule-text { color:var(--body); font-size:1rem; }
+@media (max-width:680px) { .rule { grid-template-columns:1fr; gap:.3rem; } }
+
+/* caption tying the live preview to the source above it */
+.demo-note { margin:1rem 0 0; color:var(--sub); font-size:.92rem; }
+
+/* footer — closes the page, muted, single mark reused (no new accent) */
+.site-footer { display:flex; flex-wrap:wrap; align-items:center; gap:.9rem 1.6rem; margin-top:5rem; padding-top:2rem; border-top:1px solid var(--line); }
+.site-footer .foot-brand { color:var(--sub); font-size:.95rem; }
+.site-footer .foot-brand .mark { font-weight:400; }
+.site-footer .foot-links { display:flex; gap:1.5rem; margin-left:auto; }
+.site-footer .foot-links a { color:var(--muted); text-decoration:none; font-size:.9rem; transition:color .12s; }
+.site-footer .foot-links a:hover { color:var(--ink); }
+.site-footer .foot-note { flex-basis:100%; margin:0; color:var(--muted); font-size:.8rem; }
+@media (max-width:680px) { .site-footer .foot-links { margin-left:0; } }
