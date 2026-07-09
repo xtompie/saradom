@@ -185,6 +185,7 @@ This is one option among a few for handling a form. [The simple way](the-simple-
 ## Methods
 
 - `Vld.Validate(rules, data)` runs the rules against the data, headless. Returns `Promise<errors>`.
+- `Vld.Clear(root, attr)` empties every `[vld-error]` inside `root`. `Vld.Form` calls it before rendering; call it yourself to wipe messages without validating, e.g. when reopening a dialog.
 - `Vld.Form(root, rules, data, tpl, attr)` validates and renders into `root`'s `[vld-error]` elements.
 - `Vld.Submit(ctx, event, rules, data)` resolves the space from `ctx`, validates the given `rules`, defaults `data` to `FormData` off the space's `[vld-form]` when omitted, and calls `Form`.
 - `Vld.Rule` holds the rule registry. Add to it directly to register a new one.

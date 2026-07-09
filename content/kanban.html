@@ -24,6 +24,7 @@
         <div kanban-backdrop onclick="Kanban.Modal.Close(this)"></div>
         <div kanban-dialog>
             <input kanban-input val val-fx="Input" val-key="title" type="text" placeholder="Title">
+            <div vld-error="title" kanban-error></div>
             <div kanban-colors val val-get="() => Kanban.Palette.Picked(this)" val-set="(d) => Kanban.Palette.Pick(this, d.color)">
                 <button type="button" kanban-swatch data-color="#8b5cf6" style="background:#8b5cf6" title="Violet" aria-label="Violet" onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
                 <button type="button" kanban-swatch data-color="#5a80e6" style="background:#5a80e6" title="Blue"   aria-label="Blue"   onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>

@@ -129,6 +129,7 @@
 <h2 id="methods">Methods<a class="anchor" href="#methods" aria-hidden="true">#</a></h2>
 <ul>
 <li><code>Vld.Validate(rules, data)</code> runs the rules against the data, headless. Returns <code>Promise&lt;errors&gt;</code>.</li>
+<li><code>Vld.Clear(root, attr)</code> empties every <code>[vld-error]</code> inside <code>root</code>. <code>Vld.Form</code> calls it before rendering; call it yourself to wipe messages without validating, e.g. when reopening a dialog.</li>
 <li><code>Vld.Form(root, rules, data, tpl, attr)</code> validates and renders into <code>root</code>'s <code>[vld-error]</code> elements.</li>
 <li><code>Vld.Submit(ctx, event, rules, data)</code> resolves the space from <code>ctx</code>, validates the given <code>rules</code>, defaults <code>data</code> to <code>FormData</code> off the space's <code>[vld-form]</code> when omitted, and calls <code>Form</code>.</li>
 <li><code>Vld.Rule</code> holds the rule registry. Add to it directly to register a new one.</li>

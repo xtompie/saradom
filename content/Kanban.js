@@ -1,4 +1,11 @@
 const Kanban = (() => {
+    // Title validation, ordered: an empty title reports "required" and stops there; a
+    // one-character title gets past that and reports the length rule. Just a plain value
+    // handed to Vld.Form — Vld knows nothing about where it's kept.
+    const rules = [
+        [{ path: 'title', rules: ['required', { rule: 'min', arg: 2 }] }],
+    ];
+
     // A column recounts itself: it holds as many cards as it holds. Every place that
     // changes a column's cards owns that column, so it recounts by calling Count directly.
     const Count = (col) => col.one('[kanban-count]').vset({ count: col.all('[kanban-card]').length });
@@ -21,7 +28,9 @@ const Kanban = (() => {
     // Open the modal filled with data, in the given mode, focused. The mode is an attribute
     // because CSS reads it (it hides Delete while adding).
     const Open = (modal, mode, data) => {
-        modal.one('[kanban-dialog]').vset(data);
+        const dialog = modal.one('[kanban-dialog]');
+        dialog.vset(data);
+        Vld.Clear(dialog);
         modal.attr('kanban-modal-mode', mode).flag('hidden', false);
         modal.one('[kanban-input]').focus();
     };
@@ -45,11 +54,15 @@ const Kanban = (() => {
         Open(modal, 'edit', card.vget());
     };
 
-    // Save: read the form once; write it into the remembered card, or append a new one to
-    // the remembered column and recount it. Editing changes nothing countable.
-    const Save = (ctx) => {
+    // Save: read the form once, validate it, and bail on any error (Vld.Form has already
+    // rendered the message under the field). Otherwise write it into the remembered card,
+    // or append a new one to the remembered column and recount it. Editing changes nothing
+    // countable.
+    const Save = async (ctx) => {
         const modal = ctx.up('[kanban-space]').one('[kanban-modal]');
-        const data = modal.one('[kanban-dialog]').vget();
+        const dialog = modal.one('[kanban-dialog]');
+        const data = dialog.vget();
+        if ((await Vld.Form(dialog, rules, data)).length) return;
         if (modal.attr('kanban-modal-mode') === 'edit') {
             modal._card.vset(data);
         } else {

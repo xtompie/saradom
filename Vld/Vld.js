@@ -37,11 +37,13 @@ const Vld = (() => {
     const escapeHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const defaultTpl = '<div class="vld-error">{message}</div>';
 
+    const Clear = (root, attr = 'vld-error') => root.querySelectorAll(`[${attr}]`).forEach(el => { el.innerHTML = ''; });
+
     const Form = async (root, rules, data, tpl, attr = 'vld-error') => {
         const errors = await Validate(rules, data);
         const template = tpl ?? root.querySelector('template[vld-error-tpl]')?.innerHTML ?? defaultTpl;
 
-        root.querySelectorAll(`[${attr}]`).forEach(el => { el.innerHTML = ''; });
+        Clear(root, attr);
 
         errors.forEach(e => {
             const el = root.querySelector(`[${attr}="${CSS.escape(e.path ?? '')}"]`);
@@ -67,5 +69,5 @@ const Vld = (() => {
         return Form(space, rules, data ?? formData(formEl(space)));
     };
 
-    return { Rule, Validate, Form, Submit };
+    return { Rule, Validate, Clear, Form, Submit };
 })();

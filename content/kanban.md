@@ -16,11 +16,12 @@ status: draft
 <!-- embed: content/kanban.css -->
 <!-- embed: Util/Util.js -->
 <!-- embed: Val/Val.js -->
+<!-- embed: Vld/Vld.js -->
 <!-- embed: content/Kanban.js -->
 <!-- embed: content/kanban.html -->
 </div>
 
-<!-- uses: Util/Util.js Val/Val.js https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js -->
+<!-- uses: Util/Util.js Val/Val.js Vld/Vld.js https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js -->
 
 <!-- code: content/kanban.html -->
 
