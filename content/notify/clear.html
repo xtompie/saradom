@@ -1,0 +1,5 @@
+<div form-space form-reset="() => this.ndown('field-clear')">
+  <label>Name <input field-clear="() => this.value = ''" value="John Doe"></label>
+  <label>City <input field-clear="() => this.value = ''" value="London"></label>
+  <button onclick="this.nup('form-reset')">Clear</button>
+</div>

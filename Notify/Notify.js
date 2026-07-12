@@ -17,8 +17,13 @@ const Notify = (() => {
         });
     };
 
-    return { Up, Down };
+    const All = (name, data) => {
+        document.querySelectorAll(`[${name}]`).forEach(node => Run(node, name, data));
+    };
+
+    return { Up, Down, All };
 })();
 
 HTMLElement.prototype.nup = function (name, data = null, stop = null) { Notify.Up(this, name, data, stop); return this; };
 HTMLElement.prototype.ndown = function (name, data = null, stop = null) { Notify.Down(this, name, data, stop); return this; };
+HTMLElement.prototype.nall = function (name, data = null) { Notify.All(name, data); return this; };

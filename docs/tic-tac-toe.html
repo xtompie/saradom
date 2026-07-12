@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Tic-tac-toe · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Tic-tac-toe">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,7 +18,7 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a class="active" href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a class="active" href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="tic-tac-toe">Tic-tac-toe<a class="anchor" href="#tic-tac-toe" aria-hidden="true">#</a></h1>
 <p>The <a href="https://react.dev/learn/tutorial-tic-tac-toe">React tutorial</a> builds this game to teach lifting state up, immutability, list keys, and time travel. Most of those are the cost of holding state in JavaScript. Here the state is in the DOM, so they never come up. What is left is the game itself: whose turn it is, who won, and a history to step back through.</p>
 <div class="tictactoe-demo">
@@ -170,8 +169,8 @@ const Val = (() => {
     };
     const Fx = (el, write, v = null) => {
         const fx = Attr(el, 'val-fx');
-        if (fx && fx !== '' && api.Fx[fx]) {
-            return write ? api.Fx[fx].Set(el, v, FxParams(el)) : api.Fx[fx].Get(el, FxParams(el));
+        if (fx && fx !== '' && Val.Fx[fx]) {
+            return write ? Val.Fx[fx].Set(el, v, FxParams(el)) : Val.Fx[fx].Get(el, FxParams(el));
         }
     };
     const Sg = (el, write, v = null) => {
@@ -216,115 +215,156 @@ const Val = (() => {
         el.innerHTML = '';
         if (data !== undefined && data !== null) el.appendChild(Frag(Tpl(tpl), data));
     };
-    const Patch = (el, data) => Obj(el, Object.assign(Obj(el), data));
     const Append = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data, 'appendChild');
     const Prepend = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data.reverse(), 'prepend');
-    const Modify = (el, callback) => Obj(el, callback(Obj(el)));
 
-    const api = { Get, Set, Patch, Append, Prepend, Modify, Obj, Arr, Render, FxParams };
+    return { Get, Set, Append, Prepend, Obj, Arr, Render, FxParams, Allfd, Attr };
+})();
 
-    api.Fx = {
-        Obj: {
-            Get: (el, params) => {
-                const d = {};
-                Allfd(el, '[val]').forEach(e => Object.assign(d, Get(e)));
-                return params.key ? { [params.key]: d } : d;
-            },
-            Set: (el, data, params) => {
-                const val = params.key ? data[params.key] : data;
-                if (val === undefined || val === null) return;
-                Allfd(el, '[val]').forEach(e => Set(e, val));
-            }
+Val.Fx = {
+    Obj: {
+        Get: (el, params) => {
+            const d = {};
+            Val.Allfd(el, '[val]').forEach(e => Object.assign(d, Val.Get(e)));
+            return params.key ? { [params.key]: d } : d;
         },
-        Arr: {
-            Get: (el, params) => ({ [params.key]: Arr(el) }),
-            Set: (el, data, params) => Arr(el, data[params.key], params.tpl)
+        Set: (el, data, params) => {
+            const val = params.key ? data[params.key] : data;
+            if (val === undefined || val === null) return;
+            Val.Allfd(el, '[val]').forEach(e => Val.Set(e, val));
+        }
+    },
+    Arr: {
+        Get: (el, params) => ({ [params.key]: Val.Arr(el) }),
+        Set: (el, data, params) => Val.Arr(el, data[params.key], params.tpl)
+    },
+    Render: {
+        Get: (el, params) => {
+            const d = {};
+            Val.Allfd(el, '[val]').forEach(e => Object.assign(d, Val.Get(e)));
+            return { [params.key]: d };
         },
-        Render: {
-            Get: (el, params) => {
-                const d = {};
-                Allfd(el, '[val]').forEach(e => Object.assign(d, Get(e)));
-                return { [params.key]: d };
-            },
-            Set: (el, data, params) => Render(el, params.tpl, data[params.key])
+        Set: (el, data, params) => Val.Render(el, params.tpl, data[params.key])
+    },
+    Text: {
+        Get: (el, params) => ({ [params.key]: el.textContent }),
+        Set: (el, data, params) => { el.textContent = data[params.key]; }
+    },
+    Html: {
+        Get: (el, params) => ({ [params.key]: el.innerHTML }),
+        Set: (el, data, params) => { el.innerHTML = data[params.key]; }
+    },
+    Input: {
+        Get: (el, params) => ({ [params.key]: el.value }),
+        Set: (el, data, params) => { el.value = data[params.key] || ''; }
+    },
+    Show: {
+        Get: (el, params) => ({ [params.key]: el.style.display !== 'none' }),
+        Set: (el, data, params) => { el.style.display = data[params.key] ? '' : 'none'; }
+    },
+    Hide: {
+        Get: (el, params) => ({ [params.key]: el.style.display === 'none' }),
+        Set: (el, data, params) => { el.style.display = data[params.key] ? 'none' : ''; }
+    },
+    Img: {
+        Get: (el, params) => ({ [params.key]: el.src }),
+        Set: (el, data, params) => { el.src = data[params.key]; }
+    },
+    Attr: {
+        Get: (el, params) => ({ [params.key]: Val.Attr(el, params.attr) }),
+        Set: (el, data, params) => { Val.Attr(el, params.attr, data[params.key]); }
+    },
+    Pattr: {
+        Get: (el, params) => ({ [params.key]: Val.Attr(el.parentElement, params.attr) }),
+        Set: (el, data, params) => { Val.Attr(el.parentElement, params.attr, data[params.key]); }
+    },
+    If: {
+        Get: (el, params) => {
+            const conditionMet = el.style.display !== 'none' && (!params.value || params.value === 'true');
+            if (!conditionMet) return {};
+            const result = Val.Allfd(el, '[val]').reduce((r, e) => Object.assign(r, Val.Get(e)), {});
+            return { [params.key]: result };
         },
-        Text: {
-            Get: (el, params) => ({ [params.key]: el.textContent }),
-            Set: (el, data, params) => { el.textContent = data[params.key]; }
-        },
-        Html: {
-            Get: (el, params) => ({ [params.key]: el.innerHTML }),
-            Set: (el, data, params) => { el.innerHTML = data[params.key]; }
-        },
-        Input: {
-            Get: (el, params) => ({ [params.key]: el.value }),
-            Set: (el, data, params) => { el.value = data[params.key] || ''; }
-        },
-        Show: {
-            Get: (el, params) => ({ [params.key]: el.style.display !== 'none' }),
-            Set: (el, data, params) => { el.style.display = data[params.key] ? '' : 'none'; }
-        },
-        Hide: {
-            Get: (el, params) => ({ [params.key]: el.style.display === 'none' }),
-            Set: (el, data, params) => { el.style.display = data[params.key] ? 'none' : ''; }
-        },
-        Img: {
-            Get: (el, params) => ({ [params.key]: el.src }),
-            Set: (el, data, params) => { el.src = data[params.key]; }
-        },
-        Attr: {
-            Get: (el, params) => ({ [params.key]: Attr(el, params.attr) }),
-            Set: (el, data, params) => { Attr(el, params.attr, data[params.key]); }
-        },
-        Pattr: {
-            Get: (el, params) => ({ [params.key]: Attr(el.parentElement, params.attr) }),
-            Set: (el, data, params) => { Attr(el.parentElement, params.attr, data[params.key]); }
-        },
-        If: {
-            Get: (el, params) => {
-                const conditionMet = el.style.display !== 'none' && (!params.value || params.value === 'true');
-                if (!conditionMet) return {};
-                const result = Allfd(el, '[val]').reduce((r, e) => Object.assign(r, Get(e)), {});
-                return { [params.key]: result };
-            },
-            Set: (el, data, params) => {
-                const conditionMet = params.value ? params.value === data[params.key] : data[params.key];
-                el.style.display = conditionMet ? '' : 'none';
-                if (conditionMet && data[params.key]) {
-                    Allfd(el, '[val]').forEach(e => Set(e, data[params.key]));
-                }
-            }
-        },
-        Fxs: {
-            Get: (el, params) => {
-                return Array.from(el.querySelector('[val-fxs]')?.children ?? []).reduce((result, fxEl) => {
-                    const fx = Attr(fxEl, 'val-fx');
-                    return (fx && api.Fx[fx])
-                        ? Object.assign(result, api.Fx[fx].Get(el, FxParams(fxEl)))
-                        : result;
-                }, {});
-            },
-            Set: (el, data, params) => {
-                Array.from(el.querySelector('[val-fxs]')?.children ?? []).forEach(fxEl => {
-                    const fx = Attr(fxEl, 'val-fx');
-                    fx && api.Fx[fx] && api.Fx[fx].Set(el, data, FxParams(fxEl));
-                });
+        Set: (el, data, params) => {
+            const conditionMet = params.value ? params.value === data[params.key] : data[params.key];
+            el.style.display = conditionMet ? '' : 'none';
+            if (conditionMet && data[params.key]) {
+                Val.Allfd(el, '[val]').forEach(e => Val.Set(e, data[params.key]));
             }
         }
-    };
+    },
+    Fxs: {
+        Get: (el, params) => {
+            return Array.from(el.querySelector('[val-fxs]')?.children ?? []).reduce((result, fxEl) => {
+                const fx = Val.Attr(fxEl, 'val-fx');
+                return (fx && Val.Fx[fx])
+                    ? Object.assign(result, Val.Fx[fx].Get(el, Val.FxParams(fxEl)))
+                    : result;
+            }, {});
+        },
+        Set: (el, data, params) => {
+            Array.from(el.querySelector('[val-fxs]')?.children ?? []).forEach(fxEl => {
+                const fx = Val.Attr(fxEl, 'val-fx');
+                fx && Val.Fx[fx] && Val.Fx[fx].Set(el, data, Val.FxParams(fxEl));
+            });
+        }
+    }
+};
 
-    return api;
+// Sync — a diff-aware set. Reads the current value, writes only what changed, and
+// descends only into changed subtrees, so unchanged branches (and their val-sets)
+// are left alone. Lists are reconciled by position. Optional: drop this block to remove it.
+Val.Sync = (() => {
+    const eq = (a, b) => {
+        if (a === b) return true;
+        if (a == null || b == null) return a === b;
+        if (typeof a !== 'object' && typeof b !== 'object') return String(a) === String(b);
+        return JSON.stringify(a) === JSON.stringify(b);
+    };
+    const syncArr = (el, data) => {
+        const next = data[Val.FxParams(el).key] || [];
+        const kids = Array.from(el.children);
+        const cur = kids.map(c => Val.Obj(c));
+        const n = Math.min(kids.length, next.length);
+        for (let i = 0; i < n; i++) if (!eq(cur[i], next[i])) sync(kids[i], next[i]);
+        if (next.length > kids.length) Val.Append(el, next.slice(kids.length));
+        else for (let i = kids.length - 1; i >= next.length; i--) kids[i].remove();
+    };
+    const sync = (root, data) => {
+        const leaves = Val.Allfd(root, '[val]');
+        const targets = leaves.length ? leaves : (root.hasAttribute('val') ? [root] : []);
+        targets.forEach(e => {
+            if (e.hasAttribute('val-set')) { Val.Set(e, data); return; }
+            const fx = Val.Attr(e, 'val-fx');
+            if (fx === 'Arr') { syncArr(e, data); return; }
+            if (fx === 'Obj') {
+                const key = Val.FxParams(e).key;
+                const cur = Val.Get(e);
+                const curSub = key ? cur[key] : cur;
+                const nextSub = key ? data?.[key] : data;
+                if (!eq(curSub, nextSub)) sync(e, nextSub);
+                return;
+            }
+            const cur = Val.Get(e);
+            const keys = Object.keys(cur);
+            if (keys.length === 0 || keys.some(k => !eq(cur[k], data?.[k]))) Val.Set(e, data);
+        });
+    };
+    return sync;
 })();
 
 HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, data, tpl); return this; };
 HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
 HTMLElement.prototype.vget = function (lane) { lane = lane ?? this.getAttribute('val-lane'); return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane); };
-HTMLElement.prototype.vmodify = function (f) { Val.Modify(this, f); return this; };
 HTMLElement.prototype.vobj = function (data = null, lane) { lane = lane ?? this.getAttribute('val-lane'); return Val.Obj(this, data, lane); };
-HTMLElement.prototype.vpatch = function (data) { Val.Patch(this, data); return this; };
 HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
 HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
 HTMLElement.prototype.vset = function (data, lane) {
+    if (typeof data === 'function') {
+        const cur = this.vget();
+        const next = data(cur);
+        data = next === undefined ? cur : next;
+    }
     lane = lane ?? this.getAttribute('val-lane');
     this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data, lane);
     return this;
@@ -332,6 +372,15 @@ HTMLElement.prototype.vset = function (data, lane) {
 HTMLElement.prototype.vval = function (data) {
     if (arguments.length === 0) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this);
     this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data);
+    return this;
+};
+HTMLElement.prototype.vsync = function (data) {
+    if (typeof data === 'function') {
+        const cur = this.vget();
+        const next = data(cur);
+        data = next === undefined ? cur : next;
+    }
+    Val.Sync(this, data);
     return this;
 };
 </script>
@@ -346,16 +395,17 @@ const Ttt = (() => {
         return null;
     };
 
+    const Turn = (m) => m.filter(Boolean).length % 2 ? 'O' : 'X';
+
     const Board = (space) => space.one('[ttt-board]');
     const Marks = (space) => Board(space).varr().map(c => c.mark);
 
     const Status = (space, m) => {
         const winner = Winner(m);
-        space.attr('ttt-winner', winner || null);
         space.one('[ttt-status]').vset(
             winner ? { winner: { mark: winner } } :
             m.every(Boolean) ? { draw: true } :
-            { next: { mark: space.attr('ttt-turn') } }
+            { next: { mark: Turn(m) } }
         );
     };
 
@@ -368,11 +418,10 @@ const Ttt = (() => {
 
     const Snapshot = (space, m) => {
         const history = space.one('[ttt-history]');
-        const move = history.children.length;
+        const index = history.children.length;
         history.vappend([{
             board: m.join(','),
-            turn: space.attr('ttt-turn'),
-            label: move === 0 ? 'Go to game start' : `Go to move #${move}`,
+            label: index === 0 ? 'Go to game start' : `Go to move #${index}`,
         }]);
         Select(history.lastElementChild);
     };
@@ -380,14 +429,13 @@ const Ttt = (() => {
     const Play = (ctx) => {
         const space = ctx.up('[ttt-space]');
         const cell = ctx.up('[ttt-cell]');
-        if (space.attr('ttt-winner') || cell.vget().mark) return;
+        const before = Marks(space);
+        if (Winner(before) || cell.vget().mark) return;
 
         const current = Current(space);
         while (current.nextElementSibling) current.nextElementSibling.remove();
 
-        const turn = space.attr('ttt-turn');
-        cell.vset({ mark: turn });
-        space.attr('ttt-turn', turn === 'X' ? 'O' : 'X');
+        cell.vset({ mark: Turn(before) });
 
         const m = Marks(space);
         Status(space, m);
@@ -400,7 +448,6 @@ const Ttt = (() => {
         const m = move.vget().board.split(',');
 
         Board(space).clear().vappend(m.map(mark => ({ mark })));
-        space.attr('ttt-turn', move.vget().turn);
         Status(space, m);
         Select(move);
     };
@@ -414,7 +461,7 @@ const Ttt = (() => {
     return { Play, Jump, Init };
 })();
 </script>
-<div ttt-space ttt-turn="X" ttt-winner="">
+<div ttt-space>
     <div ttt-status>
         <div val val-fx="If" val-key="next">Next player: <span val val-fx="Text" val-key="mark">X</span></div>
         <div val val-fx="If" val-key="winner" style="display:none">Winner: <span val val-fx="Text" val-key="mark"></span></div>
@@ -426,9 +473,7 @@ const Ttt = (() => {
     </template>
     <ol ttt-history val-tpl="[ttt-move-tpl]"></ol>
     <template ttt-move-tpl>
-        <li ttt-move>
-            <i val val-fx="Attr" val-key="board" val-attr="ttt-move-board" hidden></i>
-            <i val val-fx="Attr" val-key="turn" val-attr="ttt-move-turn" hidden></i>
+        <li ttt-move val val-fx="Attr" val-key="board" val-attr="ttt-move-board">
             <button val val-fx="Text" val-key="label" onclick="Ttt.Jump(this)"></button>
         </li>
     </template>
@@ -437,7 +482,7 @@ const Ttt = (() => {
 
 </div>
 <p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a></p>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">ttt-space</span> <span class="hljs-attr">ttt-turn</span>=<span class="hljs-string">"X"</span> <span class="hljs-attr">ttt-winner</span>=<span class="hljs-string">""</span>&gt;</span>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">ttt-space</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">ttt-status</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"If"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"next"</span>&gt;</span>Next player: <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"mark"</span>&gt;</span>X<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"If"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"winner"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Winner: <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"mark"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
@@ -449,9 +494,7 @@ const Ttt = (() => {
     <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">ol</span> <span class="hljs-attr">ttt-history</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[ttt-move-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ol</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">ttt-move-tpl</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">ttt-move</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"board"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"ttt-move-board"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"turn"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"ttt-move-turn"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">ttt-move</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"board"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"ttt-move-board"</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"label"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Ttt.Jump(this)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
         <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
@@ -467,16 +510,17 @@ const Ttt = (() => {
         <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
     };
 
+    <span class="hljs-keyword">const</span> Turn = <span class="hljs-function">(<span class="hljs-params">m</span>) =&gt;</span> m.filter(<span class="hljs-built_in">Boolean</span>).length % <span class="hljs-number">2</span> ? <span class="hljs-string">'O'</span> : <span class="hljs-string">'X'</span>;
+
     <span class="hljs-keyword">const</span> Board = <span class="hljs-function">(<span class="hljs-params">space</span>) =&gt;</span> space.one(<span class="hljs-string">'[ttt-board]'</span>);
     <span class="hljs-keyword">const</span> Marks = <span class="hljs-function">(<span class="hljs-params">space</span>) =&gt;</span> Board(space).varr().map(<span class="hljs-function"><span class="hljs-params">c</span> =&gt;</span> c.mark);
 
     <span class="hljs-keyword">const</span> Status = <span class="hljs-function">(<span class="hljs-params">space, m</span>) =&gt;</span> {
         <span class="hljs-keyword">const</span> winner = Winner(m);
-        space.attr(<span class="hljs-string">'ttt-winner'</span>, winner || <span class="hljs-literal">null</span>);
         space.one(<span class="hljs-string">'[ttt-status]'</span>).vset(
             winner ? { <span class="hljs-attr">winner</span>: { <span class="hljs-attr">mark</span>: winner } } :
             m.every(<span class="hljs-built_in">Boolean</span>) ? { <span class="hljs-attr">draw</span>: <span class="hljs-literal">true</span> } :
-            { <span class="hljs-attr">next</span>: { <span class="hljs-attr">mark</span>: space.attr(<span class="hljs-string">'ttt-turn'</span>) } }
+            { <span class="hljs-attr">next</span>: { <span class="hljs-attr">mark</span>: Turn(m) } }
         );
     };
 
@@ -489,11 +533,10 @@ const Ttt = (() => {
 
     <span class="hljs-keyword">const</span> Snapshot = <span class="hljs-function">(<span class="hljs-params">space, m</span>) =&gt;</span> {
         <span class="hljs-keyword">const</span> history = space.one(<span class="hljs-string">'[ttt-history]'</span>);
-        <span class="hljs-keyword">const</span> move = history.children.length;
+        <span class="hljs-keyword">const</span> index = history.children.length;
         history.vappend([{
             <span class="hljs-attr">board</span>: m.join(<span class="hljs-string">','</span>),
-            <span class="hljs-attr">turn</span>: space.attr(<span class="hljs-string">'ttt-turn'</span>),
-            <span class="hljs-attr">label</span>: move === <span class="hljs-number">0</span> ? <span class="hljs-string">'Go to game start'</span> : <span class="hljs-string">`Go to move #<span class="hljs-subst">${move}</span>`</span>,
+            <span class="hljs-attr">label</span>: index === <span class="hljs-number">0</span> ? <span class="hljs-string">'Go to game start'</span> : <span class="hljs-string">`Go to move #<span class="hljs-subst">${index}</span>`</span>,
         }]);
         Select(history.lastElementChild);
     };
@@ -501,14 +544,13 @@ const Ttt = (() => {
     <span class="hljs-keyword">const</span> Play = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
         <span class="hljs-keyword">const</span> space = ctx.up(<span class="hljs-string">'[ttt-space]'</span>);
         <span class="hljs-keyword">const</span> cell = ctx.up(<span class="hljs-string">'[ttt-cell]'</span>);
-        <span class="hljs-keyword">if</span> (space.attr(<span class="hljs-string">'ttt-winner'</span>) || cell.vget().mark) <span class="hljs-keyword">return</span>;
+        <span class="hljs-keyword">const</span> before = Marks(space);
+        <span class="hljs-keyword">if</span> (Winner(before) || cell.vget().mark) <span class="hljs-keyword">return</span>;
 
         <span class="hljs-keyword">const</span> current = Current(space);
         <span class="hljs-keyword">while</span> (current.nextElementSibling) current.nextElementSibling.remove();
 
-        <span class="hljs-keyword">const</span> turn = space.attr(<span class="hljs-string">'ttt-turn'</span>);
-        cell.vset({ <span class="hljs-attr">mark</span>: turn });
-        space.attr(<span class="hljs-string">'ttt-turn'</span>, turn === <span class="hljs-string">'X'</span> ? <span class="hljs-string">'O'</span> : <span class="hljs-string">'X'</span>);
+        cell.vset({ <span class="hljs-attr">mark</span>: Turn(before) });
 
         <span class="hljs-keyword">const</span> m = Marks(space);
         Status(space, m);
@@ -521,7 +563,6 @@ const Ttt = (() => {
         <span class="hljs-keyword">const</span> m = move.vget().board.split(<span class="hljs-string">','</span>);
 
         Board(space).clear().vappend(m.map(<span class="hljs-function"><span class="hljs-params">mark</span> =&gt;</span> ({ mark })));
-        space.attr(<span class="hljs-string">'ttt-turn'</span>, move.vget().turn);
         Status(space, m);
         Select(move);
     };
@@ -534,12 +575,12 @@ const Ttt = (() => {
 
     <span class="hljs-keyword">return</span> { Play, Jump, Init };
 })();</code></pre>
-<p>Each handler takes the event's <code>ctx</code> and resolves what it needs through the contract. <code>Play</code> calls <code>ctx.up('[ttt-cell]')</code> to find its cell; <code>up</code> returns the element itself when it already matches, so the cell is looked up, not assumed. The mark is read and written through <code>val</code>, not touched as raw text. The turn lives in one attribute on the space, <code>ttt-turn</code>. There is no board array in JavaScript to keep in agreement with the screen; the nine cells are the board. Nothing is lifted, nothing is copied.</p>
+<p>Each handler takes the event's <code>ctx</code> and resolves what it needs through the contract. <code>Play</code> calls <code>ctx.up('[ttt-cell]')</code> to find its cell. <code>up</code> returns the element itself when it already matches, so the cell is looked up, not assumed. The mark is read and written through <code>val</code>, not touched as raw text. Whose turn it is isn't stored anywhere — it's the parity of the marks on the board — and who won is read off the same nine cells; both are computed when needed, never held. There is no board array in JavaScript to keep in agreement with the screen. The nine cells are the board, and the only state there is. Nothing is lifted, nothing is copied.</p>
 <p>Winning is the one piece of real game logic, and it is the same plain function React uses: eight lines, checked for three equal marks. Its input is the nine cells read from the DOM.</p>
 <h2 id="time-travel">Time travel<a class="anchor" href="#time-travel" aria-hidden="true">#</a></h2>
 <p>Every move appends an entry to <code>[ttt-history]</code>, carrying a snapshot of the board read straight off the cells, as its own DOM state. The active entry is marked with <code>ttt-current</code>.</p>
-<p>Clicking an entry runs <code>Jump</code>: it writes that snapshot back into the cells, restores the turn, and moves <code>ttt-current</code> there. The later entries stay. You are back in the past, but the future is still on the board, so you can step forward again. Only when you play a move from a past point does <code>Play</code> drop every entry after the current one, and the new move starts a fresh line. That is a real timeline that branches, not an eager delete.</p>
-<p>There is no move index into an immutable array, and no store to rewind. The past is a list of real nodes; going back is reading one of them.</p>
+<p>Clicking an entry runs <code>Jump</code>. It writes that snapshot back into the cells and moves <code>ttt-current</code> there; the turn simply follows from the restored board. The later entries stay. The board is back in the past, but the future is still in the history, so a step forward still works. Only when a move is played from a past point does <code>Play</code> drop every entry after the current one, and the new move starts a fresh line. That is a real timeline that branches, not an eager delete.</p>
+<p>There is no move index into an immutable array, and no store to rewind. The past is a list of real nodes. Going back is reading one of them.</p>
 <p class="doc-next"><a href="kanban.html">Next: Kanban →</a></p>
 </main>
 <script>

@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Vld · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Vld">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,83 +18,128 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a class="active" href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a class="active" href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="vld">Vld<a class="anchor" href="#vld" aria-hidden="true">#</a></h1>
-<p>Vld validates data. Rules are a plain JS structure, a value goes in, an array of errors comes out — no DOM involved at any point. Attaching it to a form is one optional feature on top, wired the same way as the rest of Saradom. Nothing about the core function assumes a <code>&lt;form&gt;</code> exists at all.</p>
+<p>Vld validates data. Rules are a plain JS structure. A value goes in, and an array of errors comes out. No DOM is involved at any point. Attaching it to a form is one optional feature on top, wired the same way as the rest of Saradom. Nothing about the core function assumes a <code>&lt;form&gt;</code> exists at all.</p>
+<p><code>rules</code> is an array of groups. A group is an array of checks. A check has a <code>path</code> and a list of rules. A rule is a predicate that passes or fails.</p>
 <p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Vld/Vld.js" target="_blank" rel="noopener">Vld.js</a></p>
 <pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> rules = [
     [
-        { <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, <span class="hljs-string">'email'</span>] },
-        { <span class="hljs-attr">path</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, { <span class="hljs-attr">rule</span>: <span class="hljs-string">'min'</span>, <span class="hljs-attr">arg</span>: <span class="hljs-number">3</span> }] },
+        { <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'email'</span>] },
+        { <span class="hljs-attr">path</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">min</span>: <span class="hljs-number">3</span> }] },
     ],
 ];
 
 <span class="hljs-keyword">const</span> errors = <span class="hljs-keyword">await</span> Vld.Validate(rules, { <span class="hljs-attr">email</span>: <span class="hljs-string">''</span>, <span class="hljs-attr">password</span>: <span class="hljs-string">'ab'</span> });
 <span class="hljs-comment">// =&gt; [{ key: 'required', message: 'This field is required', path: 'email' }]</span></code></pre>
-<p>That's the whole mechanism: <code>rules</code> and <code>data</code> in, an array of errors out. An empty array means everything passed.</p>
 <h2 id="rules">Rules<a class="anchor" href="#rules" aria-hidden="true">#</a></h2>
-<p>A rule is a function: <code>(input, arg) =&gt; null | string</code>. <code>null</code> means the value is fine. A string is the message to show. There is no <code>true</code>/<code>false</code> — <code>null</code> reads as &quot;nothing to report&quot;, with no boolean to misread.</p>
-<pre><code class="hljs language-javascript">Vld.Rule.min = <span class="hljs-function">(<span class="hljs-params">input, arg</span>) =&gt;</span> <span class="hljs-built_in">String</span>(input ?? <span class="hljs-string">''</span>).length &gt;= <span class="hljs-built_in">Number</span>(arg) ? <span class="hljs-literal">null</span> : <span class="hljs-string">`Must be at least <span class="hljs-subst">${arg}</span> characters`</span>;</code></pre>
-<p>A few are built in: <code>required</code>, <code>email</code>, <code>min</code>, <code>same</code>. Inside a check, <code>rules</code> names them by string, or configures them with an object:</p>
-<pre><code class="hljs language-javascript">{ <span class="hljs-attr">path</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">rules</span>: [
-    <span class="hljs-string">'required'</span>,
-    { <span class="hljs-attr">rule</span>: <span class="hljs-string">'min'</span>, <span class="hljs-attr">arg</span>: <span class="hljs-number">3</span> },
-    { <span class="hljs-attr">rule</span>: <span class="hljs-string">'min'</span>, <span class="hljs-attr">arg</span>: <span class="hljs-number">3</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">'Too short'</span> }, <span class="hljs-comment">// overrides the rule's own message</span>
-] }</code></pre>
-<p>A rule can also be a plain function, written inline, with no registration:</p>
-<pre><code class="hljs language-javascript">{ <span class="hljs-attr">path</span>: <span class="hljs-string">'code'</span>, <span class="hljs-attr">rules</span>: [
-    <span class="hljs-function">(<span class="hljs-params">input</span>) =&gt;</span> <span class="hljs-regexp">/^[A-Z]+$/</span>.test(input) ? <span class="hljs-literal">null</span> : <span class="hljs-string">'Uppercase letters only'</span>,
-] }</code></pre>
-<p>Rules inside one check run in order, and stop at the first one that fails — a blank required field reports &quot;required&quot;, not &quot;required&quot; and &quot;not a valid email&quot; at once.</p>
+<p>A rule itself is a predicate: <code>(input, args) =&gt; boolean</code>. <code>true</code> means the value is valid. Anything else is a failure. The rule only decides pass or fail. The message is resolved a layer up, from <code>Vld.Msg</code> under the rule's key. A rule that wants its own wording can return that string directly instead of <code>false</code>.</p>
+<pre><code class="hljs language-javascript">Vld.Rule.min = <span class="hljs-function">(<span class="hljs-params">input, a</span>) =&gt;</span> <span class="hljs-built_in">String</span>(input ?? <span class="hljs-string">''</span>).length &gt;= a.value;</code></pre>
+<h3 id="writing-a-rule-in-a-check">Writing a rule in a check<a class="anchor" href="#writing-a-rule-in-a-check" aria-hidden="true">#</a></h3>
+<p>An entry in a check's <code>rules</code> array can take four forms:</p>
+<pre><code class="hljs language-javascript">rules: [
+    <span class="hljs-string">'email'</span>,                                          <span class="hljs-comment">// 1. string — a rule with no argument</span>
+    { <span class="hljs-attr">min</span>: <span class="hljs-number">3</span> },                                       <span class="hljs-comment">// 2. shorthand — { ruleName: argument }</span>
+    { <span class="hljs-attr">between</span>: { <span class="hljs-attr">min</span>: <span class="hljs-number">3</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">20</span> } },                 <span class="hljs-comment">// 2. shorthand — object argument, spread as named</span>
+    { <span class="hljs-attr">rule</span>: <span class="hljs-string">'min'</span>, <span class="hljs-attr">value</span>: <span class="hljs-number">3</span>, <span class="hljs-attr">msg</span>: <span class="hljs-string">'Too short'</span>, <span class="hljs-attr">key</span>: <span class="hljs-string">'x'</span> }, <span class="hljs-comment">// 3. full — needed for msg / key</span>
+    (input) =&gt; <span class="hljs-regexp">/^[A-Z]+$/</span>.test(input) || <span class="hljs-string">'Only caps'</span>, <span class="hljs-comment">// 4. inline function</span>
+]</code></pre>
+<ol>
+<li>String: the rule name alone, for rules that take no argument (<code>'email'</code>, <code>'numeric'</code>).</li>
+<li>Shorthand: an object whose single key is the rule name and whose value is the argument. A scalar (or array, or <code>RegExp</code>) arrives as <code>args.value</code>. A plain object is spread, so its keys become named arguments (<code>{ between: { min, max } }</code> → <code>args.min</code>, <code>args.max</code>). This is the common form.</li>
+<li>Full: an object with an explicit <code>rule</code> key. Use it only to add <code>msg</code> (custom message) or <code>key</code> (custom error key). Everything except <code>rule</code>, <code>msg</code>, and <code>key</code> is a named argument.</li>
+<li>Inline function: a predicate written on the spot, no registration. Returning the message string on failure gives it its own wording.</li>
+</ol>
+<p>Rules inside one check run in order, and stop at the first one that fails. A <code>min</code> failure reports &quot;Must be at least…&quot;, not that plus every later rule at once.</p>
+<h2 id="built-in-rules">Built-in rules<a class="anchor" href="#built-in-rules" aria-hidden="true">#</a></h2>
+<p>Shown in shorthand form. A no-argument rule is just its name as a string.</p>
+<ul>
+<li><code>'email'</code>: a valid email address</li>
+<li><code>'url'</code>: a valid URL</li>
+<li><code>{ min: n }</code>: length ≥ <code>n</code></li>
+<li><code>{ max: n }</code>: length ≤ <code>n</code></li>
+<li><code>{ between: { min, max } }</code>: length within <code>[min, max]</code></li>
+<li><code>{ length: n }</code>: length exactly <code>n</code></li>
+<li><code>'alpha'</code>: letters only</li>
+<li><code>'alnum'</code>: letters and digits only</li>
+<li><code>'digits'</code>: digits only</li>
+<li><code>'numeric'</code>: a number</li>
+<li><code>'integer'</code>: a whole number</li>
+<li><code>{ gte: n }</code>: value ≥ <code>n</code></li>
+<li><code>{ lte: n }</code>: value ≤ <code>n</code></li>
+<li><code>{ in: [...] }</code>: value is in the list</li>
+<li><code>{ notIn: [...] }</code>: value is not in the list</li>
+<li><code>{ regex: /.../ }</code>: matches the pattern</li>
+<li><code>{ same: { first, second } }</code>: <code>data[first] === data[second]</code></li>
+<li><code>{ different: { first, second } }</code>: <code>data[first] !== data[second]</code></li>
+<li><code>{ confirmed: 'field' }</code>: <code>data[field] === data[field + '_confirmation']</code></li>
+</ul>
+<p><code>same</code>, <code>different</code>, and <code>confirmed</code> compare across fields, so they go on a check with <code>path: null</code> (which hands the rule the whole <code>data</code>) and an <code>errorPath</code> for where the message lands.</p>
+<h2 id="required">Required<a class="anchor" href="#required" aria-hidden="true">#</a></h2>
+<p>Whether a field may be empty is not a rule. It is a gate that runs before the chain. A normal rule can only short-circuit to an error. Emptiness needs the opposite too. An empty non-required field must short-circuit to success, skipping its rules entirely. So it lives on the check, not in <code>rules</code>.</p>
+<p><code>required</code> is a single boolean on the check, <code>true</code> by default. An empty value (<code>undefined</code>, <code>null</code>, or <code>''</code>) reports <code>{ key: 'required' }</code> and its <code>rules</code> never run. <code>required: false</code> flips that. An empty value passes with no error and the rules are skipped. A non-empty value runs the chain as usual. It is the same knob as HTML's <code>required</code> attribute.</p>
+<pre><code class="hljs language-javascript">{ <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'email'</span>] }                                  <span class="hljs-comment">// required — empty → "This field is required"</span>
+{ <span class="hljs-attr">path</span>: <span class="hljs-string">'bio'</span>, <span class="hljs-attr">required</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">min</span>: <span class="hljs-number">10</span> }] }  <span class="hljs-comment">// not required — empty → passes; "short" → min error</span>
+{ <span class="hljs-attr">path</span>: <span class="hljs-string">'name'</span>, <span class="hljs-attr">requiredMsg</span>: <span class="hljs-string">'Please enter a name'</span>, <span class="hljs-attr">rules</span>: [] }      <span class="hljs-comment">// required with a custom message, no other rules</span></code></pre>
+<p><code>requiredMsg</code> overrides the default &quot;This field is required&quot;. There is no <code>required</code> rule to list. It is the boolean above, default <code>true</code>, and <code>required: false</code> opts out.</p>
+<h2 id="path-and-errorpath">path and errorPath<a class="anchor" href="#path-and-errorpath" aria-hidden="true">#</a></h2>
+<p>A check reads two things off <code>data</code>, independently. <code>path</code> says what the rule receives. <code>errorPath</code> says where the error attaches, when that is not the same field. It defaults to <code>path</code>.</p>
+<p>For most checks they are identical: <code>path: 'email'</code> reads <code>data.email</code>, and an error lands on <code>email</code>.</p>
+<p><code>path: null</code> passes the whole <code>data</code> object to the rule instead of one field. That is what <code>same</code> needs above: it reads its two named arguments (<code>first</code>, <code>second</code>) as field names and compares them itself, so <code>path</code> is <code>null</code> and <code>errorPath</code> says where the resulting message belongs.</p>
 <h2 id="groups">Groups<a class="anchor" href="#groups" aria-hidden="true">#</a></h2>
-<p><code>rules</code> is an array of groups, and a group is an array of checks. Every check in a group runs, so more than one field can report an error at the same time. But the moment a group produces any error, later groups don't run at all.</p>
+<p>Every check in a group runs, so more than one field can report an error at the same time. But the moment a group produces any error, later groups do not run at all.</p>
 <pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> rules = [
     [ <span class="hljs-comment">// group 1 — shape of the data</span>
-        { <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, <span class="hljs-string">'email'</span>] },
-        { <span class="hljs-attr">path</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, { <span class="hljs-attr">rule</span>: <span class="hljs-string">'min'</span>, <span class="hljs-attr">arg</span>: <span class="hljs-number">3</span> }] },
-        { <span class="hljs-attr">path</span>: <span class="hljs-string">'password2'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>] },
+        { <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'email'</span>] },
+        { <span class="hljs-attr">path</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">min</span>: <span class="hljs-number">3</span> }] },
+        { <span class="hljs-attr">path</span>: <span class="hljs-string">'password2'</span>, <span class="hljs-attr">rules</span>: [] },
     ],
     [ <span class="hljs-comment">// group 2 — only runs once group 1 is clean</span>
-        { <span class="hljs-attr">path</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">errorPath</span>: <span class="hljs-string">'password2'</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">rule</span>: <span class="hljs-string">'same'</span>, <span class="hljs-attr">arg</span>: [<span class="hljs-string">'password'</span>, <span class="hljs-string">'password2'</span>] }] },
+        { <span class="hljs-attr">path</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">errorPath</span>: <span class="hljs-string">'password2'</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">same</span>: { <span class="hljs-attr">first</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">second</span>: <span class="hljs-string">'password2'</span> } }] },
     ],
 ];</code></pre>
-<p>That ordering is what makes group 2 safe to write. Comparing <code>password</code> to <code>password2</code> only makes sense once both are actually filled in — otherwise an empty <code>password2</code> fails the comparison immediately, and the user sees &quot;Must match&quot; before they've even been told &quot;This field is required&quot;. Group 1 has to pass first — both fields present, password long enough — before group 2 is allowed to compare them.</p>
-<p>Most JS validators, <a href="https://zod.dev/">Zod</a> included, run every check and collect every error in one pass. There's no equivalent of a group gating the next one. Vld's groups exist for exactly this ordering problem, and for the same reason a rule that hits the network (checking an email isn't already taken, say) belongs in a group of its own, after the format checks that make the request worth sending.</p>
-<h2 id="path-and-errorpath">path and errorPath<a class="anchor" href="#path-and-errorpath" aria-hidden="true">#</a></h2>
-<p>A check reads two things off <code>data</code>, independently. <code>path</code> says what the rule receives. <code>errorPath</code> says where the error attaches, when that's not the same field — it defaults to <code>path</code>.</p>
-<p>For most checks they're identical: <code>path: 'email'</code> reads <code>data.email</code>, and an error lands on <code>email</code>.</p>
-<p><code>path: null</code> passes the whole <code>data</code> object to the rule instead of one field. That's what <code>same</code> needs above: it takes two field names in <code>arg</code> and compares them itself, so <code>path</code> is <code>null</code> and <code>errorPath: 'password2'</code> says where the resulting message belongs.</p>
+<p>That ordering is what makes group 2 safe to write. Comparing <code>password</code> to <code>password2</code> only makes sense once both are filled in. Otherwise an empty <code>password2</code> fails the comparison immediately, and the user sees &quot;Must match&quot; before they have even been told &quot;This field is required&quot;. Group 1 has to pass first, with both fields present and the password long enough, before group 2 is allowed to compare them.</p>
+<p>Most JS validators run every check and collect every error in one pass. There is no equivalent of a group gating the next one. Vld's groups exist for exactly this ordering problem. For the same reason, a rule that makes a network request, like checking an email is not already taken, belongs in a group of its own, after the format checks that make the request worth sending.</p>
 <h2 id="custom-rules">Custom rules<a class="anchor" href="#custom-rules" aria-hidden="true">#</a></h2>
 <p><code>Vld.Rule</code> is a plain object. Adding a rule is one assignment:</p>
-<pre><code class="hljs language-javascript">Vld.Rule.startsWithLetter = <span class="hljs-function">(<span class="hljs-params">input</span>) =&gt;</span> <span class="hljs-regexp">/^[a-zA-Z]/</span>.test(input) ? <span class="hljs-literal">null</span> : <span class="hljs-string">'Must start with a letter'</span>;</code></pre>
-<p>It's then used like any built-in:</p>
-<pre><code class="hljs language-javascript">{ <span class="hljs-attr">path</span>: <span class="hljs-string">'username'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, <span class="hljs-string">'startsWithLetter'</span>] }</code></pre>
-<p>A rule can also return a promise, for a check that has to ask a server something — whether an email is already registered, say:</p>
+<pre><code class="hljs language-javascript">Vld.Rule.startsWithLetter = <span class="hljs-function">(<span class="hljs-params">input</span>) =&gt;</span> <span class="hljs-regexp">/^[a-zA-Z]/</span>.test(input);
+Vld.Msg.startsWithLetter = <span class="hljs-string">'Must start with a letter'</span>;</code></pre>
+<p>The predicate goes in <code>Vld.Rule</code>, its message in <code>Vld.Msg</code> under the same key. The rule stays a plain pass/fail, and the wording follows the language. For a throwaway rule, the registry can be skipped by returning the string on failure instead. It is then used like any built-in:</p>
+<pre><code class="hljs language-javascript">{ <span class="hljs-attr">path</span>: <span class="hljs-string">'username'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'startsWithLetter'</span>] }</code></pre>
+<p>A rule can also return a promise, for a check that has to ask a server something, like whether an email is already registered:</p>
 <pre><code class="hljs language-javascript">{ <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [
     { <span class="hljs-attr">rule</span>: <span class="hljs-function">(<span class="hljs-params">input</span>) =&gt;</span> fetch(<span class="hljs-string">`/api/email-free?email=<span class="hljs-subst">${input}</span>`</span>)
         .then(<span class="hljs-function">(<span class="hljs-params">r</span>) =&gt;</span> r.json())
-        .then(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> d.free ? <span class="hljs-literal">null</span> : <span class="hljs-string">'Email already registered'</span>),
+        .then(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> d.free || <span class="hljs-string">'Email already registered'</span>),
       <span class="hljs-attr">key</span>: <span class="hljs-string">'unique'</span> },
 ] }</code></pre>
-<h2 id="attaching-to-a-form">Attaching to a form<a class="anchor" href="#attaching-to-a-form" aria-hidden="true">#</a></h2>
-<p>Four pieces connect <code>Validate</code> to a form: <code>vld-space</code> marks the scope — the same idiom as <code>counter-space</code> in <a href="action-in-context.html">Action in context</a> and <code>accordion-space</code> in <a href="modularization.html">Modularization</a>: climb from the triggering element to its nearest space, so two instances on the same page never share state. <code>vld-form</code> marks the <code>&lt;form&gt;</code> whose named fields supply the data. <code>vld-error=&quot;name&quot;</code> marks where an error for that name renders. <code>Vld.Submit(ctx, event, rules, data)</code> ties them together — it stops the native submit, climbs from <code>ctx</code> to the nearest <code>[vld-space]</code>, validates, and clears and refills every <code>[vld-error]</code> inside it.</p>
-<p><code>data</code> is optional — left out, <code>Vld.Submit</code> reads it from the form's named fields with <code>FormData</code>. <code>rules</code> you always hand in. Where those rules are kept is your call, not the mechanism's: <code>Vld.Submit</code> never names a property or reaches for one, it just validates whatever <code>rules</code> the call passes it. The demo below keeps them on the space with an inline <code>&lt;script&gt;</code> anchored by <code>document.currentScript</code> — the same per-instance setup <a href="ux-performance.html#why">High UX Performance</a> uses — and the handler reads them straight back with <code>this._vldRules</code>. That <code>_vldRules</code> name lives entirely in this page's markup; nothing in Vld knows about it.</p>
-<p>The form the data comes from is found from the space: if the space itself carries <code>vld-form</code>, it <em>is</em> the form; otherwise the single <code>[vld-form]</code> inside it is used. That keeps the space free to sit on a wrapper above the form, or on the <code>&lt;form&gt;</code> directly — put both attributes on one element when they coincide. Repeated field names (checkboxes, multi-selects) collect into an array rather than collapsing to the last value.</p>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">vld-space</span> <span class="hljs-attr">vld-form</span> <span class="hljs-attr">onsubmit</span>=<span class="hljs-string">"Vld.Submit(this, event, this._vldRules)"</span>&gt;</span>
+<h2 id="messages">Messages<a class="anchor" href="#messages" aria-hidden="true">#</a></h2>
+<p><code>Vld.Msg</code> is a plain object holding the messages, keyed by rule. When a rule fails without wording of its own, Vld looks its message up here by the rule's key. Changing a language is one assignment. Swap the whole object and every message follows:</p>
+<pre><code class="hljs language-javascript">Vld.Msg = {
+    <span class="hljs-attr">required</span>: <span class="hljs-string">'To pole jest wymagane'</span>,
+    <span class="hljs-attr">email</span>: <span class="hljs-string">'Nieprawidłowy adres e-mail'</span>,
+    <span class="hljs-attr">min</span>: <span class="hljs-string">'Minimalnie {value} znaków'</span>,
+    <span class="hljs-attr">between</span>: <span class="hljs-string">'Od {min} do {max} znaków'</span>,
+    <span class="hljs-comment">// ...</span>
+};</code></pre>
+<p>Placeholders are filled by name from the rule's arguments. <code>{value}</code> comes from <code>{ min: 3 }</code>, and <code>{min}</code> and <code>{max}</code> come from <code>{ between: { min: 3, max: 20 } }</code>. <code>Vld.msg(key, args)</code> does that lookup-and-fill, and that is the one place it happens. The rules stay pure predicates. A single message overrides the registry from the check itself: <code>{ rule: 'min', value: 3, msg: 'Too short' }</code> for one field, or <code>requiredMsg</code> for the empty case. <code>key</code> overrides the same way, so a rule reports under any name.</p>
+<h2 id="forms">Forms<a class="anchor" href="#forms" aria-hidden="true">#</a></h2>
+<p>Four pieces connect <code>Validate</code> to a form. <code>vld-space</code> marks the scope. The handler climbs from the triggering element to its nearest space, so two instances on the same page never share state. <code>vld-form</code> marks the <code>&lt;form&gt;</code> whose named fields supply the data. <code>vld-error=&quot;name&quot;</code> marks where an error for that name renders. <code>Vld.Form.Submit(ctx, event, rules, data)</code> ties them together. It stops the native submit, climbs from <code>ctx</code> to the nearest <code>[vld-space]</code>, validates, then clears and refills every <code>[vld-error]</code> inside it.</p>
+<p><code>data</code> is optional. Left out, <code>Vld.Form.Submit</code> reads it from the form's named fields with <code>FormData</code>. <code>rules</code> are always handed in. Where those rules are kept is up to the caller, not the mechanism. <code>Vld.Form.Submit</code> never names a property or reaches for one. It just validates whatever <code>rules</code> the call passes it. The demo below keeps them on the space with an inline <code>&lt;script&gt;</code> anchored by <code>document.currentScript</code>, and the handler reads them straight back with <code>this._vldRules</code>. That <code>_vldRules</code> name lives entirely in this page's markup. Nothing in Vld knows about it.</p>
+<p>The form the data comes from is found from the space. If the space itself carries <code>vld-form</code>, it is the form. Otherwise the single <code>[vld-form]</code> inside it is used. That keeps the space free to be on a wrapper above the form, or on the <code>&lt;form&gt;</code> directly. Both attributes can go on one element when they coincide. Repeated field names, like checkboxes and multi-selects, collect into an array rather than collapsing to the last value.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">vld-space</span> <span class="hljs-attr">vld-form</span> <span class="hljs-attr">vld-error-tpl</span>=<span class="hljs-string">"#signup-error"</span> <span class="hljs-attr">onsubmit</span>=<span class="hljs-string">"Vld.Form.Submit(this, event, this._vldRules)"</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
     <span class="hljs-built_in">document</span>.currentScript.closest(<span class="hljs-string">'[vld-space]'</span>)._vldRules = [
         [
-            { <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, <span class="hljs-string">'email'</span>] },
-            { <span class="hljs-attr">path</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, { <span class="hljs-attr">rule</span>: <span class="hljs-string">'min'</span>, <span class="hljs-attr">arg</span>: <span class="hljs-number">3</span> }] },
-            { <span class="hljs-attr">path</span>: <span class="hljs-string">'password2'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>] },
+            { <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'email'</span>] },
+            { <span class="hljs-attr">path</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">min</span>: <span class="hljs-number">3</span> }] },
+            { <span class="hljs-attr">path</span>: <span class="hljs-string">'password2'</span>, <span class="hljs-attr">rules</span>: [] },
         ],
         [
-            { <span class="hljs-attr">path</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">errorPath</span>: <span class="hljs-string">'password2'</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">rule</span>: <span class="hljs-string">'same'</span>, <span class="hljs-attr">arg</span>: [<span class="hljs-string">'password'</span>, <span class="hljs-string">'password2'</span>] }] },
+            { <span class="hljs-attr">path</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">errorPath</span>: <span class="hljs-string">'password2'</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">same</span>: { <span class="hljs-attr">first</span>: <span class="hljs-string">'password'</span>, <span class="hljs-attr">second</span>: <span class="hljs-string">'password2'</span> } }] },
         ],
     ];
     </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-
-    <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">vld-error-tpl</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"vld-error"</span>&gt;</span>{message}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
 
     <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"email"</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">vld-error</span>=<span class="hljs-string">"email"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
@@ -107,32 +151,37 @@
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">vld-error</span>=<span class="hljs-string">"password2"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 
     <span class="hljs-tag">&lt;<span class="hljs-name">button</span>&gt;</span>Sign up<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span></code></pre>
-<p>Keeping the rules on the element is one way to solve a real problem, not a rule Vld imposes. A plain JS variable named <code>rules</code> would have to live somewhere a second form could reach it too — a global, almost always, and a second form on the same page would either share it by accident or fight over the name. Hanging them off the space instead means two forms are just two elements, each carrying its own rules, with nothing to collide — and the handler passes them in like any other argument.</p>
-<p>The error markup comes from <code>&lt;template vld-error-tpl&gt;</code>, read once per submit. <code>{key}</code>, <code>{message}</code>, and <code>{path}</code> are replaced from the matching error. Without a template in the space, <code>Vld.Form</code> falls back to <code>&lt;div class=&quot;vld-error&quot;&gt;{message}&lt;/div&gt;</code>.</p>
-<p><code>ctx</code> doesn't have to be the form. Calling it from a plain button works the same way, since <code>Vld.Submit</code> climbs to <code>[vld-space]</code> from wherever it's called, not just from the form itself — climb to the space to reach the rules kept there:</p>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Vld.Submit(this, event, this.closest('[vld-space]')._vldRules)"</span>&gt;</span>Sign up<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
-<p><code>rules</code> is always passed; passing <code>data</code> too skips the <code>FormData</code> read — for a one-off form, or values that don't come from named inputs:</p>
-<pre><code class="hljs language-javascript">Vld.Submit(<span class="hljs-keyword">this</span>, event, rules, { <span class="hljs-attr">email</span>: state.email, <span class="hljs-attr">password</span>: state.password })</code></pre>
-<p><code>Vld.Submit</code> returns the errors, so a caller can act once validation settles:</p>
-<pre><code class="hljs language-javascript">Vld.Submit(<span class="hljs-keyword">this</span>, event, <span class="hljs-keyword">this</span>._vldRules).then(<span class="hljs-function">(<span class="hljs-params">errors</span>) =&gt;</span> {
-    <span class="hljs-keyword">if</span> (!errors.length) { <span class="hljs-comment">/* proceed */</span> }
+<span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"signup-error"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"signup-error"</span>&gt;</span>{message}<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span></code></pre>
+<p>Keeping the rules on the element is one way to solve a real problem, not a rule Vld imposes. A plain JS variable named <code>rules</code> would have to live somewhere a second form could reach it too. That is a global, almost always, and a second form on the same page would either share it by accident or fight over the name. Keeping them on the space instead means two forms are just two elements, each carrying its own rules, with nothing to collide. The handler passes them in like any other argument.</p>
+<p><code>vld-error-tpl</code> holds a selector, and the element it points to supplies the error markup. Its inner HTML is the template, read once per submit. <code>{key}</code>, <code>{message}</code>, and <code>{path}</code> are replaced from the matching error. The target is found by that selector alone, never by tag. A <code>&lt;template&gt;</code> is the natural inert holder, but any element works. There is no built-in markup and no default class. The <code>vld-</code> prefix names attribute contracts, not styles, so the markup and its classes are defined in the page, not by Vld. No selector, or a selector that matches nothing, means nothing renders.</p>
+<p><code>ctx</code> does not have to be the form. Calling it from a plain button works the same way, since <code>Vld.Form.Submit</code> climbs to <code>[vld-space]</code> from wherever it is called, not just from the form itself. The climb to the space reaches the rules kept there:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Vld.Form.Submit(this, event, this.closest('[vld-space]')._vldRules)"</span>&gt;</span>Sign up<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p><code>rules</code> is always passed. Passing <code>data</code> too skips the <code>FormData</code> read, for a one-off form or values that do not come from named inputs:</p>
+<pre><code class="hljs language-javascript">Vld.Form.Submit(<span class="hljs-keyword">this</span>, event, rules, { <span class="hljs-attr">email</span>: state.email, <span class="hljs-attr">password</span>: state.password })</code></pre>
+<p><code>Vld.Form.Submit</code> resolves to <code>true</code> when the data passed, so a caller can act once validation settles:</p>
+<pre><code class="hljs language-javascript">Vld.Form.Submit(<span class="hljs-keyword">this</span>, event, <span class="hljs-keyword">this</span>._vldRules).then(<span class="hljs-function">(<span class="hljs-params">ok</span>) =&gt;</span> {
+    <span class="hljs-keyword">if</span> (ok) { <span class="hljs-comment">/* proceed */</span> }
 });</code></pre>
-<p>This is one option among a few for handling a form. <a href="the-simple-way.html#forms">The simple way</a> lays out the others — a plain submit, an htmx-style swap, sending JSON and rendering whatever errors the server sends back. Reach for Vld for the shape checks that should show before any of those fire, not as a replacement for them.</p>
+<p>This is one option among a few for handling a form. Vld covers the shape checks that should show before a submit fires. It is not a replacement for the submit itself.</p>
 <h2 id="attributes">Attributes<a class="anchor" href="#attributes" aria-hidden="true">#</a></h2>
 <ul>
-<li><code>vld-space</code> marks the scope <code>Vld.Submit</code> climbs to.</li>
-<li><code>vld-form</code> marks the <code>&lt;form&gt;</code> whose named fields supply <code>data</code>. It sits on the space itself, or on the single form inside it.</li>
+<li><code>vld-space</code> marks the scope <code>Vld.Form.Submit</code> climbs to.</li>
+<li><code>vld-form</code> marks the <code>&lt;form&gt;</code> whose named fields supply <code>data</code>. It is on the space itself, or on the single form inside it.</li>
 <li><code>vld-error=&quot;name&quot;</code> marks where the error for that <code>path</code> renders. An empty value (<code>vld-error=&quot;&quot;</code>) catches errors with <code>path: null</code>.</li>
-<li><code>vld-error-tpl</code>, on a <code>&lt;template&gt;</code> inside the space, gives the error markup. Optional — a default is used when it's missing.</li>
+<li><code>vld-error-tpl</code>, on a <code>&lt;template&gt;</code> inside the space, gives the error markup. Optional: a default is used when it is missing.</li>
 </ul>
 <h2 id="methods">Methods<a class="anchor" href="#methods" aria-hidden="true">#</a></h2>
+<p>The core is headless: <code>Validate</code> and the registries, no DOM. Rendering lives in the <code>Vld.Form</code> addon.</p>
 <ul>
 <li><code>Vld.Validate(rules, data)</code> runs the rules against the data, headless. Returns <code>Promise&lt;errors&gt;</code>.</li>
-<li><code>Vld.Clear(root, attr)</code> empties every <code>[vld-error]</code> inside <code>root</code>. <code>Vld.Form</code> calls it before rendering; call it yourself to wipe messages without validating, e.g. when reopening a dialog.</li>
-<li><code>Vld.Form(root, rules, data, tpl, attr)</code> validates and renders into <code>root</code>'s <code>[vld-error]</code> elements.</li>
-<li><code>Vld.Submit(ctx, event, rules, data)</code> resolves the space from <code>ctx</code>, validates the given <code>rules</code>, defaults <code>data</code> to <code>FormData</code> off the space's <code>[vld-form]</code> when omitted, and calls <code>Form</code>.</li>
+<li><code>Vld.Form.Validate(root, rules, data, tpl, attr)</code> validates and shows the errors under the fields in one call, and returns <code>Promise&lt;boolean&gt;</code>, <code>true</code> when the data passed. A default for a component that holds its own <code>data</code>: <code>if (!(await Vld.Form.Validate(form, rules, data))) return;</code>.</li>
+<li><code>Vld.Form.Submit(ctx, event, rules, data)</code> resolves the space from <code>ctx</code>, defaults <code>data</code> to <code>FormData</code> off the space's <code>[vld-form]</code> when omitted, then does the same validate-and-show. Returns <code>Promise&lt;boolean&gt;</code>.</li>
+<li><code>Vld.Form.Clear(root, attr)</code> empties every <code>[vld-error]</code> inside <code>root</code> without validating. It clears messages on their own, for example when closing or reopening a dialog.</li>
 <li><code>Vld.Rule</code> holds the rule registry. Add to it directly to register a new one.</li>
+<li><code>Vld.Msg</code> holds the built-in messages, keyed by rule. Swap the whole object to change language; <code>{name}</code> placeholders are filled from the rule's named arguments.</li>
+<li><code>Vld.msg(key, args)</code> reads <code>Vld.Msg[key]</code> and fills its <code>{name}</code> placeholders from <code>args</code>. Built-in rules use it; custom rules can too.</li>
 </ul>
 <p class="doc-next"><a href="visible.html">Next: Visible →</a></p>
 </main>

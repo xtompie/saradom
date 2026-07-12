@@ -12,7 +12,7 @@ status: draft
 
 # Action in context
 
-The event has a current DOM element from which the operating space can be determined.
+Every event has a current element. That element sets the space where the action runs.
 
 ```html
 <div counter-space>
@@ -31,29 +31,12 @@ Counter.Increment = (ctx) => {
 
 ## Why
 
-One function serves every instance.
-The same `Counter.Increment` runs for one counter or a hundred on the page. Nothing is
-created per widget: no instance, no component object, no per-copy state. The context is
-worked out at click time from *where* the event happened, so one piece of code covers
-them all.
+One function serves every instance. The same `Counter.Increment` runs for one counter or a hundred. Nothing is created per widget: no instance, no component object. The context is found at click time, from where the event happened. One piece of code covers them all.
 
-The element is passed in, not captured.
-The handler receives the triggering element as an argument. There is no `this` to bind,
-no closure holding the right scope, no lookup to figure out which copy was clicked.
+The element is passed in, not captured. The handler receives the triggering element as an argument. There is no `this` to bind and no closure to hold the scope.
 
-Nesting is the scope.
-From that node the rest is reached by walking the DOM: `closest` up to the space, then
-`querySelector` down to the parts. Identical widgets that each need their own state, and
-sometimes need to talk to a parent or sibling, are scoped by the surrounding markup
-already. There is nothing to wire: the tree that lays the UI out is the same tree that
-scopes it.
+Nesting is the scope. From that node the rest is reached by walking the DOM: `closest` up to the space, then `querySelector` down to the parts. Identical widgets each keep their own state, scoped by the surrounding markup. There is nothing to wire. The tree that lays out the UI is the same tree that scopes it.
 
-No registry to keep.
-The element anchors everything, so there is no map from id to a state object to keep in
-step as things are added, moved, or removed. Removing the element leaves nothing behind,
-since there was never a second copy to clean up.
+No registry to keep. State is on the element. There is no map from id to a state object. Nothing has to be kept in sync as elements are added or removed. Removing the element leaves nothing behind, because there was never a second copy to clean up.
 
-The call stack is short.
-The attribute calls the function directly, so a click leads straight into it. The stack
-trace points at the real code, with no framework event system, synthetic event, or
-dispatch layer in between.
+The call stack is short. The attribute calls the function directly, so a click leads straight into it. The stack trace points at the real code. There is no framework event system or dispatch layer in between.

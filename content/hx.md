@@ -11,7 +11,7 @@ status: draft
 
 # Hx
 
-Hx is [htmx](https://htmx.org/), implemented in the Saradom pattern. There is one difference between Hx and htmx: htmx scans the page itself and binds `hx-*` attributes, and Hx wires them through a plain event attribute instead.
+Hx is [htmx](https://htmx.org/), implemented in the Saradom pattern. It covers a subset of htmx. There is one difference in how the attributes are bound. htmx scans the page and binds `hx-*` attributes itself. Hx wires them through a plain event attribute instead.
 
 <!-- source: Hx/Hx.js -->
 
@@ -19,26 +19,24 @@ Hx is [htmx](https://htmx.org/), implemented in the Saradom pattern. There is on
 <button hx-get="/hello" onclick="hx(this, event)">Load</button>
 ```
 
-Clicking the button sends an HTTP GET to `/hello`. With no `hx-target` set, the response goes into the element that triggered the request, the button itself, replacing its content.
-
-Hx covers a subset of htmx.
+Clicking the button sends an HTTP GET to `/hello`. With no `hx-target`, the response goes into the element that triggered the request. Here that is the button, and its content is replaced.
 
 ## Attributes
 
 - `hx-get`, `hx-post`, `hx-put`, `hx-delete`, `hx-patch` name the method and the URL.
 - `hx-target` names where the response goes.
 - `hx-swap` names how it goes in: `innerHTML`, `outerHTML`, `append`, `prepend`, or `none`.
-- `hx-select` picks part of the response out, by selector.
-- `hx-indicator` names an element shown while the request is in flight.
-- `hx-disable` stops the element from triggering a request at all.
+- `hx-select` picks part of the response, by selector.
+- `hx-indicator` names an element shown while the request runs.
+- `hx-disable` stops the element from triggering a request.
 
 ## Event binding
 
-`hx(this, event)` is set in the event attribute, the same as any Saradom handler. `event` is optional. It is needed to stop a `<form>`, an `<a>`, or a `<button>` inside a `<form>` from also doing its own submit or navigation.
+`hx(this, event)` is set in the event attribute, the same as any Saradom handler. `event` is optional. It is needed to stop a `<form>` or an `<a>` from also running its own submit or navigation.
 
 ## Native semantics
 
-A plain `<a href>` sends a GET to that URL, with no `hx-*` attribute needed. A plain `<form>` sends a POST to its `action`, or to the current URL if `action` is missing, with its fields serialized.
+A plain `<a href>` sends a GET to that URL, with no `hx-*` attribute needed. A plain `<form>` sends a POST to its `action`, with its fields serialized. If `action` is missing, it posts to the current URL.
 
 ## Selectors
 
@@ -50,7 +48,7 @@ A plain `<a href>` sends a GET to that URL, with no `hx-*` attribute needed. A p
 <button hx-get="/x" hx-target="this" onclick="hx(this, event)">Click</button>
 ```
 
-The response replaces the button's own content, the same as leaving `hx-target` out entirely.
+The response replaces the button's own content, the same as leaving `hx-target` out.
 
 `find <selector>` looks inside the triggering element.
 
@@ -60,7 +58,7 @@ The response replaces the button's own content, the same as leaving `hx-target` 
 </div>
 ```
 
-`hx-indicator` here is set on the `<div>`, so `find .loading` looks inside that `<div>` and finds the `<span>`. It is shown for the duration of the request and hidden again once it settles.
+`hx-indicator` here is set on the `<div>`, so `find .loading` looks inside it and finds the `<span>`. The `<span>` is shown while the request runs, then hidden.
 
 `closest <selector> [subselector]` walks up to the nearest matching ancestor, then optionally back down to a child of it.
 
@@ -68,7 +66,7 @@ The response replaces the button's own content, the same as leaving `hx-target` 
 <button hx-target="closest .panel .content"></button>
 ```
 
-This walks up from the button to the nearest `.panel`, then down into that same `.panel` for `.content`. The response lands in `.content`, not in `.panel` itself, and not in some other `.panel` elsewhere on the page.
+This walks up from the button to the nearest `.panel`, then down into that same `.panel` for `.content`. The response lands in that `.content`, not in another `.panel` on the page.
 
 Anything else is a plain, page-wide selector.
 
@@ -91,7 +89,7 @@ Each button loads its own content into one shared container.
 </div>
 ```
 
-`hx-target` is set once, on `[tab-space]`, and both buttons inherit it by walking up to the nearest ancestor that has it. Clicking `Tab 1` sends a GET to `/tab/1`; clicking `Tab 2` sends one to `/tab/2`. Either way the response walks up to the same `[tab-space]` and back down into `[tab-content]`, replacing it via `innerHTML`. The buttons that triggered the request are never touched.
+`hx-target` is set once, on `[tab-space]`. Both buttons inherit it by walking up to the nearest ancestor that has it. Each response walks up to the same `[tab-space]`, then back down into `[tab-content]`, and replaces it via `innerHTML`. The buttons that triggered the request are never touched.
 
 ## Load more
 
@@ -107,9 +105,9 @@ The triggering `<li>` replaces itself with the response, which carries its own n
 </ul>
 ```
 
-Clicking `Load more` sends a GET to `/contacts/?page=2` and shows `.htmx-indicator` for the duration. The response swaps in with `outerHTML`, so the whole `<li>`, button and all, is replaced rather than just its content.
+Clicking `Load more` shows `.htmx-indicator` while the request runs. The response swaps in with `outerHTML`, so the whole `<li>` is replaced, button and all, not just its content.
 
-The response for `/contacts/?page=2` is itself an `<li>` shaped the same way, wired to page 3:
+The response is itself an `<li>` shaped the same way, wired to page 3:
 
 ```html
 <li>Agent 2</li>

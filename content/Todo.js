@@ -7,7 +7,7 @@ const Todo = (() => {
         Output(space);
     };
     const Check = (ctx) => {
-        ctx.up('[todo-item]').vmodify(d => ({ ...d, status: d.status === 'done' ? 'todo' : 'done' }));
+        ctx.up('[todo-item]').vset(d => ({ ...d, status: d.status === 'done' ? 'todo' : 'done' }));
         Output(ctx.up('[todo-space]'));
     };
     const Remove = (ctx) => {

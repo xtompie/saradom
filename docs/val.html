@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Val · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Val">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,9 +18,9 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a class="active" href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a class="active" href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="val">Val<a class="anchor" href="#val" aria-hidden="true">#</a></h1>
-<p>In Saradom a screen updates by swapping a whole HTML fragment. A swap is the simplest and fastest way to update, so it comes first. When a swap cannot do the job, the work happens on individual values. Val is for that: two-way binding between a JavaScript object and the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model">DOM</a>. An element is marked, an object is written to it, and the same object is read back.</p>
+<p>In Saradom a screen usually updates by swapping a whole HTML fragment. When a swap cannot do the job, the work happens on individual values. Val is for that: two-way binding between a JavaScript object and the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model">DOM</a>. An element is marked, an object is written to it, and the same object is read back.</p>
 <p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a></p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span>Cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
@@ -33,7 +32,6 @@
 el.vset({ title: <span class="hljs-string">'Dog'</span>, image: <span class="hljs-string">'/dog.jpg'</span> });
 el.vget(); <span class="hljs-comment">// =&gt; { title: 'Dog', image: '/dog.jpg' }</span>
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-<p>Elements are marked with attributes, and values are read and written on them.</p>
 <h2 id="mechanism">Mechanism<a class="anchor" href="#mechanism" aria-hidden="true">#</a></h2>
 <p>The <code>val</code> attribute marks an element for binding. Two attributes define what happens. <code>val-set</code> writes data into the element. <code>val-get</code> reads data from it. Both run with <code>this</code> bound to the element.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
@@ -72,7 +70,7 @@ el.querySelector(<span class="hljs-string">'img'</span>).src = data.image;
   &gt;</span>Cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span></code></pre>
 <pre><code class="hljs language-javascript">dom.one(<span class="hljs-string">'article'</span>).vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span> });</code></pre>
-<p>A getter and setter per field becomes repetitive across a page. <a href="#fx">Fx</a> remove that repetition.</p>
+<p>A getter and setter per field becomes repetitive across a page. An fx removes that repetition.</p>
 <h2 id="fx">Fx<a class="anchor" href="#fx" aria-hidden="true">#</a></h2>
 <p>An fx is a ready-made getter and setter. <code>val-fx</code> names it. That replaces <code>val-set</code> and <code>val-get</code>. <code>val-key</code> names the field to bind.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">article</span>&gt;</span>
@@ -106,7 +104,7 @@ article.vget(); <span class="hljs-comment">// =&gt; { title: 'Dog' }</span></cod
 <li><code>Hide</code> is the reverse of <code>Show</code>.</li>
 <li><code>If</code> shows a subtree when a field is set, and binds it only then.</li>
 </ul>
-<p><code>Obj</code>, <code>Arr</code>, and <code>Render</code> bind nested objects and lists. See <a href="#rendering">Rendering</a>.</p>
+<p><code>Obj</code>, <code>Arr</code>, and <code>Render</code> bind nested objects and lists.</p>
 <h3 id="showing-with-show-and-hide">Showing with <code>Show</code> and <code>Hide</code><a class="anchor" href="#showing-with-show-and-hide" aria-hidden="true">#</a></h3>
 <p><code>Show</code> sets <code>display</code> from a boolean. <code>Hide</code> does the reverse. On read both return the current visibility as a boolean.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Show"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"online"</span>&gt;</span>Online<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span></code></pre>
@@ -140,7 +138,7 @@ article.vget();
 box.vset({ <span class="hljs-attr">error</span>: { <span class="hljs-attr">text</span>: <span class="hljs-string">'Not found'</span> } }); <span class="hljs-comment">// shows and fills the message</span>
 box.vset({ <span class="hljs-attr">error</span>: <span class="hljs-literal">false</span> });                 <span class="hljs-comment">// hides</span></code></pre>
 <p>The read side is asymmetric. A hidden element returns <code>{}</code>, so its key drops out of the <code>vget</code> result. Only a shown element contributes its field.</p>
-<p>An fx can also be defined by hand. See <a href="#custom-fx">Custom fx</a>.</p>
+<p>An fx can also be defined by hand.</p>
 <h2 id="rendering">Rendering<a class="anchor" href="#rendering" aria-hidden="true">#</a></h2>
 <p>Nested objects and lists bind with the same <code>val-fx</code> and <code>val-key</code>. Three fx cover them: <code>Obj</code> for a nested object, <code>Arr</code> for a list, and <code>Render</code> for one object from a template.</p>
 <h3 id="nested-objects">Nested objects<a class="anchor" href="#nested-objects" aria-hidden="true">#</a></h3>
@@ -253,14 +251,20 @@ link.vget();
 
 link.vset({ <span class="hljs-attr">label</span>: <span class="hljs-string">'Dog'</span>, <span class="hljs-attr">url</span>: <span class="hljs-string">'/dog'</span> }); <span class="hljs-comment">// sets text and href</span>
 link.vget(); <span class="hljs-comment">// =&gt; { label: 'Dog', url: '/dog' }</span></code></pre>
-<p>Built-in and custom fx mix freely in the same tree. See <a href="#methods">Methods</a> for the full surface.</p>
+<p>Built-in and custom fx mix freely in the same tree.</p>
+<h2 id="sync">Sync<a class="anchor" href="#sync" aria-hidden="true">#</a></h2>
+<p><code>vsync(data)</code> writes like <code>vset</code>, but only where the value changed. It reads the current value, compares, and sets only the fields that differ. Unchanged subtrees are skipped, including their <code>val-set</code>. A list is reconciled by position: an unchanged item is left untouched, a changed item is patched in place, extra items are appended, a shorter list drops its tail.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> d = article.vget();
+d.title = <span class="hljs-string">'Cat'</span>;
+article.vsync(d);                               <span class="hljs-comment">// only the title element is written</span>
+article.vsync(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">title</span>: <span class="hljs-string">'Cat'</span> })); <span class="hljs-comment">// same, given a function of the current state</span></code></pre>
+<p>An element with <code>val-set</code> is always written, because its effect cannot be read back to compare.</p>
 <h2 id="methods">Methods<a class="anchor" href="#methods" aria-hidden="true">#</a></h2>
 <p>Val adds methods to <code>HTMLElement</code>. Each acts on the marked subtree of the element it is called on and returns the element, except the readers.</p>
 <ul>
-<li><code>vset(data)</code> writes an object into the subtree.</li>
+<li><code>vset(data)</code> writes an object into the subtree. Given a function, it reads the state, passes it in, and writes the result.</li>
 <li><code>vget()</code> reads the subtree back as an object. Reader.</li>
-<li><code>vpatch(data)</code> merges the object into the current state, then writes.</li>
-<li><code>vmodify(fn)</code> reads the state, passes it to <code>fn</code>, writes the result.</li>
+<li><code>vsync(data)</code> writes only the fields that changed. Given a function, it reads the state, passes it in, and writes what changed.</li>
 <li><code>vappend(items, tpl)</code> adds items to the end of a list.</li>
 <li><code>vprepend(items, tpl)</code> adds items to the start of a list.</li>
 <li><code>varr(data, tpl)</code> writes an array as list items. Called with no argument it reads the list back as an array. Reader in that form.</li>
@@ -270,10 +274,10 @@ link.vget(); <span class="hljs-comment">// =&gt; { label: 'Dog', url: '/dog' }</
 </ul>
 <pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> article = dom.one(<span class="hljs-string">'article'</span>);
 
-article.vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span> });        <span class="hljs-comment">// write</span>
-article.vget();                        <span class="hljs-comment">// read</span>
-article.vpatch({ <span class="hljs-attr">image</span>: <span class="hljs-string">'/dog.jpg'</span> }); <span class="hljs-comment">// merge and write</span>
-article.vmodify(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">seen</span>: <span class="hljs-literal">true</span> }));</code></pre>
+article.vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span> });              <span class="hljs-comment">// write</span>
+article.vget();                              <span class="hljs-comment">// read</span>
+article.vset(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">seen</span>: <span class="hljs-literal">true</span> }));  <span class="hljs-comment">// read, change, write</span>
+article.vsync(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">title</span>: <span class="hljs-string">'Cat'</span> }));  <span class="hljs-comment">// read, change, write only the diff</span></code></pre>
 <h3 id="attributes">Attributes<a class="anchor" href="#attributes" aria-hidden="true">#</a></h3>
 <ul>
 <li><code>val</code> marks an element for binding.</li>
@@ -288,7 +292,7 @@ article.vmodify(<span class="hljs-function">(<span class="hljs-params">d</span>)
 </ul>
 <p><code>val-set</code> and <code>val-get</code> run with <code>this</code> bound to the element. Any other <code>val-*</code> attribute is passed to an fx as a parameter.</p>
 <p><code>vset</code>, <code>vget</code>, and their kin act on the element itself when it carries the <code>val</code> attribute, and on its marked subtree when it does not.</p>
-<p>Each method wraps the public <code>Val.*</code> API: <code>Val.Get</code>, <code>Val.Set</code>, <code>Val.Obj</code>, <code>Val.Arr</code>, <code>Val.Render</code>, <code>Val.Patch</code>, <code>Val.Append</code>, <code>Val.Prepend</code>, and <code>Val.Modify</code>. The same calls are available on <code>Val</code> for use without an element method.</p>
+<p>Each method wraps the public <code>Val.*</code> API: <code>Val.Get</code>, <code>Val.Set</code>, <code>Val.Obj</code>, <code>Val.Arr</code>, <code>Val.Render</code>, <code>Val.Append</code>, <code>Val.Prepend</code>, and <code>Val.Sync</code>. The same calls are available on <code>Val</code> for use without an element method.</p>
 <p class="doc-next"><a href="hx.html">Next: Hx →</a></p>
 </main>
 <script>

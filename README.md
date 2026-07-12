@@ -1,7 +1,7 @@
 # Saradom
 
 Frontend architecture pattern. Build modular, scalable frontends in plain HTML
-and JavaScript. No framework, no npm, no build step.
+and JavaScript. There is no framework and no build step.
 
 Documentation: https://xtompie.github.io/saradom/
 

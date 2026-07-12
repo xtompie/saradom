@@ -13,7 +13,7 @@ status: draft
 
 Show one set of elements and hide the rest. The current mode is written to the DOM as `visible-state`. The active view is readable there, with no JavaScript variable holding it.
 
-Regions carry a `visible-tag` inside a shared `visible-space`. `Visible.Visible(ctx, tags)` shows every `[visible-tag]` listed in `tags`, hides the others, and writes `tags` to `visible-state`. `Visible.Toggle(ctx, when, then, otherwise)` reads that state. When it includes `when` the `then` set is shown, else the `otherwise` set.
+Regions carry a `visible-tag` inside a shared `visible-space`. `Visible.Visible(ctx, tags)` shows every `[visible-tag]` listed in `tags`, hides the others, and writes `tags` to `visible-state`. `Visible.Toggle(ctx, when, then, otherwise)` reads that state. When the state includes `when`, the `then` set is shown. Otherwise the `otherwise` set is shown.
 
 <!-- source: Visible/Visible.js -->
 
@@ -29,7 +29,7 @@ Each header toggles its panel. Opening one closes the rest.
 
 <!-- demo: content/visible-accordion.html -->
 
-## Radio with an "Other" option
+## Radio
 
 The extra input shows only when Other is selected.
 
@@ -37,7 +37,7 @@ The extra input shows only when Other is selected.
 
 ## Lanes
 
-Several `Visible` mechanisms can work on the same elements at once. A `visible-space` names a `visible-lane`, and each tag belongs to that lane; a call touches only the tags in its space's lane and leaves the others alone. Nest the spaces and a hidden outer layer hides its inner one, so an element shows only when every lane shows it — the intersection comes from the nesting, not from merging state on one node.
+Several `Visible` mechanisms can work on the same elements at once. A `visible-space` names a `visible-lane`, and each tag belongs to that lane. A call touches only the tags in its space's lane and leaves the others alone. When the spaces nest, a hidden outer layer hides its inner one. An element shows only when every lane shows it. The intersection comes from the nesting, not from merging state on one node.
 
 ```html
 <div visible-space visible-lane="mode" visible-state="grid">
@@ -52,7 +52,7 @@ Several `Visible` mechanisms can work on the same elements at once. A `visible-s
 </div>
 ```
 
-Without `visible-lane`, a space touches every `[visible-tag]` inside it — the original behavior, unchanged.
+Without `visible-lane`, a space touches every `[visible-tag]` inside it. That is the original behavior, unchanged.
 
 <!-- embed: content/visible.css -->
 <!-- embed: Visible/Visible.js -->

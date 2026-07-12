@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Modularization · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Modularization">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,16 +18,17 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a class="active" href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a class="active" href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="modularization">Modularization<a class="anchor" href="#modularization" aria-hidden="true">#</a></h1>
-<p>A Saradom unit is one module. It comes together from three parts:</p>
+<p>A module is an object. The private parts stay inside. The public functions are what the markup calls. The module name is the prefix for its attributes.</p>
+<p>A module comes together from three parts:</p>
 <ol>
 <li>The markup: elements tagged with the module's namespaced attributes.</li>
-<li>The JavaScript: an object built by an <a href="https://developer.mozilla.org/en-US/docs/Glossary/IIFE">IIFE</a>, private inside, public API out.</li>
-<li>The contract between them: the markup names the attributes and calls the public functions, and the JavaScript reads and writes the DOM through those same attributes.</li>
+<li>The JavaScript: the object.</li>
+<li>The contract: the markup names the attributes and calls the public functions. The JavaScript reads and writes the DOM through those same attributes.</li>
 </ol>
-<h2 id="the-module-object">The module object<a class="anchor" href="#the-module-object" aria-hidden="true">#</a></h2>
-<p>A module is an object built by an IIFE: private inside, public API out. Its name namespaces its attributes.</p>
+<h2 id="object">Object<a class="anchor" href="#object" aria-hidden="true">#</a></h2>
+<p>The object is built by an <a href="https://developer.mozilla.org/en-US/docs/Glossary/IIFE">IIFE</a>. The IIFE keeps the private parts inside and returns the public API.</p>
 <pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> Accordion = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
   <span class="hljs-keyword">const</span> item = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> { <span class="hljs-comment">/* ... */</span> };
   <span class="hljs-keyword">const</span> Show = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> { <span class="hljs-comment">/* ... */</span> };
@@ -38,31 +38,28 @@
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">accordion-space</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">accordion-item</span>&gt;</span> ... <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<p>The module name is also the attribute prefix. <code>Accordion</code> is the object. <code>accordion-*</code> is the markup. The object and the markup share one name.</p>
-<h2 id="multiple-instances">Multiple instances<a class="anchor" href="#multiple-instances" aria-hidden="true">#</a></h2>
-<p>The same module can be placed many times on one page. Each instance keeps its own state.</p>
-<p>State is stored in the DOM. Each action finds its space from the current element. So two <code>accordion-space</code> blocks on one page do not share state. One is open while the other stays closed. There is no instance list and no id to track. A module is written once and placed as often as the page needs.</p>
-<h2 id="the-module-signature">The module signature<a class="anchor" href="#the-module-signature" aria-hidden="true">#</a></h2>
-<p>A module signature is the contract between the JavaScript and the HTML, without a type system. It lists the namespaced attributes, the values they hold, and the functions that run on them. Nesting matters: it shows which parts are inside which, wherever a function depends on that hierarchy.</p>
+<p><code>Accordion</code> is the object. <code>accordion-*</code> is the markup. The object and the markup share one name.</p>
+<h2 id="instances">Instances<a class="anchor" href="#instances" aria-hidden="true">#</a></h2>
+<p>The same module can be placed many times on one page. Each instance keeps its own state. Two <code>accordion-space</code> blocks do not share it. One is open while the other stays closed. There is no instance list and no id to track. A module is written once and placed as often as the page needs.</p>
+<h2 id="naming">Naming<a class="anchor" href="#naming" aria-hidden="true">#</a></h2>
+<p>A big app has many modules. They are all under one object, <code>App</code>.</p>
+<p>The name shows where each one is. The catalog is <code>App.Catalog</code>. A product in it is <code>App.Catalog.Product</code>. It can go deeper, like <code>App.Catalog.Product.Add</code>. A bigger app adds more names next to these, like <code>App.Ordering</code> and <code>App.Billing</code>.</p>
+<p>There is no fixed way to group them.</p>
+<p>This works like folders. A deeper level is one more dot, like one more folder.</p>
+<h2 id="signature">Signature<a class="anchor" href="#signature" aria-hidden="true">#</a></h2>
+<p>A module signature is the contract between the JavaScript and the HTML, without a type system. It lists the namespaced attributes, the values they hold, and the functions that run on them. It also shows nesting, where one part is inside another. That matters when a function depends on the hierarchy.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt; <span class="hljs-attr">todo-space</span>&gt;</span>
     <span class="hljs-tag">&lt; <span class="hljs-attr">todo-item</span> <span class="hljs-attr">todo-item-status</span>=<span class="hljs-string">"done|active"</span>&gt;</span>
         <span class="hljs-tag">&lt; <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Todo.Toggle(this)"</span>&gt;</span>
 
 Todo.Save()</code></pre>
-<h2 id="styling-through-the-contract">Styling through the contract<a class="anchor" href="#styling-through-the-contract" aria-hidden="true">#</a></h2>
-<p>A module keeps state in attributes, and CSS can target those same attributes directly. The JavaScript reads and writes the attribute, and the CSS styles from it, so a restyle needs no change to the JavaScript. A class name that the JavaScript also sets would couple the two to the same name instead.</p>
-<pre><code class="hljs language-css"><span class="hljs-selector-attr">[todo-item]</span><span class="hljs-selector-attr">[todo-item-status=<span class="hljs-string">"done"</span>]</span> { <span class="hljs-attribute">opacity</span>: .<span class="hljs-number">5</span>; <span class="hljs-attribute">text-decoration</span>: line-through; }</code></pre>
+<h2 id="styling">Styling<a class="anchor" href="#styling" aria-hidden="true">#</a></h2>
+<p>A module keeps state in attributes. CSS can target those same attributes directly. The JavaScript reads and writes the attribute. The CSS styles from it. A restyle needs no change to the JavaScript. A class name that the JavaScript also sets would couple the two to the same name instead.</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-attr">[todo-item]</span><span class="hljs-selector-attr">[todo-item-status=<span class="hljs-string">"done"</span>]</span> { <span class="hljs-attribute">text-decoration</span>: line-through; }</code></pre>
 <h2 id="why">Why<a class="anchor" href="#why" aria-hidden="true">#</a></h2>
-<p>No module system to set up.
-A module is a plain object returned by an IIFE. There is no <code>import</code> graph, no bundler
-deciding what ships, no registration step. A module is defined and it is there. Add a
-module by adding a script; remove it by deleting one.</p>
-<p>Globals, on purpose.
-Modules live on the global scope, and that is the point: no IoC container, no event bus, no
-indirection nobody asked for. The prefix is the whole convention that keeps names apart,
-the same way BEM keeps CSS class names apart, by agreement, not by tooling. Modules can
-also nest under one object, as deep as a project wants.</p>
-<p class="doc-next"><a href="ux-performance.html">Next: High UX Performance →</a></p>
+<p>No module system to set up. A module is a plain object returned by an IIFE. There is no <code>import</code> graph and no bundler deciding what ships. A module is defined and it is there. A module is added by including a script. Deleting the script removes it.</p>
+<p>Globals, on purpose. Modules are on the global scope. There is no IoC container and no event bus. The prefix keeps names apart, the same way BEM keeps CSS class names apart. It works by agreement, not by tooling.</p>
+<p class="doc-next"><a href="ux-performance.html">Next: UX Performance →</a></p>
 </main>
 <script>
 // Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),

@@ -1,0 +1,15 @@
+<div boxes-space>
+    <p>Items: <span boxes-total="() =>
+        this.textContent = this.up('[boxes-space]').all('[boxes-item]').length
+    ">3</span></p>
+
+    <div boxes-list>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+    </div>
+
+    <script>
+        document.currentScript.up('[boxes-space]').compute('boxes-total')
+    </script>
+</div>

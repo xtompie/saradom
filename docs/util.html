@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Util · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Util">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,17 +18,18 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a class="active" href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a class="active" href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="util">Util<a class="anchor" href="#util" aria-hidden="true">#</a></h1>
-<p>Helper methods on built-in objects like <code>HTMLElement</code> and <code>Array</code>.</p>
+<p>Short helper methods on built-in objects like <code>HTMLElement</code> and <code>Array</code>. They make DOM and array code shorter.</p>
 <p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a></p>
-<h2 id="without-util">Without Util<a class="anchor" href="#without-util" aria-hidden="true">#</a></h2>
-<pre><code class="hljs language-javascript"><span class="hljs-built_in">document</span>.querySelectorAll(<span class="hljs-string">'[todo-item]'</span>).forEach(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> {
-  <span class="hljs-keyword">const</span> status = el.getAttribute(<span class="hljs-string">'data-status'</span>);
-  el.setAttribute(<span class="hljs-string">'data-status'</span>, status === <span class="hljs-string">'done'</span> ? <span class="hljs-string">'active'</span> : <span class="hljs-string">'done'</span>);
-});</code></pre>
-<h2 id="with-util">With Util<a class="anchor" href="#with-util" aria-hidden="true">#</a></h2>
-<pre><code class="hljs language-javascript">dom.al(<span class="hljs-string">'[todo-item]'</span>).each(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> el.attrt(<span class="hljs-string">'data-status'</span>, <span class="hljs-string">'done'</span>, <span class="hljs-string">'active'</span>));</code></pre>
+<pre><code class="hljs language-javascript">dom.al(<span class="hljs-string">'[todo-item]'</span>).each(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> el.attrt(<span class="hljs-string">'data-status'</span>, <span class="hljs-string">'done'</span>, <span class="hljs-string">'active'</span>));
+
+<span class="hljs-comment">/* without Util:
+document.querySelectorAll('[todo-item]').forEach(el =&gt; {
+  const status = el.getAttribute('data-status');
+  el.setAttribute('data-status', status === 'done' ? 'active' : 'done');
+});
+*/</span></code></pre>
 <h2 id="selecting">Selecting<a class="anchor" href="#selecting" aria-hidden="true">#</a></h2>
 <pre><code class="hljs language-javascript">dom.al(<span class="hljs-string">'[todo-item]'</span>);    <span class="hljs-comment">// array of matches in the document</span>
 dom.one(<span class="hljs-string">'[todo-add]'</span>);    <span class="hljs-comment">// first match in the document</span>
@@ -45,10 +45,12 @@ el.attr(<span class="hljs-string">'data-status'</span>, <span class="hljs-litera
 el.attrt(<span class="hljs-string">'data-status'</span>, <span class="hljs-string">'done'</span>, <span class="hljs-string">'active'</span>);  <span class="hljs-comment">// toggle between two values</span>
 el.flag(<span class="hljs-string">'hidden'</span>);                          <span class="hljs-comment">// read as a boolean</span>
 el.flag(<span class="hljs-string">'hidden'</span>, <span class="hljs-literal">true</span>);                    <span class="hljs-comment">// add the attribute; false removes it</span></code></pre>
-<p>A whole namespace of attributes reads and writes as one object. <code>attrs('data')</code> is <code>dataset</code> for any prefix — kebab keys, not camelCased.</p>
-<pre><code class="hljs language-javascript">el.attrs();                            <span class="hljs-comment">// { every-attribute: value }</span>
-el.attrs(<span class="hljs-string">'card-val'</span>);                  <span class="hljs-comment">// { title, color } from card-val-* only</span>
-el.attrs(<span class="hljs-string">'card-val'</span>, { <span class="hljs-attr">color</span>: <span class="hljs-string">'red'</span> }); <span class="hljs-comment">// merge: sets card-val-color, keeps the rest</span></code></pre>
+<h2 id="attribute-namespaces">Attribute namespaces<a class="anchor" href="#attribute-namespaces" aria-hidden="true">#</a></h2>
+<p><code>attrs</code> reads or writes a whole namespace of attributes as one object. It is like <code>dataset</code>, but for any prefix, and it keeps kebab keys instead of camelCasing them.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">card-val-title</span>=<span class="hljs-string">"Buy milk"</span> <span class="hljs-attr">card-val-color</span>=<span class="hljs-string">"red"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript">el.attrs(<span class="hljs-string">'card-val'</span>);                     <span class="hljs-comment">// { title: 'Buy milk', color: 'red' }</span>
+el.attrs(<span class="hljs-string">'card-val'</span>, { <span class="hljs-attr">color</span>: <span class="hljs-string">'blue'</span> });  <span class="hljs-comment">// sets card-val-color="blue", keeps title</span>
+el.attrs();                               <span class="hljs-comment">// { card-val-title, card-val-color }</span></code></pre>
 <h2 id="visibility">Visibility<a class="anchor" href="#visibility" aria-hidden="true">#</a></h2>
 <pre><code class="hljs language-javascript">el.show();       <span class="hljs-comment">// show</span>
 el.hide();       <span class="hljs-comment">// hide, display:none</span>

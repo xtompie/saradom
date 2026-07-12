@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Saradom — frontend architecture pattern · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Saradom — frontend architecture pattern">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -20,7 +19,7 @@
 <body class="landing"><main class="content"><header class="hero">
 <h1 class="wordmark">Saradom</h1>
 <p class="tagline">Frontend architecture pattern</p>
-<p class="sub">Build modular, scalable frontends in plain HTML and JavaScript.<br>No framework, no npm, no build step.</p>
+<p class="sub">Build modular, scalable frontends in plain HTML and JavaScript.<br>There is no framework and no build step.</p>
 <div class="cta-row">
 <a class="cta" href="introduction.html">Get started <span class="cta-arrow">→</span></a>
 <a class="cta-ghost" href="https://github.com/xtompie/saradom">GitHub <span class="cta-ext">↗</span></a>
@@ -59,9 +58,9 @@ const Counter = (() => {
 <div class="rules">
 <div class="rule"><div class="rule-name"><span class="rule-no">1</span> DOM State</div><div class="rule-text">State is stored in the DOM. State is not stored in JavaScript variables.</div></div>
 <div class="rule"><div class="rule-name"><span class="rule-no">2</span> Event attributes</div><div class="rule-text">Events are set in HTML attributes. Events are not dynamically bound with addEventListener.</div></div>
-<div class="rule"><div class="rule-name"><span class="rule-no">3</span> Action in context</div><div class="rule-text">The event has a current DOM element from which the operating space is determined.</div></div>
-<div class="rule"><div class="rule-name"><span class="rule-no">4</span> Modularization</div><div class="rule-text">A module is an object built by an IIFE: private inside, public API out. Its name namespaces its attributes.</div></div>
-<div class="rule"><div class="rule-name"><span class="rule-no">5</span> High UX Performance</div><div class="rule-text">Instant initialization, seamless loading interface, responsive interaction.</div></div>
+<div class="rule"><div class="rule-name"><span class="rule-no">3</span> Action in context</div><div class="rule-text">Every event has a current element. That element sets the space where the action runs.</div></div>
+<div class="rule"><div class="rule-name"><span class="rule-no">4</span> Modularization</div><div class="rule-text">A module is an object. The private parts stay inside. The public functions are what the markup calls. The module name is the prefix for its attributes.</div></div>
+<div class="rule"><div class="rule-name"><span class="rule-no">5</span> UX Performance</div><div class="rule-text">The interface works as soon as the page loads. It does not wait for a JavaScript init like DOMContentLoaded.</div></div>
 </div>
 <p class="doc-next"><a href="introduction.html">Next: Introduction →</a></p>
 <footer class="site-footer">

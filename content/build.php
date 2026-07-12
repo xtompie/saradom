@@ -15,7 +15,7 @@ use Symfony\Component\Yaml\Yaml;
 const REPO     = 'https://github.com/xtompie/saradom/blob/main/';
 const BASE_URL = 'https://xtompie.github.io/saradom/';
 const SITE     = 'Saradom';
-const DESC     = 'Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.';
+const DESC     = 'Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.';
 
 $ROOT = dirname(__DIR__);
 $OUT  = "$ROOT/docs";
@@ -25,7 +25,7 @@ $MD   = make_md();
 rmrf($OUT);
 @mkdir($OUT, 0777, true);
 
-foreach (array_merge(["$ROOT/index.md"], glob("$ROOT/content/*.md")) as $file) {
+foreach (glob("$ROOT/content/*.md") as $file) {
     [$fm, $md] = frontmatter(file_get_contents($file));
     $name = pathinfo($file, PATHINFO_FILENAME);           // file name is the URL
     $body = includes($MD->convert($md)->getContent(), $ROOT);

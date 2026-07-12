@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Notify · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Notify">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,9 +18,9 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a class="active" href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a class="active" href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="notify">Notify<a class="anchor" href="#notify" aria-hidden="true">#</a></h1>
-<p>Notify lets elements on a page tell each other that something changed. <code>nup</code> (short for notify up) sends a signal up through the ancestors; <code>ndown</code> (notify down) sends it down through the descendants. A listener is an attribute that holds a callback, run when the signal reaches it. Two calls and an attribute are enough to wire a page's pieces together.</p>
+<p>Notify lets elements on a page tell each other that something changed. <code>nup</code> (short for notify up) sends a signal up through the ancestors. <code>ndown</code> (notify down) sends it down through the descendants. A listener is an attribute that holds a callback, run when the signal reaches it. Two calls and an attribute are enough to wire a page's pieces together.</p>
 <p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Notify/Notify.js" target="_blank" rel="noopener">Notify.js</a></p>
 <script>
 const dom = document;
@@ -155,14 +154,19 @@ const Notify = (() => {
         });
     };
 
-    return { Up, Down };
+    const All = (name, data) => {
+        document.querySelectorAll(`[${name}]`).forEach(node => Run(node, name, data));
+    };
+
+    return { Up, Down, All };
 })();
 
 HTMLElement.prototype.nup = function (name, data = null, stop = null) { Notify.Up(this, name, data, stop); return this; };
 HTMLElement.prototype.ndown = function (name, data = null, stop = null) { Notify.Down(this, name, data, stop); return this; };
+HTMLElement.prototype.nall = function (name, data = null) { Notify.All(name, data); return this; };
 </script>
-<h2 id="up-and-down">Up and down<a class="anchor" href="#up-and-down" aria-hidden="true">#</a></h2>
-<p>A button and a display next to each other are siblings, so the button cannot reach the display on its own. The signal goes up to the parent they share, and the parent sends it back down. There is no script for the widget itself; the only JavaScript is <code>nup</code> and <code>ndown</code> in the toolkit.</p>
+<h2 id="direction">Direction<a class="anchor" href="#direction" aria-hidden="true">#</a></h2>
+<p>A button and a display next to each other are siblings, so the button cannot reach the display on its own. The signal goes up to the parent they share, and the parent sends it back down. There is no script for the widget itself. The only JavaScript is <code>nup</code> and <code>ndown</code> in the toolkit.</p>
 <div class="demo">
 <div counter-onclick="() => this.ndown('counter-increment')">
   <span counter-increment="() => this.textContent = +this.textContent + 1">0</span>
@@ -173,7 +177,7 @@ HTMLElement.prototype.ndown = function (name, data = null, stop = null) { Notify
   <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">counter-increment</span>=<span class="hljs-string">"() =&gt; this.textContent = +this.textContent + 1"</span>&gt;</span>0<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.nup('counter-onclick')"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<h2 id="carrying-data">Carrying data<a class="anchor" href="#carrying-data" aria-hidden="true">#</a></h2>
+<h2 id="data">Data<a class="anchor" href="#data" aria-hidden="true">#</a></h2>
 <p>A signal can carry a value. It arrives as the callback's argument, and each hop passes it along.</p>
 <div class="demo">
 <div counter-onclick="(step) => this.ndown('counter-increment', step)">
@@ -187,11 +191,11 @@ HTMLElement.prototype.ndown = function (name, data = null, stop = null) { Notify
   <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.nup('counter-onclick', 1)"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.nup('counter-onclick', 5)"</span>&gt;</span>+5<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<h2 id="stopping-at-a-boundary">Stopping at a boundary<a class="anchor" href="#stopping-at-a-boundary" aria-hidden="true">#</a></h2>
-<p>A third argument is a selector where the walk stops. <code>nup</code> runs listeners up to it but not past it; <code>ndown</code> will not descend into it. You reach for it only when a widget is nested inside another of the same kind, so each keeps its signals to itself.</p>
+<h2 id="boundary">Boundary<a class="anchor" href="#boundary" aria-hidden="true">#</a></h2>
+<p>A third argument is a selector where the walk stops. <code>nup</code> runs listeners up to it but not past it. <code>ndown</code> will not descend into it. It is only needed when a widget is nested inside another of the same kind, so each keeps its signals to itself.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.nup('counter-onclick', 1, '[counter-space]')"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
 <h2 id="ancestor-context">Ancestor context<a class="anchor" href="#ancestor-context" aria-hidden="true">#</a></h2>
-<p>The select and the package never name each other. A control announces its change as a small patch up; the space owns the reaction — it is the only writer, merging the patch into its <code>configurator-val-*</code> namespace with <code>attrs</code> and signalling its dependents down to re-check. The package reads that bag and decides on its own whether to stay available. Every parameter rides the same channel, so adding a second control changes nothing about the wiring — and because each change flows through the space before it is stored, that one handler is where a value could later be vetoed or the configuration's invariants defended.</p>
+<p>The control and the package never name each other. A control sends its change up as a small patch. The space owns the state and is its only writer. It merges the patch into its <code>configurator-val-*</code> attributes with <code>attrs</code>, then signals its dependents down to re-check. The package reads those attributes and decides on its own whether to stay available. Every parameter uses the same channel, so adding a second control needs no new wiring. Each change goes through the space before it is stored. That one handler is where a value could later be vetoed, or the configuration's rules enforced.</p>
 <div class="demo">
 <div configurator-space configurator-val-engine="standard"
      configurator-onchange="(change) => this
@@ -224,59 +228,21 @@ HTMLElement.prototype.ndown = function (name, data = null, stop = null) { Notify
     <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"checkbox"</span> <span class="hljs-attr">disabled</span>&gt;</span> Sport package
   <span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<h2 id="select-all">Select all<a class="anchor" href="#select-all" aria-hidden="true">#</a></h2>
-<p>A checkbox has a third state beside on and off: indeterminate, drawn as a dash, for &quot;some but not all&quot;. Only the part that has to stay decoupled goes through Notify: an item announces that it changed, and the header, listening, refreshes itself. Setting every item is the header's own job — it owns them, so it finds them by attribute and sets them directly, with no signal. And a listener does not have to be an inline expression: here it calls a small module, whose functions resolve what they need from the element they are handed.</p>
+<h2 id="clear">Clear<a class="anchor" href="#clear" aria-hidden="true">#</a></h2>
+<p>A Clear button empties fields elsewhere in the form. The click goes up to the form as one signal. The form passes it down, and each field clears itself. There is no module: the whole feature is three short attributes.</p>
 <div class="demo">
-<div check-space check-onchange="() => Check.Sync(this)">
-  <label><input type="checkbox" check-master onchange="Check.All(this)"> All</label>
-  <label><input type="checkbox" check-item onchange="this.nup('check-onchange')"> Design</label>
-  <label><input type="checkbox" check-item onchange="this.nup('check-onchange')"> Build</label>
-  <label><input type="checkbox" check-item onchange="this.nup('check-onchange')"> Ship</label>
+<div form-space form-reset="() => this.ndown('field-clear')">
+  <label>Name <input field-clear="() => this.value = ''" value="John Doe"></label>
+  <label>City <input field-clear="() => this.value = ''" value="London"></label>
+  <button onclick="this.nup('form-reset')">Clear</button>
 </div>
-
-<script>
-const Check = (() => {
-  const All = (ctx) => {
-    const master = ctx.up('[check-master]');
-    master.indeterminate = false;
-    master.up('[check-space]').all('[check-item]').each(el => el.checked = master.checked);
-  };
-  const Sync = (ctx) => {
-    const space = ctx.up('[check-space]');
-    const items = space.all('[check-item]'), on = items.filter(el => el.checked);
-    const master = space.one('[check-master]');
-    master.checked = on.length === items.length;
-    master.indeterminate = on.length > 0 && on.length < items.length;
-  };
-  return { All, Sync };
-})();
-</script>
 </div>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">check-space</span> <span class="hljs-attr">check-onchange</span>=<span class="hljs-string">"() =&gt; Check.Sync(this)"</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"checkbox"</span> <span class="hljs-attr">check-master</span> <span class="hljs-attr">onchange</span>=<span class="hljs-string">"Check.All(this)"</span>&gt;</span> All<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"checkbox"</span> <span class="hljs-attr">check-item</span> <span class="hljs-attr">onchange</span>=<span class="hljs-string">"this.nup('check-onchange')"</span>&gt;</span> Design<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"checkbox"</span> <span class="hljs-attr">check-item</span> <span class="hljs-attr">onchange</span>=<span class="hljs-string">"this.nup('check-onchange')"</span>&gt;</span> Build<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"checkbox"</span> <span class="hljs-attr">check-item</span> <span class="hljs-attr">onchange</span>=<span class="hljs-string">"this.nup('check-onchange')"</span>&gt;</span> Ship<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-
-<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-<span class="hljs-keyword">const</span> Check = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
-  <span class="hljs-keyword">const</span> All = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> master = ctx.up(<span class="hljs-string">'[check-master]'</span>);
-    master.indeterminate = <span class="hljs-literal">false</span>;
-    master.up(<span class="hljs-string">'[check-space]'</span>).all(<span class="hljs-string">'[check-item]'</span>).each(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> el.checked = master.checked);
-  };
-  <span class="hljs-keyword">const</span> Sync = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> space = ctx.up(<span class="hljs-string">'[check-space]'</span>);
-    <span class="hljs-keyword">const</span> items = space.all(<span class="hljs-string">'[check-item]'</span>), on = items.filter(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> el.checked);
-    <span class="hljs-keyword">const</span> master = space.one(<span class="hljs-string">'[check-master]'</span>);
-    master.checked = on.length === items.length;
-    master.indeterminate = on.length &gt; <span class="hljs-number">0</span> &amp;&amp; on.length &lt; items.length;
-  };
-  <span class="hljs-keyword">return</span> { All, Sync };
-})();
-</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-<p class="doc-next"><a href="vld.html">Next: Vld →</a></p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">form-space</span> <span class="hljs-attr">form-reset</span>=<span class="hljs-string">"() =&gt; this.ndown('field-clear')"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>Name <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">field-clear</span>=<span class="hljs-string">"() =&gt; this.value = ''"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"John Doe"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>City <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">field-clear</span>=<span class="hljs-string">"() =&gt; this.value = ''"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"London"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.nup('form-reset')"</span>&gt;</span>Clear<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p class="doc-next"><a href="compute.html">Next: Compute →</a></p>
 </main>
 <script>
 // Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),

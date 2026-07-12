@@ -11,23 +11,19 @@ status: draft
 
 # Util
 
-Helper methods on built-in objects like `HTMLElement` and `Array`.
+Short helper methods on built-in objects like `HTMLElement` and `Array`. They make DOM and array code shorter.
 
 <!-- source: Util/Util.js -->
 
-## Without Util
-
 ```javascript
+dom.al('[todo-item]').each(el => el.attrt('data-status', 'done', 'active'));
+
+/* without Util:
 document.querySelectorAll('[todo-item]').forEach(el => {
   const status = el.getAttribute('data-status');
   el.setAttribute('data-status', status === 'done' ? 'active' : 'done');
 });
-```
-
-## With Util
-
-```javascript
-dom.al('[todo-item]').each(el => el.attrt('data-status', 'done', 'active'));
+*/
 ```
 
 ## Selecting
@@ -53,12 +49,17 @@ el.flag('hidden');                          // read as a boolean
 el.flag('hidden', true);                    // add the attribute; false removes it
 ```
 
-A whole namespace of attributes reads and writes as one object. `attrs('data')` is `dataset` for any prefix — kebab keys, not camelCased.
+## Attribute namespaces
 
+`attrs` reads or writes a whole namespace of attributes as one object. It is like `dataset`, but for any prefix, and it keeps kebab keys instead of camelCasing them.
+
+```html
+<div card-val-title="Buy milk" card-val-color="red"></div>
+```
 ```javascript
-el.attrs();                            // { every-attribute: value }
-el.attrs('card-val');                  // { title, color } from card-val-* only
-el.attrs('card-val', { color: 'red' }); // merge: sets card-val-color, keeps the rest
+el.attrs('card-val');                     // { title: 'Buy milk', color: 'red' }
+el.attrs('card-val', { color: 'blue' });  // sets card-val-color="blue", keeps title
+el.attrs();                               // { card-val-title, card-val-color }
 ```
 
 ## Visibility

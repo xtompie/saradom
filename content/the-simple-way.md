@@ -10,17 +10,7 @@ status: draft
 
 # The simple way
 
-## Global scope
-
-Every module on the global scope means many names, and the risk of a collision. One `App` object holds them all. It can also nest deeper, into its own namespace under `App`, when a project wants more separation.
-
-```javascript
-const App = {};
-App.Visible = (() => { /* ... */ })();
-App.Filter = (() => { /* ... */ })();
-App.Configurator = App.Configurator || {};
-App.Configurator.Package = (() => { /* ... */ })();
-```
+Common needs, each solved with a small pattern in plain HTML and JavaScript.
 
 ## Module reuse
 
@@ -112,7 +102,7 @@ App.Info.Refresh();
 </script>
 ```
 
-## Public state attributes
+## State attributes
 
 `Cart` owns these attributes, and updates the DOM to match its state.
 
@@ -129,7 +119,7 @@ Option 2. Form data is sent, and the HTML response is swapped in, the way htmx d
 
 Option 3. Val reads the fields, sends JSON, and renders the returned errors under the field.
 
-Option 4. [Vld](vld.html) validates the fields in the browser, before any of the above — instant, in-page errors with no request at all — so when you want validation on the page right away, it's the one to reach for. It layers on top of options 1–3: the network only sees a submit once the shape is already right.
+Option 4. Vld validates the fields in the browser, before any of the above. The errors show in the page at once, with no request. It layers on top of options 1 to 3. The network only sees a submit once the shape is already right.
 
 ## Toasts
 
@@ -206,7 +196,7 @@ const Modal = (function () {
         );
     };
     const Close = (data) => {
-        if (data !== undefined) callback(data);
+        callback(data);
         document.querySelector('modal').remove();
     };
     return { Open, Close };
@@ -221,3 +211,5 @@ const Modal = (function () {
 <button onclick="window.parent.Modal.Close({ id: 1, name: 'Item 1' })">Item 1</button>
 <button onclick="window.parent.Modal.Close({ id: 2, name: 'Item 2' })">Item 2</button>
 ```
+
+With one more piece, this becomes a generic picker. `Open` adds `_pick=1` to the URL it loads, and the backend renders that page inside a modal layout whenever it sees the flag. Any list the app already has, with a checkbox on each row and a Choose submit, then works as a picker. The list and its filter are the ones that already exist. Only the flag and the Choose step are new, and they are set up once, in one place.

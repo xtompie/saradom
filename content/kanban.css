@@ -69,12 +69,12 @@
     z-index: 50;
 }
 [kanban-modal][hidden] { display: none; }
-[kanban-backdrop] {
+[kanban-modal] > div {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, .55);
 }
-[kanban-dialog] {
+[kanban-modal] section {
     position: relative;
     width: min(22rem, 90vw);
     display: flex;
@@ -95,11 +95,11 @@
     outline: none;
 }
 [kanban-input]:focus { border-color: #5a80e6; }
-[kanban-colors] {
+[kanban-color] {
     display: flex;
     gap: .45rem;
 }
-[kanban-swatch] {
+[kanban-option] {
     width: 1.6rem;
     height: 1.6rem;
     border-radius: 50%;
@@ -107,14 +107,15 @@
     padding: 0;
     cursor: pointer;
 }
-[kanban-swatch][kanban-selected] { border-color: var(--ink); }
-[kanban-actions] {
+[kanban-selected] { border-color: var(--ink); }
+[kanban-modal] footer {
     display: flex;
     align-items: center;
     gap: .5rem;
+    margin-top: .6rem;
 }
-[kanban-actions] [kanban-delete] { margin-right: auto; }
-[kanban-actions] button {
+[kanban-modal] footer [kanban-delete] { margin-left: auto; }
+[kanban-modal] footer button {
     font: inherit;
     font-size: .85rem;
     cursor: pointer;
@@ -123,7 +124,14 @@
     background: transparent;
     color: var(--muted);
     padding: .4rem .8rem;
+    transition: background .12s, border-color .12s, color .12s;
 }
-[kanban-save] { background: #5a80e6; color: #fff; border-color: #5a80e6; }
+[kanban-modal] footer button:hover { border-color: var(--ink); color: var(--ink); }
+[kanban-modal] footer button:first-child { background: #5a80e6; color: #fff; border-color: #5a80e6; }
+[kanban-modal] footer button:first-child:hover { background: #4a6fd0; border-color: #4a6fd0; color: #fff; }
 [kanban-delete] { color: #f43f5e; }
+[kanban-delete]:hover { background: #f43f5e; border-color: #f43f5e; color: #fff; }
 [kanban-modal][kanban-modal-mode="add"] [kanban-delete] { display: none; }
+
+[kanban-modal] [vld-error]:not(:empty) { color: #f43f5e; font-size: .8rem; margin-top: .25rem; }
+[kanban-input]:has(+ [vld-error]:not(:empty)) { border-color: #f43f5e; }

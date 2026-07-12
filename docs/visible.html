@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Visible · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Visible">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,10 +18,10 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a class="active" href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a class="active" href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="visible">Visible<a class="anchor" href="#visible" aria-hidden="true">#</a></h1>
 <p>Show one set of elements and hide the rest. The current mode is written to the DOM as <code>visible-state</code>. The active view is readable there, with no JavaScript variable holding it.</p>
-<p>Regions carry a <code>visible-tag</code> inside a shared <code>visible-space</code>. <code>Visible.Visible(ctx, tags)</code> shows every <code>[visible-tag]</code> listed in <code>tags</code>, hides the others, and writes <code>tags</code> to <code>visible-state</code>. <code>Visible.Toggle(ctx, when, then, otherwise)</code> reads that state. When it includes <code>when</code> the <code>then</code> set is shown, else the <code>otherwise</code> set.</p>
+<p>Regions carry a <code>visible-tag</code> inside a shared <code>visible-space</code>. <code>Visible.Visible(ctx, tags)</code> shows every <code>[visible-tag]</code> listed in <code>tags</code>, hides the others, and writes <code>tags</code> to <code>visible-state</code>. <code>Visible.Toggle(ctx, when, then, otherwise)</code> reads that state. When the state includes <code>when</code>, the <code>then</code> set is shown. Otherwise the <code>otherwise</code> set is shown.</p>
 <p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Visible/Visible.js" target="_blank" rel="noopener">Visible.js</a></p>
 <h2 id="tabs">Tabs<a class="anchor" href="#tabs" aria-hidden="true">#</a></h2>
 <p>One panel shows at a time. Each button selects its tag.</p>
@@ -64,7 +63,7 @@
   <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Toggle(this, 'returns', [], ['returns'])"</span>&gt;</span>Returns<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"returns"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Thirty day returns.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<h2 id="radio-with-an-other-option">Radio with an &quot;Other&quot; option<a class="anchor" href="#radio-with-an-other-option" aria-hidden="true">#</a></h2>
+<h2 id="radio">Radio<a class="anchor" href="#radio" aria-hidden="true">#</a></h2>
 <p>The extra input shows only when Other is selected.</p>
 <div class="demo">
 <div visible-space visible-state="">
@@ -83,7 +82,7 @@
   <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"other"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"Tell us more"</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
 <h2 id="lanes">Lanes<a class="anchor" href="#lanes" aria-hidden="true">#</a></h2>
-<p>Several <code>Visible</code> mechanisms can work on the same elements at once. A <code>visible-space</code> names a <code>visible-lane</code>, and each tag belongs to that lane; a call touches only the tags in its space's lane and leaves the others alone. Nest the spaces and a hidden outer layer hides its inner one, so an element shows only when every lane shows it — the intersection comes from the nesting, not from merging state on one node.</p>
+<p>Several <code>Visible</code> mechanisms can work on the same elements at once. A <code>visible-space</code> names a <code>visible-lane</code>, and each tag belongs to that lane. A call touches only the tags in its space's lane and leaves the others alone. When the spaces nest, a hidden outer layer hides its inner one. An element shows only when every lane shows it. The intersection comes from the nesting, not from merging state on one node.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">visible-space</span> <span class="hljs-attr">visible-lane</span>=<span class="hljs-string">"mode"</span> <span class="hljs-attr">visible-state</span>=<span class="hljs-string">"grid"</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, ['grid'])"</span>&gt;</span>Grid<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Visible(this, ['list'])"</span>&gt;</span>List<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
@@ -94,7 +93,7 @@
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
   <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<p>Without <code>visible-lane</code>, a space touches every <code>[visible-tag]</code> inside it — the original behavior, unchanged.</p>
+<p>Without <code>visible-lane</code>, a space touches every <code>[visible-tag]</code> inside it. That is the original behavior, unchanged.</p>
 <style>
 .demo [visible-space] { width:100%; max-width:22rem; text-align:left; }
 

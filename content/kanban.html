@@ -5,39 +5,42 @@
         <div kanban-column>
             <header>
                 <span kanban-column-title val val-fx="Text" val-key="title"></span>
-                <span kanban-count val val-fx="Text" val-key="count"></span>
+                <span kanban-onchange="() => this.textContent = this.up('[kanban-column]').all('[kanban-card]').length"></span>
             </header>
-            <div kanban-cards val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]" val-set="() => Kanban.Column.Drag(this)"></div>
-            <button type="button" kanban-add onclick="Kanban.Modal.Add(this)">+ Add card</button>
+            <div kanban-cards kanban-drag val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></div>
+            <button kanban-add onclick="Kanban.Add(this)">+ Add card</button>
         </div>
     </template>
 
     <template kanban-card-tpl>
-        <article kanban-card onclick="Kanban.Modal.Edit(this)">
+        <article kanban-card onclick="Kanban.Edit(this)">
             <span kanban-card-title val val-fx="Text" val-key="title"
                   val-set="(d) => this.up('[kanban-card]').style.setProperty('--kanban-color', d.color)"
                   val-get="() => ({ color: this.up('[kanban-card]').style.getPropertyValue('--kanban-color').trim() })"></span>
         </article>
     </template>
 
-    <div kanban-modal hidden kanban-modal-mode="add">
-        <div kanban-backdrop onclick="Kanban.Modal.Close(this)"></div>
-        <div kanban-dialog>
+    <template id="kanban-error-tpl">{message}</template>
+
+    <div kanban-modal val val-get="() => ({})" hidden kanban-modal-mode="add" vld-error-tpl="#kanban-error-tpl">
+        <div onclick="Kanban.Close(this)"></div>
+        <section kanban-form>
             <input kanban-input val val-fx="Input" val-key="title" type="text" placeholder="Title">
-            <div vld-error="title" kanban-error></div>
-            <div kanban-colors val val-get="() => Kanban.Palette.Picked(this)" val-set="(d) => Kanban.Palette.Pick(this, d.color)">
-                <button type="button" kanban-swatch data-color="#8b5cf6" style="background:#8b5cf6" title="Violet" aria-label="Violet" onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
-                <button type="button" kanban-swatch data-color="#5a80e6" style="background:#5a80e6" title="Blue"   aria-label="Blue"   onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
-                <button type="button" kanban-swatch data-color="#2dd4bf" style="background:#2dd4bf" title="Teal"   aria-label="Teal"   onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
-                <button type="button" kanban-swatch data-color="#f59e0b" style="background:#f59e0b" title="Amber"  aria-label="Amber"  onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
-                <button type="button" kanban-swatch data-color="#f43f5e" style="background:#f43f5e" title="Rose"   aria-label="Rose"   onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
+            <div vld-error="title"></div>
+            <div kanban-color val val-fx="Attr" val-key="color" val-attr="kanban-color-val"
+                 val-set="(d) => Kanban.Select(this, d.color)">
+                <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
             </div>
-            <div kanban-actions>
-                <button type="button" kanban-delete onclick="Kanban.Modal.Delete(this)">Delete</button>
-                <button type="button" onclick="Kanban.Modal.Close(this)">Cancel</button>
-                <button type="button" kanban-save onclick="Kanban.Modal.Save(this)">Save</button>
-            </div>
-        </div>
+            <footer>
+                <button onclick="Kanban.Save(this)">Save</button>
+                <button onclick="Kanban.Close(this)">Cancel</button>
+                <button kanban-delete onclick="Kanban.Delete(this)">Delete</button>
+            </footer>
+        </section>
     </div>
 
     <script>

@@ -6,8 +6,7 @@ $ogImg = BASE_URL . 'og.png';
 ?><!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title><?= htmlspecialchars($title) ?> · <?= SITE ?></title>
 <meta name="description" content="<?= htmlspecialchars($desc) ?>">
 <meta property="og:title" content="<?= htmlspecialchars($title) ?>">

@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>The simple way · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="The simple way">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,15 +18,9 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a class="active" href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a class="active" href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="the-simple-way">The simple way<a class="anchor" href="#the-simple-way" aria-hidden="true">#</a></h1>
-<h2 id="global-scope">Global scope<a class="anchor" href="#global-scope" aria-hidden="true">#</a></h2>
-<p>Every module on the global scope means many names, and the risk of a collision. One <code>App</code> object holds them all. It can also nest deeper, into its own namespace under <code>App</code>, when a project wants more separation.</p>
-<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> App = {};
-App.Visible = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> { <span class="hljs-comment">/* ... */</span> })();
-App.Filter = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> { <span class="hljs-comment">/* ... */</span> })();
-App.Configurator = App.Configurator || {};
-App.Configurator.Package = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> { <span class="hljs-comment">/* ... */</span> })();</code></pre>
+<p>Common needs, each solved with a small pattern in plain HTML and JavaScript.</p>
 <h2 id="module-reuse">Module reuse<a class="anchor" href="#module-reuse" aria-hidden="true">#</a></h2>
 <p>The same file can serve more than one instance, by taking its config through the shared <code>exports</code> variable.</p>
 <pre><code class="hljs language-javascript"><span class="hljs-comment">// tabs.js</span>
@@ -86,7 +79,7 @@ App.Theme.Init();
 App.Cart.OnChange(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> App.Info.Refresh());
 App.Info.Refresh();
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-<h2 id="public-state-attributes">Public state attributes<a class="anchor" href="#public-state-attributes" aria-hidden="true">#</a></h2>
+<h2 id="state-attributes">State attributes<a class="anchor" href="#state-attributes" aria-hidden="true">#</a></h2>
 <p><code>Cart</code> owns these attributes, and updates the DOM to match its state.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">cart-val-hasdata</span>=<span class="hljs-string">"yes"</span>&gt;</span>Cart: <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">cart-val-count</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">cart-val-hasdata</span>=<span class="hljs-string">"no"</span>&gt;</span>Cart empty<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></code></pre>
@@ -94,7 +87,7 @@ App.Info.Refresh();
 <p>Option 1. A plain form, submitted normally.</p>
 <p>Option 2. Form data is sent, and the HTML response is swapped in, the way htmx does it.</p>
 <p>Option 3. Val reads the fields, sends JSON, and renders the returned errors under the field.</p>
-<p>Option 4. <a href="vld.html">Vld</a> validates the fields in the browser, before any of the above — instant, in-page errors with no request at all — so when you want validation on the page right away, it's the one to reach for. It layers on top of options 1–3: the network only sees a submit once the shape is already right.</p>
+<p>Option 4. Vld validates the fields in the browser, before any of the above. The errors show in the page at once, with no request. It layers on top of options 1 to 3. The network only sees a submit once the shape is already right.</p>
 <h2 id="toasts">Toasts<a class="anchor" href="#toasts" aria-hidden="true">#</a></h2>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
 App.Toast = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
@@ -156,7 +149,7 @@ decides on its own whether the sport package stays enabled. <code>Configurator</
         );
     };
     <span class="hljs-keyword">const</span> Close = <span class="hljs-function">(<span class="hljs-params">data</span>) =&gt;</span> {
-        <span class="hljs-keyword">if</span> (data !== <span class="hljs-literal">undefined</span>) callback(data);
+        callback(data);
         <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'modal'</span>).remove();
     };
     <span class="hljs-keyword">return</span> { Open, Close };
@@ -167,6 +160,7 @@ decides on its own whether the sport package stays enabled. <code>Configurator</
 <pre><code class="hljs language-xml"><span class="hljs-comment">&lt;!-- list page --&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"window.parent.Modal.Close({ id: 1, name: 'Item 1' })"</span>&gt;</span>Item 1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"window.parent.Modal.Close({ id: 2, name: 'Item 2' })"</span>&gt;</span>Item 2<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p>With one more piece, this becomes a generic picker. <code>Open</code> adds <code>_pick=1</code> to the URL it loads, and the backend renders that page inside a modal layout whenever it sees the flag. Any list the app already has, with a checkbox on each row and a Choose submit, then works as a picker. The list and its filter are the ones that already exist. Only the flag and the Choose step are new, and they are set up once, in one place.</p>
 <p class="doc-next"><a href="saradom-vs-others.html">Next: Saradom vs Others →</a></p>
 </main>
 <script>

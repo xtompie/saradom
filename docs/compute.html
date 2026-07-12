@@ -2,9 +2,9 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
-<title>Produce · Saradom</title>
+<title>Compute · Saradom</title>
 <meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
-<meta property="og:title" content="Produce">
+<meta property="og:title" content="Compute">
 <meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
@@ -14,13 +14,15 @@
 <meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="compute.css">
 </head>
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a class="active" href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
-<main class="content"><h1 id="produce">Produce<a class="anchor" href="#produce" aria-hidden="true">#</a></h1>
-<p>Nothing here is new. Produce composes Visible, Filter, Val, and a small script that runs on load. Each was shown on its own. Here they work together.</p>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a class="active" href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="compute">Compute<a class="anchor" href="#compute" aria-hidden="true">#</a></h1>
+<p>Compute watches the elements under a root and re-runs a callback when one is added or removed below it. The callback is an attribute that reads the DOM and writes a value, such as a count. Nothing runs until <code>el.compute('name')</code> is called. That call does the first run and starts the watch.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Compute/Compute.js" target="_blank" rel="noopener">Compute.js</a></p>
 <script>
 const dom = document;
 document.al = function(s) {
@@ -374,137 +376,92 @@ HTMLElement.prototype.vsync = function (data) {
 };
 </script>
 <script>
-const Visible = (() => {
-    const Visible = (ctx, tags) => {
-        const space = ctx.closest('[visible-space]');
-        const lane = space.getAttribute('visible-lane');
-        const selector = lane ? `[visible-tag][visible-lane="${lane}"]` : '[visible-tag]';
-        space.querySelectorAll(selector).forEach(el => {
-            el.style.display = tags.includes(el.getAttribute('visible-tag')) ? '' : 'none';
-        });
-        space.setAttribute('visible-state', tags.join(' '));
+const Compute = (() => {
+    const Debounce = (fn, ms) => {
+        let timer;
+        return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), ms);
+        };
     };
-
-    const Toggle = (ctx, when, then, otherwise) => {
-        const space = ctx.closest('[visible-space]');
-        Visible(space, space.getAttribute('visible-state').split(' ').includes(when) ? then : otherwise);
+    const Run = (el, name) => {
+        const code = el.getAttribute(name);
+        return (function () {
+            return eval(code).call(el);
+        }).bind(el)();
     };
-
-    return { Visible, Toggle };
-})();
-</script>
-<script>
-const Filter = (() => {
-    const Filter = (ctx) => {
-        const space = ctx.closest('[filter-space]');
-        const lane = space.getAttribute('filter-lane');
-        const query = space.querySelector('[filter-query]').value.trim().toLowerCase();
-        const selector = lane ? `[filter-item][filter-lane="${lane}"]` : '[filter-item]';
-        space.querySelectorAll(selector).forEach(el => {
-            el.style.display = el.getAttribute('filter-item').toLowerCase().includes(query) ? '' : 'none';
-        });
+    const All = (root, name) => {
+        root.querySelectorAll(`[${name}]`).forEach(el => Run(el, name));
     };
-
-    return { Filter };
-})();
-</script>
-<script>
-const Produce = (() => {
-    const Init = (ctx, items) => {
-        const space = ctx.up('[produce-space]');
-        space.one('[produce-list]')
-            .vappend(items.map(p => ({ ...p, match: `${p.name} ${p.category}` })), space.one('[produce-row-tpl]'));
+    const Init = (root, name, opts = {}) => {
+        const store = root._compute ??= {};
+        if (store[name]) {
+            return;
+        }
+        const config = { childList: true, subtree: opts.subtree !== false };
+        let observer;
+        const run = () => {
+            observer.disconnect();
+            All(root, name);
+            observer.observe(root, config);
+        };
+        const fire = opts.debounce ? Debounce(run, opts.debounce) : run;
+        observer = new MutationObserver(fire);
+        store[name] = observer;
+        run();
     };
-
     return { Init };
 })();
+HTMLElement.prototype.compute = function (name, opts) {
+    Compute.Init(this, name, opts);
+    return this;
+};
 </script>
-<div class="produce-demo">
-<div produce-space filter-space visible-space visible-state="category">
-    <div>
-        <input filter-query type="text" oninput="Filter.Filter(this)">
-        <button onclick="Visible.Toggle(this, 'category', ['hidden'], ['category'])">
-            <span visible-tag="category">Hide category</span>
-            <span visible-tag="hidden" style="display:none">Show category</span>
-        </button>
+<div class="demo">
+<div boxes-space>
+    <p>Items: <span boxes-total="() =>
+        this.textContent = this.up('[boxes-space]').all('[boxes-item]').length
+    ">3</span></p>
+
+    <div boxes-list>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
     </div>
-    <ul produce-list val-tpl="[produce-row-tpl]"></ul>
-    <template produce-row-tpl>
-        <li filter-item>
-            <i val val-fx="Pattr" val-key="match" val-attr="filter-item" hidden></i>
-            <span val val-fx="Text" val-key="name"></span>
-            <span val val-fx="Text" val-key="category" visible-tag="category"></span>
-        </li>
-    </template>
+
     <script>
-        Produce.Init(document.currentScript, [
-            { name: 'Apple',  category: 'Fruit' },
-            { name: 'Banana', category: 'Fruit' },
-            { name: 'Cherry', category: 'Fruit' },
-            { name: 'Carrot', category: 'Vegetable' },
-            { name: 'Potato', category: 'Vegetable' },
-        ]);
+        document.currentScript.up('[boxes-space]').compute('boxes-total')
     </script>
 </div>
-
 </div>
-<style>
-.produce-demo [produce-space] { display:flex; flex-direction:column; gap:.6rem; max-width:24rem; margin:0 auto; }
-.produce-demo [produce-space] > div { display:flex; gap:.5rem; }
-.produce-demo input {
-  flex:1; background:var(--code-bg); border:1px solid var(--line); border-radius:var(--r-sm);
-  color:var(--ink); font:inherit; padding:.5rem .65rem; outline:none; transition:border-color .12s ease;
-}
-.produce-demo input:focus { border-color:var(--demo-accent); }
-.produce-demo button {
-  font:inherit; font-size:.88rem; cursor:pointer; border-radius:var(--r-sm); border:1px solid var(--line);
-  background:transparent; color:var(--muted); padding:.42rem .8rem; white-space:nowrap; transition:color .12s ease, border-color .12s ease;
-}
-.produce-demo button:hover { color:var(--body); border-color:var(--muted); }
-.produce-demo [produce-list] { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.35rem; }
-.produce-demo [produce-list] li {
-  display:flex; justify-content:space-between; align-items:baseline; gap:1rem;
-  padding:.45rem .65rem; background:var(--soft); border:1px solid var(--line);
-  border-radius:var(--r-sm); color:var(--ink);
-}
-.produce-demo [produce-list] [visible-tag="category"] { color:var(--muted); font-size:.85rem; }
-</style>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">produce-space</span> <span class="hljs-attr">filter-space</span> <span class="hljs-attr">visible-space</span> <span class="hljs-attr">visible-state</span>=<span class="hljs-string">"category"</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">filter-query</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">oninput</span>=<span class="hljs-string">"Filter.Filter(this)"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Toggle(this, 'category', ['hidden'], ['category'])"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"category"</span>&gt;</span>Hide category<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Show category<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">boxes-space</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Items: <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">boxes-total</span>=<span class="hljs-string">"() =&gt;
+        this.textContent = this.up('[boxes-space]').all('[boxes-item]').length
+    "</span>&gt;</span>3<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">boxes-list</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">boxes-item</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"remove"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.remove()"</span>&gt;</span>×<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">boxes-item</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"remove"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.remove()"</span>&gt;</span>×<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">boxes-item</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"remove"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.remove()"</span>&gt;</span>×<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">ul</span> <span class="hljs-attr">produce-list</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[produce-row-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">produce-row-tpl</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">filter-item</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pattr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"match"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"filter-item"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"name"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"category"</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"category"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
     <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-        Produce.Init(<span class="hljs-built_in">document</span>.currentScript, [
-            { <span class="hljs-attr">name</span>: <span class="hljs-string">'Apple'</span>,  <span class="hljs-attr">category</span>: <span class="hljs-string">'Fruit'</span> },
-            { <span class="hljs-attr">name</span>: <span class="hljs-string">'Banana'</span>, <span class="hljs-attr">category</span>: <span class="hljs-string">'Fruit'</span> },
-            { <span class="hljs-attr">name</span>: <span class="hljs-string">'Cherry'</span>, <span class="hljs-attr">category</span>: <span class="hljs-string">'Fruit'</span> },
-            { <span class="hljs-attr">name</span>: <span class="hljs-string">'Carrot'</span>, <span class="hljs-attr">category</span>: <span class="hljs-string">'Vegetable'</span> },
-            { <span class="hljs-attr">name</span>: <span class="hljs-string">'Potato'</span>, <span class="hljs-attr">category</span>: <span class="hljs-string">'Vegetable'</span> },
-        ]);
+        <span class="hljs-built_in">document</span>.currentScript.up(<span class="hljs-string">'[boxes-space]'</span>).compute(<span class="hljs-string">'boxes-total'</span>)
     </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> Produce = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> Init = <span class="hljs-function">(<span class="hljs-params">ctx, items</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> space = ctx.up(<span class="hljs-string">'[produce-space]'</span>);
-        space.one(<span class="hljs-string">'[produce-list]'</span>)
-            .vappend(items.map(<span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> ({ ...p, <span class="hljs-attr">match</span>: <span class="hljs-string">`<span class="hljs-subst">${p.name}</span> <span class="hljs-subst">${p.category}</span>`</span> })), space.one(<span class="hljs-string">'[produce-row-tpl]'</span>));
-    };
-
-    <span class="hljs-keyword">return</span> { Init };
-})();</code></pre>
-<p class="doc-next"><a href="tic-tac-toe.html">Next: Tic-tac-toe →</a></p>
+<h2 id="call">Call<a class="anchor" href="#call" aria-hidden="true">#</a></h2>
+<p><code>el.compute('boxes-total')</code> runs the callback once and starts the watch. The caller names the attribute. By default the watch reaches every element under the root. A value read from two lists is placed on the element that holds both. A change in either list runs it again.</p>
+<h2 id="batching">Batching<a class="anchor" href="#batching" aria-hidden="true">#</a></h2>
+<p>Changes are grouped. Fifty boxes added in one step cause one run, not fifty. The run happens right after the change, in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide">microtask</a>.</p>
+<h2 id="options">Options<a class="anchor" href="#options" aria-hidden="true">#</a></h2>
+<p><code>el.compute(name, opts)</code> takes a second argument. <code>debounce</code> waits for a quiet gap in milliseconds before a run. Rapid changes spread across many ticks then cause one run, not one each. <code>subtree</code> set to false limits the watch to the root's direct children. A shallow list is watched with less work. The first run at the call is always immediate.</p>
+<pre><code class="hljs language-javascript">el.compute(<span class="hljs-string">'boxes-total'</span>, { <span class="hljs-attr">debounce</span>: <span class="hljs-number">100</span> })
+el.compute(<span class="hljs-string">'boxes-total'</span>, { <span class="hljs-attr">subtree</span>: <span class="hljs-literal">false</span> })</code></pre>
+<h2 id="use">Use<a class="anchor" href="#use" aria-hidden="true">#</a></h2>
+<p>Compute fits a value read from a changing set of elements, like items in a cart or results appended after a fetch. <code>debounce</code> helps when those elements arrive in bursts, such as a streamed or paginated list. A value that depends on an input's text is a different job. Typing changes a property, not the DOM. An input event fits there, not Compute.</p>
+<h2 id="mechanism">Mechanism<a class="anchor" href="#mechanism" aria-hidden="true">#</a></h2>
+<p>Compute puts one <a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver">MutationObserver</a> on the root. It stores the observer on the element in <code>el._compute</code>. A second call for the same attribute is skipped. The observer is turned off during a run and turned back on after. Its own writes then do not trigger it. Compute does not track a state object. It reacts to the DOM, whatever changed it.</p>
+<p class="doc-next"><a href="vld.html">Next: Vld →</a></p>
 </main>
 <script>
 // Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),

@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Kanban · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Kanban">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,8 +18,10 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a class="active" href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a class="active" href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="kanban">Kanban<a class="anchor" href="#kanban" aria-hidden="true">#</a></h1>
+<p>A kanban board with drag-and-drop, built from several toolkits. Val renders the columns and cards. Compute keeps each column's card count. Vld validates the add and edit form. Drag-and-drop is <a href="https://sortablejs.github.io/Sortable/">SortableJS</a>, a plain third-party library.</p>
+<p>SortableJS moves the same DOM nodes Saradom reads. When a card is dragged to another column, the count recomputes, because the new order is already in the DOM. There is no virtual DOM to reconcile, so the library and Saradom write to one real tree.</p>
 <div class="kanban-demo">
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <style>
@@ -95,12 +96,12 @@
     z-index: 50;
 }
 [kanban-modal][hidden] { display: none; }
-[kanban-backdrop] {
+[kanban-modal] > div {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, .55);
 }
-[kanban-dialog] {
+[kanban-modal] section {
     position: relative;
     width: min(22rem, 90vw);
     display: flex;
@@ -121,11 +122,11 @@
     outline: none;
 }
 [kanban-input]:focus { border-color: #5a80e6; }
-[kanban-colors] {
+[kanban-color] {
     display: flex;
     gap: .45rem;
 }
-[kanban-swatch] {
+[kanban-option] {
     width: 1.6rem;
     height: 1.6rem;
     border-radius: 50%;
@@ -133,14 +134,15 @@
     padding: 0;
     cursor: pointer;
 }
-[kanban-swatch][kanban-selected] { border-color: var(--ink); }
-[kanban-actions] {
+[kanban-selected] { border-color: var(--ink); }
+[kanban-modal] footer {
     display: flex;
     align-items: center;
     gap: .5rem;
+    margin-top: .6rem;
 }
-[kanban-actions] [kanban-delete] { margin-right: auto; }
-[kanban-actions] button {
+[kanban-modal] footer [kanban-delete] { margin-left: auto; }
+[kanban-modal] footer button {
     font: inherit;
     font-size: .85rem;
     cursor: pointer;
@@ -149,10 +151,17 @@
     background: transparent;
     color: var(--muted);
     padding: .4rem .8rem;
+    transition: background .12s, border-color .12s, color .12s;
 }
-[kanban-save] { background: #5a80e6; color: #fff; border-color: #5a80e6; }
+[kanban-modal] footer button:hover { border-color: var(--ink); color: var(--ink); }
+[kanban-modal] footer button:first-child { background: #5a80e6; color: #fff; border-color: #5a80e6; }
+[kanban-modal] footer button:first-child:hover { background: #4a6fd0; border-color: #4a6fd0; color: #fff; }
 [kanban-delete] { color: #f43f5e; }
+[kanban-delete]:hover { background: #f43f5e; border-color: #f43f5e; color: #fff; }
 [kanban-modal][kanban-modal-mode="add"] [kanban-delete] { display: none; }
+
+[kanban-modal] [vld-error]:not(:empty) { color: #f43f5e; font-size: .8rem; margin-top: .25rem; }
+[kanban-input]:has(+ [vld-error]:not(:empty)) { border-color: #f43f5e; }
 </style>
 <script>
 const dom = document;
@@ -291,8 +300,8 @@ const Val = (() => {
     };
     const Fx = (el, write, v = null) => {
         const fx = Attr(el, 'val-fx');
-        if (fx && fx !== '' && api.Fx[fx]) {
-            return write ? api.Fx[fx].Set(el, v, FxParams(el)) : api.Fx[fx].Get(el, FxParams(el));
+        if (fx && fx !== '' && Val.Fx[fx]) {
+            return write ? Val.Fx[fx].Set(el, v, FxParams(el)) : Val.Fx[fx].Get(el, FxParams(el));
         }
     };
     const Sg = (el, write, v = null) => {
@@ -337,115 +346,156 @@ const Val = (() => {
         el.innerHTML = '';
         if (data !== undefined && data !== null) el.appendChild(Frag(Tpl(tpl), data));
     };
-    const Patch = (el, data) => Obj(el, Object.assign(Obj(el), data));
     const Append = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data, 'appendChild');
     const Prepend = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data.reverse(), 'prepend');
-    const Modify = (el, callback) => Obj(el, callback(Obj(el)));
 
-    const api = { Get, Set, Patch, Append, Prepend, Modify, Obj, Arr, Render, FxParams };
+    return { Get, Set, Append, Prepend, Obj, Arr, Render, FxParams, Allfd, Attr };
+})();
 
-    api.Fx = {
-        Obj: {
-            Get: (el, params) => {
-                const d = {};
-                Allfd(el, '[val]').forEach(e => Object.assign(d, Get(e)));
-                return params.key ? { [params.key]: d } : d;
-            },
-            Set: (el, data, params) => {
-                const val = params.key ? data[params.key] : data;
-                if (val === undefined || val === null) return;
-                Allfd(el, '[val]').forEach(e => Set(e, val));
-            }
+Val.Fx = {
+    Obj: {
+        Get: (el, params) => {
+            const d = {};
+            Val.Allfd(el, '[val]').forEach(e => Object.assign(d, Val.Get(e)));
+            return params.key ? { [params.key]: d } : d;
         },
-        Arr: {
-            Get: (el, params) => ({ [params.key]: Arr(el) }),
-            Set: (el, data, params) => Arr(el, data[params.key], params.tpl)
+        Set: (el, data, params) => {
+            const val = params.key ? data[params.key] : data;
+            if (val === undefined || val === null) return;
+            Val.Allfd(el, '[val]').forEach(e => Val.Set(e, val));
+        }
+    },
+    Arr: {
+        Get: (el, params) => ({ [params.key]: Val.Arr(el) }),
+        Set: (el, data, params) => Val.Arr(el, data[params.key], params.tpl)
+    },
+    Render: {
+        Get: (el, params) => {
+            const d = {};
+            Val.Allfd(el, '[val]').forEach(e => Object.assign(d, Val.Get(e)));
+            return { [params.key]: d };
         },
-        Render: {
-            Get: (el, params) => {
-                const d = {};
-                Allfd(el, '[val]').forEach(e => Object.assign(d, Get(e)));
-                return { [params.key]: d };
-            },
-            Set: (el, data, params) => Render(el, params.tpl, data[params.key])
+        Set: (el, data, params) => Val.Render(el, params.tpl, data[params.key])
+    },
+    Text: {
+        Get: (el, params) => ({ [params.key]: el.textContent }),
+        Set: (el, data, params) => { el.textContent = data[params.key]; }
+    },
+    Html: {
+        Get: (el, params) => ({ [params.key]: el.innerHTML }),
+        Set: (el, data, params) => { el.innerHTML = data[params.key]; }
+    },
+    Input: {
+        Get: (el, params) => ({ [params.key]: el.value }),
+        Set: (el, data, params) => { el.value = data[params.key] || ''; }
+    },
+    Show: {
+        Get: (el, params) => ({ [params.key]: el.style.display !== 'none' }),
+        Set: (el, data, params) => { el.style.display = data[params.key] ? '' : 'none'; }
+    },
+    Hide: {
+        Get: (el, params) => ({ [params.key]: el.style.display === 'none' }),
+        Set: (el, data, params) => { el.style.display = data[params.key] ? 'none' : ''; }
+    },
+    Img: {
+        Get: (el, params) => ({ [params.key]: el.src }),
+        Set: (el, data, params) => { el.src = data[params.key]; }
+    },
+    Attr: {
+        Get: (el, params) => ({ [params.key]: Val.Attr(el, params.attr) }),
+        Set: (el, data, params) => { Val.Attr(el, params.attr, data[params.key]); }
+    },
+    Pattr: {
+        Get: (el, params) => ({ [params.key]: Val.Attr(el.parentElement, params.attr) }),
+        Set: (el, data, params) => { Val.Attr(el.parentElement, params.attr, data[params.key]); }
+    },
+    If: {
+        Get: (el, params) => {
+            const conditionMet = el.style.display !== 'none' && (!params.value || params.value === 'true');
+            if (!conditionMet) return {};
+            const result = Val.Allfd(el, '[val]').reduce((r, e) => Object.assign(r, Val.Get(e)), {});
+            return { [params.key]: result };
         },
-        Text: {
-            Get: (el, params) => ({ [params.key]: el.textContent }),
-            Set: (el, data, params) => { el.textContent = data[params.key]; }
-        },
-        Html: {
-            Get: (el, params) => ({ [params.key]: el.innerHTML }),
-            Set: (el, data, params) => { el.innerHTML = data[params.key]; }
-        },
-        Input: {
-            Get: (el, params) => ({ [params.key]: el.value }),
-            Set: (el, data, params) => { el.value = data[params.key] || ''; }
-        },
-        Show: {
-            Get: (el, params) => ({ [params.key]: el.style.display !== 'none' }),
-            Set: (el, data, params) => { el.style.display = data[params.key] ? '' : 'none'; }
-        },
-        Hide: {
-            Get: (el, params) => ({ [params.key]: el.style.display === 'none' }),
-            Set: (el, data, params) => { el.style.display = data[params.key] ? 'none' : ''; }
-        },
-        Img: {
-            Get: (el, params) => ({ [params.key]: el.src }),
-            Set: (el, data, params) => { el.src = data[params.key]; }
-        },
-        Attr: {
-            Get: (el, params) => ({ [params.key]: Attr(el, params.attr) }),
-            Set: (el, data, params) => { Attr(el, params.attr, data[params.key]); }
-        },
-        Pattr: {
-            Get: (el, params) => ({ [params.key]: Attr(el.parentElement, params.attr) }),
-            Set: (el, data, params) => { Attr(el.parentElement, params.attr, data[params.key]); }
-        },
-        If: {
-            Get: (el, params) => {
-                const conditionMet = el.style.display !== 'none' && (!params.value || params.value === 'true');
-                if (!conditionMet) return {};
-                const result = Allfd(el, '[val]').reduce((r, e) => Object.assign(r, Get(e)), {});
-                return { [params.key]: result };
-            },
-            Set: (el, data, params) => {
-                const conditionMet = params.value ? params.value === data[params.key] : data[params.key];
-                el.style.display = conditionMet ? '' : 'none';
-                if (conditionMet && data[params.key]) {
-                    Allfd(el, '[val]').forEach(e => Set(e, data[params.key]));
-                }
-            }
-        },
-        Fxs: {
-            Get: (el, params) => {
-                return Array.from(el.querySelector('[val-fxs]')?.children ?? []).reduce((result, fxEl) => {
-                    const fx = Attr(fxEl, 'val-fx');
-                    return (fx && api.Fx[fx])
-                        ? Object.assign(result, api.Fx[fx].Get(el, FxParams(fxEl)))
-                        : result;
-                }, {});
-            },
-            Set: (el, data, params) => {
-                Array.from(el.querySelector('[val-fxs]')?.children ?? []).forEach(fxEl => {
-                    const fx = Attr(fxEl, 'val-fx');
-                    fx && api.Fx[fx] && api.Fx[fx].Set(el, data, FxParams(fxEl));
-                });
+        Set: (el, data, params) => {
+            const conditionMet = params.value ? params.value === data[params.key] : data[params.key];
+            el.style.display = conditionMet ? '' : 'none';
+            if (conditionMet && data[params.key]) {
+                Val.Allfd(el, '[val]').forEach(e => Val.Set(e, data[params.key]));
             }
         }
-    };
+    },
+    Fxs: {
+        Get: (el, params) => {
+            return Array.from(el.querySelector('[val-fxs]')?.children ?? []).reduce((result, fxEl) => {
+                const fx = Val.Attr(fxEl, 'val-fx');
+                return (fx && Val.Fx[fx])
+                    ? Object.assign(result, Val.Fx[fx].Get(el, Val.FxParams(fxEl)))
+                    : result;
+            }, {});
+        },
+        Set: (el, data, params) => {
+            Array.from(el.querySelector('[val-fxs]')?.children ?? []).forEach(fxEl => {
+                const fx = Val.Attr(fxEl, 'val-fx');
+                fx && Val.Fx[fx] && Val.Fx[fx].Set(el, data, Val.FxParams(fxEl));
+            });
+        }
+    }
+};
 
-    return api;
+// Sync — a diff-aware set. Reads the current value, writes only what changed, and
+// descends only into changed subtrees, so unchanged branches (and their val-sets)
+// are left alone. Lists are reconciled by position. Optional: drop this block to remove it.
+Val.Sync = (() => {
+    const eq = (a, b) => {
+        if (a === b) return true;
+        if (a == null || b == null) return a === b;
+        if (typeof a !== 'object' && typeof b !== 'object') return String(a) === String(b);
+        return JSON.stringify(a) === JSON.stringify(b);
+    };
+    const syncArr = (el, data) => {
+        const next = data[Val.FxParams(el).key] || [];
+        const kids = Array.from(el.children);
+        const cur = kids.map(c => Val.Obj(c));
+        const n = Math.min(kids.length, next.length);
+        for (let i = 0; i < n; i++) if (!eq(cur[i], next[i])) sync(kids[i], next[i]);
+        if (next.length > kids.length) Val.Append(el, next.slice(kids.length));
+        else for (let i = kids.length - 1; i >= next.length; i--) kids[i].remove();
+    };
+    const sync = (root, data) => {
+        const leaves = Val.Allfd(root, '[val]');
+        const targets = leaves.length ? leaves : (root.hasAttribute('val') ? [root] : []);
+        targets.forEach(e => {
+            if (e.hasAttribute('val-set')) { Val.Set(e, data); return; }
+            const fx = Val.Attr(e, 'val-fx');
+            if (fx === 'Arr') { syncArr(e, data); return; }
+            if (fx === 'Obj') {
+                const key = Val.FxParams(e).key;
+                const cur = Val.Get(e);
+                const curSub = key ? cur[key] : cur;
+                const nextSub = key ? data?.[key] : data;
+                if (!eq(curSub, nextSub)) sync(e, nextSub);
+                return;
+            }
+            const cur = Val.Get(e);
+            const keys = Object.keys(cur);
+            if (keys.length === 0 || keys.some(k => !eq(cur[k], data?.[k]))) Val.Set(e, data);
+        });
+    };
+    return sync;
 })();
 
 HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, data, tpl); return this; };
 HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
 HTMLElement.prototype.vget = function (lane) { lane = lane ?? this.getAttribute('val-lane'); return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane); };
-HTMLElement.prototype.vmodify = function (f) { Val.Modify(this, f); return this; };
 HTMLElement.prototype.vobj = function (data = null, lane) { lane = lane ?? this.getAttribute('val-lane'); return Val.Obj(this, data, lane); };
-HTMLElement.prototype.vpatch = function (data) { Val.Patch(this, data); return this; };
 HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
 HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
 HTMLElement.prototype.vset = function (data, lane) {
+    if (typeof data === 'function') {
+        const cur = this.vget();
+        const next = data(cur);
+        data = next === undefined ? cur : next;
+    }
     lane = lane ?? this.getAttribute('val-lane');
     this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data, lane);
     return this;
@@ -455,31 +505,47 @@ HTMLElement.prototype.vval = function (data) {
     this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data);
     return this;
 };
+HTMLElement.prototype.vsync = function (data) {
+    if (typeof data === 'function') {
+        const cur = this.vget();
+        const next = data(cur);
+        data = next === undefined ? cur : next;
+    }
+    Val.Sync(this, data);
+    return this;
+};
 </script>
 <script>
 const Vld = (() => {
-    const Rule = {
-        required: (input) => (input !== undefined && input !== null && input !== '') ? null : 'This field is required',
-        email: (input) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input) ? null : 'Not a valid email address',
-        min: (input, arg) => String(input ?? '').length >= Number(arg) ? null : `Must be at least ${arg} characters`,
-        same: (input, arg) => input[arg[0]] === input[arg[1]] ? null : 'Must match',
+    const ResolveRule = (def) => {
+        if (typeof def === 'string') return { fn: Vld.Rule[def], args: {}, key: def, msg: undefined };
+        if (typeof def === 'function') return { fn: def, args: {}, key: undefined, msg: undefined };
+        if (!('rule' in def)) {
+            const name = Object.keys(def)[0];
+            const val = def[name];
+            const plain = val != null && typeof val === 'object' && Object.getPrototypeOf(val) === Object.prototype;
+            return { fn: Vld.Rule[name], args: plain ? val : { value: val }, key: name, msg: undefined };
+        }
+        const { rule, msg, key, ...args } = def;
+        const fn = typeof rule === 'string' ? Vld.Rule[rule] : rule;
+        return { fn, args, key: key ?? (typeof rule === 'string' ? rule : undefined), msg };
     };
 
-    const resolveRule = (def) => {
-        if (typeof def === 'string') return { fn: Rule[def], arg: undefined, key: def, msg: undefined };
-        if (typeof def === 'function') return { fn: def, arg: undefined, key: undefined, msg: undefined };
-        const fn = typeof def.rule === 'string' ? Rule[def.rule] : def.rule;
-        const key = def.key ?? (typeof def.rule === 'string' ? def.rule : undefined);
-        return { fn, arg: def.arg, key, msg: def.msg };
-    };
+    const IsEmpty = (v) => v === undefined || v === null || v === '';
 
-    const checkErrors = async (check, data) => {
+    const CheckErrors = async (check, data) => {
         const input = check.path == null ? data : data[check.path];
+        const path = check.errorPath ?? check.path ?? null;
+        if (IsEmpty(input)) {
+            if (check.required === false) return [];
+            return [{ key: 'required', message: check.requiredMsg ?? Vld.Msg.required, path }];
+        }
         for (const def of check.rules) {
-            const { fn, arg, key, msg } = resolveRule(def);
-            const result = await fn(input, arg);
-            if (result !== null) {
-                return [{ key, message: msg ?? result, path: check.errorPath ?? check.path ?? null }];
+            const { fn, args, key, msg } = ResolveRule(def);
+            const result = await fn(input, args);
+            if (result !== true) {
+                const message = msg ?? (typeof result === 'string' ? result : Vld.msg(key, args));
+                return [{ key, message, path }];
             }
         }
         return [];
@@ -487,34 +553,67 @@ const Vld = (() => {
 
     const Validate = async (rules, data) => {
         for (const checks of rules) {
-            const errors = (await Promise.all(checks.map(check => checkErrors(check, data)))).flat();
+            const errors = (await Promise.all(checks.map(check => CheckErrors(check, data)))).flat();
             if (errors.length) return errors;
         }
         return [];
     };
 
-    const escapeHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const defaultTpl = '<div class="vld-error">{message}</div>';
+    return { Validate };
+})();
 
-    const Clear = (root, attr = 'vld-error') => root.querySelectorAll(`[${attr}]`).forEach(el => { el.innerHTML = ''; });
+Vld.Msg = {
+    required: 'This field is required',
+    email: 'Not a valid email address',
+    url: 'Not a valid URL',
+    min: 'Must be at least {value} characters',
+    max: 'Must be at most {value} characters',
+    between: 'Must be between {min} and {max} characters',
+    length: 'Must be exactly {value} characters',
+    alpha: 'Only letters are allowed',
+    alnum: 'Only letters and numbers are allowed',
+    digits: 'Only digits are allowed',
+    numeric: 'Must be a number',
+    integer: 'Must be a whole number',
+    gte: 'Must be {value} or more',
+    lte: 'Must be {value} or less',
+    in: 'Must be one of: {value}',
+    notIn: 'Must not be one of: {value}',
+    regex: 'Invalid format',
+    same: 'Must match',
+    different: 'Must be different',
+    confirmed: 'Confirmation does not match',
+};
 
-    const Form = async (root, rules, data, tpl, attr = 'vld-error') => {
-        const errors = await Validate(rules, data);
-        const template = tpl ?? root.querySelector('template[vld-error-tpl]')?.innerHTML ?? defaultTpl;
+Vld.msg = (key, args = {}) => (Vld.Msg[key] ?? '').replace(/\{(\w+)\}/g, (_, k) => args[k] ?? '');
 
-        Clear(root, attr);
+Vld.Rule = {
+    email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+    url: (v) => { try { new URL(v); return true; } catch { return false; } },
+    min: (v, a) => String(v ?? '').length >= a.value,
+    max: (v, a) => String(v ?? '').length <= a.value,
+    between: (v, a) => { const n = String(v ?? '').length; return n >= a.min && n <= a.max; },
+    length: (v, a) => String(v ?? '').length === a.value,
+    alpha: (v) => /^[a-zA-Z]+$/.test(v),
+    alnum: (v) => /^[a-zA-Z0-9]+$/.test(v),
+    digits: (v) => /^[0-9]+$/.test(v),
+    numeric: (v) => v !== '' && !isNaN(Number(v)),
+    integer: (v) => Number.isInteger(Number(v)),
+    gte: (v, a) => Number(v) >= a.value,
+    lte: (v, a) => Number(v) <= a.value,
+    in: (v, a) => a.value.includes(v),
+    notIn: (v, a) => !a.value.includes(v),
+    regex: (v, a) => a.value.test(v),
+    same: (data, a) => data[a.first] === data[a.second],
+    different: (data, a) => data[a.first] !== data[a.second],
+    confirmed: (data, a) => data[a.value] === data[`${a.value}_confirmation`],
+};
 
-        errors.forEach(e => {
-            const el = root.querySelector(`[${attr}="${CSS.escape(e.path ?? '')}"]`);
-            el?.insertAdjacentHTML('beforeend', template.replace(/\{(\w+)\}/g, (_, k) => escapeHtml(e[k] ?? '')));
-        });
+Vld.Form = (() => {
+    const EscapeHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const FormEl = (space) => space.matches('[vld-form]') ? space : space.querySelector('[vld-form]');
 
-        return errors;
-    };
-
-    const formEl = (space) => space.matches('[vld-form]') ? space : space.querySelector('[vld-form]');
-
-    const formData = (form) => {
+    const FormValues = (form) => {
         const data = {};
         for (const [name, value] of new FormData(form)) {
             data[name] = name in data ? [].concat(data[name], value) : value;
@@ -522,123 +621,140 @@ const Vld = (() => {
         return data;
     };
 
+    const Clear = (root, attr = 'vld-error') => root.querySelectorAll(`[${attr}]`).forEach(el => { el.innerHTML = ''; });
+
+    const Apply = (root, errors, tpl, attr = 'vld-error') => {
+        const selector = tpl ?? root.getAttribute('vld-error-tpl');
+        const template = selector && document.querySelector(selector)?.innerHTML;
+
+        Clear(root, attr);
+        if (!template) return errors;
+
+        errors.forEach(e => {
+            const el = root.querySelector(`[${attr}="${CSS.escape(e.path ?? '')}"]`);
+            el?.insertAdjacentHTML('beforeend', template.replace(/\{(\w+)\}/g, (_, k) => EscapeHtml(e[k] ?? '')));
+        });
+
+        return errors;
+    };
+
+    const Validate = async (root, rules, data, tpl, attr) => {
+        const errors = await Vld.Validate(rules, data);
+        Apply(root, errors, tpl, attr);
+        return errors.length === 0;
+    };
+
     const Submit = async (ctx, event, rules, data) => {
         event?.preventDefault();
         const space = ctx.closest('[vld-space]');
-        return Form(space, rules, data ?? formData(formEl(space)));
+        return Validate(space, rules, data ?? FormValues(FormEl(space)));
     };
 
-    return { Rule, Validate, Clear, Form, Submit };
+    return { Clear, Validate, Submit };
 })();
 </script>
 <script>
+const Compute = (() => {
+    const Debounce = (fn, ms) => {
+        let timer;
+        return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), ms);
+        };
+    };
+    const Run = (el, name) => {
+        const code = el.getAttribute(name);
+        return (function () {
+            return eval(code).call(el);
+        }).bind(el)();
+    };
+    const All = (root, name) => {
+        root.querySelectorAll(`[${name}]`).forEach(el => Run(el, name));
+    };
+    const Init = (root, name, opts = {}) => {
+        const store = root._compute ??= {};
+        if (store[name]) {
+            return;
+        }
+        const config = { childList: true, subtree: opts.subtree !== false };
+        let observer;
+        const run = () => {
+            observer.disconnect();
+            All(root, name);
+            observer.observe(root, config);
+        };
+        const fire = opts.debounce ? Debounce(run, opts.debounce) : run;
+        observer = new MutationObserver(fire);
+        store[name] = observer;
+        run();
+    };
+    return { Init };
+})();
+HTMLElement.prototype.compute = function (name, opts) {
+    Compute.Init(this, name, opts);
+    return this;
+};
+</script>
+<script>
 const Kanban = (() => {
-    // Title validation, ordered: an empty title reports "required" and stops there; a
-    // one-character title gets past that and reports the length rule. Just a plain value
-    // handed to Vld.Form — Vld knows nothing about where it's kept.
     const rules = [
-        [{ path: 'title', rules: ['required', { rule: 'min', arg: 2 }] }],
+        [{ path: 'title', rules: [{ min: 2 }] }],
     ];
 
-    // A column recounts itself: it holds as many cards as it holds. Every place that
-    // changes a column's cards owns that column, so it recounts by calling Count directly.
-    const Count = (col) => col.one('[kanban-count]').vset({ count: col.all('[kanban-card]').length });
+    const Modal = (ctx) => ctx.up('[kanban-space]').one('[kanban-modal]');
 
-    // Make a card list draggable, from the list's own val-set as it renders. The _sortable
-    // guard keeps it idempotent: re-rendering never wires a second Sortable onto the list.
-    // A drag moves a card between columns, so on sort the list recounts its own column.
-    const Drag = (list) => {
-        if (list._sortable) return;
-        list._sortable = new Sortable(list, { group: 'kanban', animation: 150, onSort: () => Count(list.up('[kanban-column]')) });
+    const Select = (ctx, value) =>
+        ctx.all('[kanban-option]').each(o => o.flag('kanban-selected', o.attr('kanban-option') === value));
+
+    const Open = (ctx, anchor, data) => {
+        const m = Modal(ctx);
+        m._kanban = anchor;
+        m.one('[kanban-form]').vset(data);
+        m.attr('kanban-modal-mode', anchor.matches('[kanban-card]') ? 'edit' : 'add').flag('hidden', false);
+        m.one('[kanban-input]').focus();
     };
 
-    // The swatches are static markup (it's a demo), so the picker is only selection: flag
-    // the swatch whose colour matches — one step behind both a click and loading for edit.
-    const Pick = (colors, color) => colors.all('[kanban-swatch]').each(s => s.flag('kanban-selected', s.dataset.color === color));
-
-    // Read the selected colour back, so the form's vget returns { title, colour } as one.
-    const Picked = (colors) => ({ color: colors.one('[kanban-selected]')?.dataset.color ?? null });
-
-    // Open the modal filled with data, in the given mode, focused. The mode is an attribute
-    // because CSS reads it (it hides Delete while adding).
-    const Open = (modal, mode, data) => {
-        const dialog = modal.one('[kanban-dialog]');
-        dialog.vset(data);
-        Vld.Clear(dialog);
-        modal.attr('kanban-modal-mode', mode).flag('hidden', false);
-        modal.one('[kanban-input]').focus();
+    const Close = (ctx) => {
+        const m = Modal(ctx);
+        m.flag('hidden', true);
+        Vld.Form.Clear(m);
     };
 
-    // Add: remember the target column on the modal, open blank with the first colour. The
-    // working reference lives on the modal element, so every board instance keeps its own.
-    const Add = (ctx) => {
-        const board = ctx.up('[kanban-space]');
-        const modal = board.one('[kanban-modal]');
-        modal._card = null;
-        modal._target = ctx.up('[kanban-column]');
-        Open(modal, 'add', { title: '', color: board.one('[kanban-swatch]').dataset.color });
-    };
+    const Add = (ctx) => Open(ctx, ctx.up('[kanban-column]').one('[kanban-cards]'),
+        { title: '', color: Modal(ctx).one('[kanban-option]').attr('kanban-option') });
 
-    // Edit: remember the card on the modal, open filled straight from it.
     const Edit = (ctx) => {
-        const modal = ctx.up('[kanban-space]').one('[kanban-modal]');
         const card = ctx.up('[kanban-card]');
-        modal._card = card;
-        modal._target = null;
-        Open(modal, 'edit', card.vget());
+        Open(ctx, card, card.vget());
     };
 
-    // Save: read the form once, validate it, and bail on any error (Vld.Form has already
-    // rendered the message under the field). Otherwise write it into the remembered card,
-    // or append a new one to the remembered column and recount it. Editing changes nothing
-    // countable.
     const Save = async (ctx) => {
-        const modal = ctx.up('[kanban-space]').one('[kanban-modal]');
-        const dialog = modal.one('[kanban-dialog]');
-        const data = dialog.vget();
-        if ((await Vld.Form(dialog, rules, data)).length) return;
-        if (modal.attr('kanban-modal-mode') === 'edit') {
-            modal._card.vset(data);
+        const m = Modal(ctx);
+        const data = m.one('[kanban-form]').vget();
+        if (!(await Vld.Form.Validate(m, rules, data))) return;
+        if (m._kanban.matches('[kanban-card]')) {
+            m._kanban.vset(data);
         } else {
-            modal._target.one('[kanban-cards]').vappend([data]);
-            Count(modal._target);
+            m._kanban.vappend([data]);
         }
         Close(ctx);
     };
 
     const Delete = (ctx) => {
-        const modal = ctx.up('[kanban-space]').one('[kanban-modal]');
-        const card = modal._card;
-        if (card && confirm('Delete this card?')) {
-            const col = card.up('[kanban-column]');
-            card.remove();
-            Count(col);
+        const m = Modal(ctx);
+        if (m._kanban.matches('[kanban-card]') && confirm('Delete this card?')) {
+            m._kanban.remove();
             Close(ctx);
         }
     };
 
-    const Close = (ctx) => {
-        const modal = ctx.up('[kanban-space]').one('[kanban-modal]');
-        modal.flag('hidden', true);
-        modal._card = null;
-        modal._target = null;
-    };
+    const Init = (ctx, input) =>
+        ctx.up('[kanban-space]')
+            .vset(input)
+            .compute('kanban-onchange')
+            .all('[kanban-drag]').each(i => new Sortable(i, { group: 'kanban', animation: 150 }));
 
-    // The whole board is one value. Writing it lets val fan out: data renders the columns,
-    // and the column template nests an Arr over cards (whose val-set wires the drag). The
-    // JavaScript names no template — the HTML does, in val-tpl. Then each column counts itself.
-    const Init = (ctx, input) => {
-        const board = ctx.up('[kanban-space]');
-        board.vset(input);
-        board.all('[kanban-column]').each(Count);
-    };
-
-    return {
-        Init,
-        Column:  { Count, Drag },
-        Palette: { Pick, Picked },
-        Modal:   { Add, Edit, Save, Delete, Close },
-    };
+    return { Init, Add, Edit, Save, Delete, Close, Select };
 })();
 </script>
 <div kanban-space>
@@ -648,39 +764,42 @@ const Kanban = (() => {
         <div kanban-column>
             <header>
                 <span kanban-column-title val val-fx="Text" val-key="title"></span>
-                <span kanban-count val val-fx="Text" val-key="count"></span>
+                <span kanban-onchange="() => this.textContent = this.up('[kanban-column]').all('[kanban-card]').length"></span>
             </header>
-            <div kanban-cards val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]" val-set="() => Kanban.Column.Drag(this)"></div>
-            <button type="button" kanban-add onclick="Kanban.Modal.Add(this)">+ Add card</button>
+            <div kanban-cards kanban-drag val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></div>
+            <button kanban-add onclick="Kanban.Add(this)">+ Add card</button>
         </div>
     </template>
 
     <template kanban-card-tpl>
-        <article kanban-card onclick="Kanban.Modal.Edit(this)">
+        <article kanban-card onclick="Kanban.Edit(this)">
             <span kanban-card-title val val-fx="Text" val-key="title"
                   val-set="(d) => this.up('[kanban-card]').style.setProperty('--kanban-color', d.color)"
                   val-get="() => ({ color: this.up('[kanban-card]').style.getPropertyValue('--kanban-color').trim() })"></span>
         </article>
     </template>
 
-    <div kanban-modal hidden kanban-modal-mode="add">
-        <div kanban-backdrop onclick="Kanban.Modal.Close(this)"></div>
-        <div kanban-dialog>
+    <template id="kanban-error-tpl">{message}</template>
+
+    <div kanban-modal val val-get="() => ({})" hidden kanban-modal-mode="add" vld-error-tpl="#kanban-error-tpl">
+        <div onclick="Kanban.Close(this)"></div>
+        <section kanban-form>
             <input kanban-input val val-fx="Input" val-key="title" type="text" placeholder="Title">
-            <div vld-error="title" kanban-error></div>
-            <div kanban-colors val val-get="() => Kanban.Palette.Picked(this)" val-set="(d) => Kanban.Palette.Pick(this, d.color)">
-                <button type="button" kanban-swatch data-color="#8b5cf6" style="background:#8b5cf6" title="Violet" aria-label="Violet" onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
-                <button type="button" kanban-swatch data-color="#5a80e6" style="background:#5a80e6" title="Blue"   aria-label="Blue"   onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
-                <button type="button" kanban-swatch data-color="#2dd4bf" style="background:#2dd4bf" title="Teal"   aria-label="Teal"   onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
-                <button type="button" kanban-swatch data-color="#f59e0b" style="background:#f59e0b" title="Amber"  aria-label="Amber"  onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
-                <button type="button" kanban-swatch data-color="#f43f5e" style="background:#f43f5e" title="Rose"   aria-label="Rose"   onclick="Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"></button>
+            <div vld-error="title"></div>
+            <div kanban-color val val-fx="Attr" val-key="color" val-attr="kanban-color-val"
+                 val-set="(d) => Kanban.Select(this, d.color)">
+                <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
             </div>
-            <div kanban-actions>
-                <button type="button" kanban-delete onclick="Kanban.Modal.Delete(this)">Delete</button>
-                <button type="button" onclick="Kanban.Modal.Close(this)">Cancel</button>
-                <button type="button" kanban-save onclick="Kanban.Modal.Save(this)">Save</button>
-            </div>
-        </div>
+            <footer>
+                <button onclick="Kanban.Save(this)">Save</button>
+                <button onclick="Kanban.Close(this)">Cancel</button>
+                <button kanban-delete onclick="Kanban.Delete(this)">Delete</button>
+            </footer>
+        </section>
     </div>
 
     <script>
@@ -704,7 +823,11 @@ const Kanban = (() => {
 </div>
 
 </div>
-<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Vld/Vld.js" target="_blank" rel="noopener">Vld.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
+<h2 id="state">State<a class="anchor" href="#state" aria-hidden="true">#</a></h2>
+<p>The whole board is one value. <code>vget</code> on the space reads it back as an object, ready to log, save, or send to a server.</p>
+<pre><code class="hljs language-javascript">dom.one(<span class="hljs-string">'[kanban-space]'</span>).vget();
+<span class="hljs-comment">// =&gt; { data: [ { title: 'To Do', cards: [ { title: 'Design landing page', color: '#8b5cf6' } ] } ] }</span></code></pre>
+<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Vld/Vld.js" target="_blank" rel="noopener">Vld.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Compute/Compute.js" target="_blank" rel="noopener">Compute.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-space</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-columns</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"data"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[kanban-column-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 
@@ -712,39 +835,42 @@ const Kanban = (() => {
         <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-column</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">header</span>&gt;</span>
                 <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-column-title</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-count</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"count"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-onchange</span>=<span class="hljs-string">"() =&gt; this.textContent = this.up('[kanban-column]').all('[kanban-card]').length"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
             <span class="hljs-tag">&lt;/<span class="hljs-name">header</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-cards</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"cards"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[kanban-card-tpl]"</span> <span class="hljs-attr">val-set</span>=<span class="hljs-string">"() =&gt; Kanban.Column.Drag(this)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">kanban-add</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Modal.Add(this)"</span>&gt;</span>+ Add card<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-cards</span> <span class="hljs-attr">kanban-drag</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"cards"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[kanban-card-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-add</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Add(this)"</span>&gt;</span>+ Add card<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
         <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
 
     <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">kanban-card-tpl</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">article</span> <span class="hljs-attr">kanban-card</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Modal.Edit(this)"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">article</span> <span class="hljs-attr">kanban-card</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Edit(this)"</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-card-title</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>
                   <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(d) =&gt; this.up('[kanban-card]').style.setProperty('--kanban-color', d.color)"</span>
                   <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({ color: this.up('[kanban-card]').style.getPropertyValue('--kanban-color').trim() })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
         <span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
 
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-modal</span> <span class="hljs-attr">hidden</span> <span class="hljs-attr">kanban-modal-mode</span>=<span class="hljs-string">"add"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-backdrop</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Modal.Close(this)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-dialog</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"kanban-error-tpl"</span>&gt;</span>{message}<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-modal</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({})"</span> <span class="hljs-attr">hidden</span> <span class="hljs-attr">kanban-modal-mode</span>=<span class="hljs-string">"add"</span> <span class="hljs-attr">vld-error-tpl</span>=<span class="hljs-string">"#kanban-error-tpl"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Close(this)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">kanban-form</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">kanban-input</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Input"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"Title"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">vld-error</span>=<span class="hljs-string">"title"</span> <span class="hljs-attr">kanban-error</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-colors</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; Kanban.Palette.Picked(this)"</span> <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(d) =&gt; Kanban.Palette.Pick(this, d.color)"</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">kanban-swatch</span> <span class="hljs-attr">data-color</span>=<span class="hljs-string">"#8b5cf6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#8b5cf6"</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"Violet"</span> <span class="hljs-attr">aria-label</span>=<span class="hljs-string">"Violet"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">kanban-swatch</span> <span class="hljs-attr">data-color</span>=<span class="hljs-string">"#5a80e6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#5a80e6"</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"Blue"</span>   <span class="hljs-attr">aria-label</span>=<span class="hljs-string">"Blue"</span>   <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">kanban-swatch</span> <span class="hljs-attr">data-color</span>=<span class="hljs-string">"#2dd4bf"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#2dd4bf"</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"Teal"</span>   <span class="hljs-attr">aria-label</span>=<span class="hljs-string">"Teal"</span>   <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">kanban-swatch</span> <span class="hljs-attr">data-color</span>=<span class="hljs-string">"#f59e0b"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f59e0b"</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"Amber"</span>  <span class="hljs-attr">aria-label</span>=<span class="hljs-string">"Amber"</span>  <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">kanban-swatch</span> <span class="hljs-attr">data-color</span>=<span class="hljs-string">"#f43f5e"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f43f5e"</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"Rose"</span>   <span class="hljs-attr">aria-label</span>=<span class="hljs-string">"Rose"</span>   <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Palette.Pick(this.up('[kanban-colors]'), this.dataset.color)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">vld-error</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-color</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"kanban-color-val"</span>
+                 <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(d) =&gt; Kanban.Select(this, d.color)"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#8b5cf6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#8b5cf6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#5a80e6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#5a80e6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#2dd4bf"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#2dd4bf"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f59e0b"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f59e0b"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f43f5e"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f43f5e"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
             <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-actions</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">kanban-delete</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Modal.Delete(this)"</span>&gt;</span>Delete<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Modal.Close(this)"</span>&gt;</span>Cancel<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">kanban-save</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Modal.Save(this)"</span>&gt;</span>Save<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">footer</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Save(this)"</span>&gt;</span>Save<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Close(this)"</span>&gt;</span>Cancel<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-delete</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Delete(this)"</span>&gt;</span>Delete<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">footer</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 
     <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
@@ -767,112 +893,64 @@ const Kanban = (() => {
     </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
 <pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> Kanban = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
-    <span class="hljs-comment">// Title validation, ordered: an empty title reports "required" and stops there; a</span>
-    <span class="hljs-comment">// one-character title gets past that and reports the length rule. Just a plain value</span>
-    <span class="hljs-comment">// handed to Vld.Form — Vld knows nothing about where it's kept.</span>
     <span class="hljs-keyword">const</span> rules = [
-        [{ <span class="hljs-attr">path</span>: <span class="hljs-string">'title'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'required'</span>, { <span class="hljs-attr">rule</span>: <span class="hljs-string">'min'</span>, <span class="hljs-attr">arg</span>: <span class="hljs-number">2</span> }] }],
+        [{ <span class="hljs-attr">path</span>: <span class="hljs-string">'title'</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">min</span>: <span class="hljs-number">2</span> }] }],
     ];
 
-    <span class="hljs-comment">// A column recounts itself: it holds as many cards as it holds. Every place that</span>
-    <span class="hljs-comment">// changes a column's cards owns that column, so it recounts by calling Count directly.</span>
-    <span class="hljs-keyword">const</span> Count = <span class="hljs-function">(<span class="hljs-params">col</span>) =&gt;</span> col.one(<span class="hljs-string">'[kanban-count]'</span>).vset({ <span class="hljs-attr">count</span>: col.all(<span class="hljs-string">'[kanban-card]'</span>).length });
+    <span class="hljs-keyword">const</span> Modal = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> ctx.up(<span class="hljs-string">'[kanban-space]'</span>).one(<span class="hljs-string">'[kanban-modal]'</span>);
 
-    <span class="hljs-comment">// Make a card list draggable, from the list's own val-set as it renders. The _sortable</span>
-    <span class="hljs-comment">// guard keeps it idempotent: re-rendering never wires a second Sortable onto the list.</span>
-    <span class="hljs-comment">// A drag moves a card between columns, so on sort the list recounts its own column.</span>
-    <span class="hljs-keyword">const</span> Drag = <span class="hljs-function">(<span class="hljs-params">list</span>) =&gt;</span> {
-        <span class="hljs-keyword">if</span> (list._sortable) <span class="hljs-keyword">return</span>;
-        list._sortable = <span class="hljs-keyword">new</span> Sortable(list, { <span class="hljs-attr">group</span>: <span class="hljs-string">'kanban'</span>, <span class="hljs-attr">animation</span>: <span class="hljs-number">150</span>, <span class="hljs-attr">onSort</span>: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> Count(list.up(<span class="hljs-string">'[kanban-column]'</span>)) });
+    <span class="hljs-keyword">const</span> Select = <span class="hljs-function">(<span class="hljs-params">ctx, value</span>) =&gt;</span>
+        ctx.all(<span class="hljs-string">'[kanban-option]'</span>).each(<span class="hljs-function"><span class="hljs-params">o</span> =&gt;</span> o.flag(<span class="hljs-string">'kanban-selected'</span>, o.attr(<span class="hljs-string">'kanban-option'</span>) === value));
+
+    <span class="hljs-keyword">const</span> Open = <span class="hljs-function">(<span class="hljs-params">ctx, anchor, data</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> m = Modal(ctx);
+        m._kanban = anchor;
+        m.one(<span class="hljs-string">'[kanban-form]'</span>).vset(data);
+        m.attr(<span class="hljs-string">'kanban-modal-mode'</span>, anchor.matches(<span class="hljs-string">'[kanban-card]'</span>) ? <span class="hljs-string">'edit'</span> : <span class="hljs-string">'add'</span>).flag(<span class="hljs-string">'hidden'</span>, <span class="hljs-literal">false</span>);
+        m.one(<span class="hljs-string">'[kanban-input]'</span>).focus();
     };
 
-    <span class="hljs-comment">// The swatches are static markup (it's a demo), so the picker is only selection: flag</span>
-    <span class="hljs-comment">// the swatch whose colour matches — one step behind both a click and loading for edit.</span>
-    <span class="hljs-keyword">const</span> Pick = <span class="hljs-function">(<span class="hljs-params">colors, color</span>) =&gt;</span> colors.all(<span class="hljs-string">'[kanban-swatch]'</span>).each(<span class="hljs-function"><span class="hljs-params">s</span> =&gt;</span> s.flag(<span class="hljs-string">'kanban-selected'</span>, s.dataset.color === color));
-
-    <span class="hljs-comment">// Read the selected colour back, so the form's vget returns { title, colour } as one.</span>
-    <span class="hljs-keyword">const</span> Picked = <span class="hljs-function">(<span class="hljs-params">colors</span>) =&gt;</span> ({ <span class="hljs-attr">color</span>: colors.one(<span class="hljs-string">'[kanban-selected]'</span>)?.dataset.color ?? <span class="hljs-literal">null</span> });
-
-    <span class="hljs-comment">// Open the modal filled with data, in the given mode, focused. The mode is an attribute</span>
-    <span class="hljs-comment">// because CSS reads it (it hides Delete while adding).</span>
-    <span class="hljs-keyword">const</span> Open = <span class="hljs-function">(<span class="hljs-params">modal, mode, data</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> dialog = modal.one(<span class="hljs-string">'[kanban-dialog]'</span>);
-        dialog.vset(data);
-        Vld.Clear(dialog);
-        modal.attr(<span class="hljs-string">'kanban-modal-mode'</span>, mode).flag(<span class="hljs-string">'hidden'</span>, <span class="hljs-literal">false</span>);
-        modal.one(<span class="hljs-string">'[kanban-input]'</span>).focus();
+    <span class="hljs-keyword">const</span> Close = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> m = Modal(ctx);
+        m.flag(<span class="hljs-string">'hidden'</span>, <span class="hljs-literal">true</span>);
+        Vld.Form.Clear(m);
     };
 
-    <span class="hljs-comment">// Add: remember the target column on the modal, open blank with the first colour. The</span>
-    <span class="hljs-comment">// working reference lives on the modal element, so every board instance keeps its own.</span>
-    <span class="hljs-keyword">const</span> Add = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> board = ctx.up(<span class="hljs-string">'[kanban-space]'</span>);
-        <span class="hljs-keyword">const</span> modal = board.one(<span class="hljs-string">'[kanban-modal]'</span>);
-        modal._card = <span class="hljs-literal">null</span>;
-        modal._target = ctx.up(<span class="hljs-string">'[kanban-column]'</span>);
-        Open(modal, <span class="hljs-string">'add'</span>, { <span class="hljs-attr">title</span>: <span class="hljs-string">''</span>, <span class="hljs-attr">color</span>: board.one(<span class="hljs-string">'[kanban-swatch]'</span>).dataset.color });
-    };
+    <span class="hljs-keyword">const</span> Add = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> Open(ctx, ctx.up(<span class="hljs-string">'[kanban-column]'</span>).one(<span class="hljs-string">'[kanban-cards]'</span>),
+        { <span class="hljs-attr">title</span>: <span class="hljs-string">''</span>, <span class="hljs-attr">color</span>: Modal(ctx).one(<span class="hljs-string">'[kanban-option]'</span>).attr(<span class="hljs-string">'kanban-option'</span>) });
 
-    <span class="hljs-comment">// Edit: remember the card on the modal, open filled straight from it.</span>
     <span class="hljs-keyword">const</span> Edit = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> modal = ctx.up(<span class="hljs-string">'[kanban-space]'</span>).one(<span class="hljs-string">'[kanban-modal]'</span>);
         <span class="hljs-keyword">const</span> card = ctx.up(<span class="hljs-string">'[kanban-card]'</span>);
-        modal._card = card;
-        modal._target = <span class="hljs-literal">null</span>;
-        Open(modal, <span class="hljs-string">'edit'</span>, card.vget());
+        Open(ctx, card, card.vget());
     };
 
-    <span class="hljs-comment">// Save: read the form once, validate it, and bail on any error (Vld.Form has already</span>
-    <span class="hljs-comment">// rendered the message under the field). Otherwise write it into the remembered card,</span>
-    <span class="hljs-comment">// or append a new one to the remembered column and recount it. Editing changes nothing</span>
-    <span class="hljs-comment">// countable.</span>
     <span class="hljs-keyword">const</span> Save = <span class="hljs-keyword">async</span> (ctx) =&gt; {
-        <span class="hljs-keyword">const</span> modal = ctx.up(<span class="hljs-string">'[kanban-space]'</span>).one(<span class="hljs-string">'[kanban-modal]'</span>);
-        <span class="hljs-keyword">const</span> dialog = modal.one(<span class="hljs-string">'[kanban-dialog]'</span>);
-        <span class="hljs-keyword">const</span> data = dialog.vget();
-        <span class="hljs-keyword">if</span> ((<span class="hljs-keyword">await</span> Vld.Form(dialog, rules, data)).length) <span class="hljs-keyword">return</span>;
-        <span class="hljs-keyword">if</span> (modal.attr(<span class="hljs-string">'kanban-modal-mode'</span>) === <span class="hljs-string">'edit'</span>) {
-            modal._card.vset(data);
+        <span class="hljs-keyword">const</span> m = Modal(ctx);
+        <span class="hljs-keyword">const</span> data = m.one(<span class="hljs-string">'[kanban-form]'</span>).vget();
+        <span class="hljs-keyword">if</span> (!(<span class="hljs-keyword">await</span> Vld.Form.Validate(m, rules, data))) <span class="hljs-keyword">return</span>;
+        <span class="hljs-keyword">if</span> (m._kanban.matches(<span class="hljs-string">'[kanban-card]'</span>)) {
+            m._kanban.vset(data);
         } <span class="hljs-keyword">else</span> {
-            modal._target.one(<span class="hljs-string">'[kanban-cards]'</span>).vappend([data]);
-            Count(modal._target);
+            m._kanban.vappend([data]);
         }
         Close(ctx);
     };
 
     <span class="hljs-keyword">const</span> Delete = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> modal = ctx.up(<span class="hljs-string">'[kanban-space]'</span>).one(<span class="hljs-string">'[kanban-modal]'</span>);
-        <span class="hljs-keyword">const</span> card = modal._card;
-        <span class="hljs-keyword">if</span> (card &amp;&amp; confirm(<span class="hljs-string">'Delete this card?'</span>)) {
-            <span class="hljs-keyword">const</span> col = card.up(<span class="hljs-string">'[kanban-column]'</span>);
-            card.remove();
-            Count(col);
+        <span class="hljs-keyword">const</span> m = Modal(ctx);
+        <span class="hljs-keyword">if</span> (m._kanban.matches(<span class="hljs-string">'[kanban-card]'</span>) &amp;&amp; confirm(<span class="hljs-string">'Delete this card?'</span>)) {
+            m._kanban.remove();
             Close(ctx);
         }
     };
 
-    <span class="hljs-keyword">const</span> Close = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> modal = ctx.up(<span class="hljs-string">'[kanban-space]'</span>).one(<span class="hljs-string">'[kanban-modal]'</span>);
-        modal.flag(<span class="hljs-string">'hidden'</span>, <span class="hljs-literal">true</span>);
-        modal._card = <span class="hljs-literal">null</span>;
-        modal._target = <span class="hljs-literal">null</span>;
-    };
+    <span class="hljs-keyword">const</span> Init = <span class="hljs-function">(<span class="hljs-params">ctx, input</span>) =&gt;</span>
+        ctx.up(<span class="hljs-string">'[kanban-space]'</span>)
+            .vset(input)
+            .compute(<span class="hljs-string">'kanban-onchange'</span>)
+            .all(<span class="hljs-string">'[kanban-drag]'</span>).each(<span class="hljs-function"><span class="hljs-params">i</span> =&gt;</span> <span class="hljs-keyword">new</span> Sortable(i, { <span class="hljs-attr">group</span>: <span class="hljs-string">'kanban'</span>, <span class="hljs-attr">animation</span>: <span class="hljs-number">150</span> }));
 
-    <span class="hljs-comment">// The whole board is one value. Writing it lets val fan out: data renders the columns,</span>
-    <span class="hljs-comment">// and the column template nests an Arr over cards (whose val-set wires the drag). The</span>
-    <span class="hljs-comment">// JavaScript names no template — the HTML does, in val-tpl. Then each column counts itself.</span>
-    <span class="hljs-keyword">const</span> Init = <span class="hljs-function">(<span class="hljs-params">ctx, input</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> board = ctx.up(<span class="hljs-string">'[kanban-space]'</span>);
-        board.vset(input);
-        board.all(<span class="hljs-string">'[kanban-column]'</span>).each(Count);
-    };
-
-    <span class="hljs-keyword">return</span> {
-        Init,
-        <span class="hljs-attr">Column</span>:  { Count, Drag },
-        <span class="hljs-attr">Palette</span>: { Pick, Picked },
-        <span class="hljs-attr">Modal</span>:   { Add, Edit, Save, Delete, Close },
-    };
+    <span class="hljs-keyword">return</span> { Init, Add, Edit, Save, Delete, Close, Select };
 })();</code></pre>
 <p class="doc-next"><a href="the-simple-way.html">Next: The simple way →</a></p>
 </main>

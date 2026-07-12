@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
-<title>High UX Performance · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
-<meta property="og:title" content="High UX Performance">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<title>UX Performance · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:title" content="UX Performance">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,12 +18,10 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a class="active" href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
-<main class="content"><h1 id="high-ux-performance">High UX Performance<a class="anchor" href="#high-ux-performance" aria-hidden="true">#</a></h1>
-<p>Instant initialization, seamless loading interface, responsive interaction.</p>
-<p>State comes ready from the backend. The accordion renders with the first panel open and the
-second closed, set by an inline <code>display:none</code> in the markup the server sent. The right
-state shows before any JavaScript runs.</p>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a class="active" href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="ux-performance">UX Performance<a class="anchor" href="#ux-performance" aria-hidden="true">#</a></h1>
+<p>The interface works as soon as the page loads. It does not wait for a JavaScript init like DOMContentLoaded.</p>
+<p>State comes ready from the backend. The right state shows before any JavaScript runs.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">accordion-space</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">accordion-item</span> <span class="hljs-attr">accordion-open</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">accordion-head</span>&gt;</span>Shipping<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
@@ -35,33 +32,18 @@ state shows before any JavaScript runs.</p>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">accordion-panel</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Free within 30 days.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
   <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<p>Some components need a moment of setup. A countdown has to start ticking as soon as it
-appears. An inline script initializes just this instance, anchored to
-<code>document.currentScript</code>, without waiting for the rest of the page.</p>
+<p>Some components need a moment of setup. A countdown has to start ticking as soon as it appears. An inline script sets up just this instance, anchored to <code>document.currentScript</code>. It does not wait for the rest of the page.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">countdown-space</span> <span class="hljs-attr">countdown-until</span>=<span class="hljs-string">"2026-12-31T23:59:59Z"</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">countdown-value</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">Countdown.Init(<span class="hljs-built_in">document</span>.currentScript)</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
 <h2 id="why">Why<a class="anchor" href="#why" aria-hidden="true">#</a></h2>
-<p>Interactive as soon as it parses.
-There is no framework runtime to download and run before anything works. The HTML is the
-UI and the state is already in it, so the page responds the moment the browser reads it.
-Nothing has to boot first.</p>
-<p>No hydration.
-The markup the server sent is already live. There is no client-side render that re-runs the
-UI to attach it, so there is no window where the page looks ready but does not answer.
-Server-side rendering is not a feature to add, since there was never a client render to undo.</p>
-<p>Sections initialize themselves in place.
-An inline <code>&lt;script&gt;</code> sets up its own section using <code>document.currentScript</code> as the anchor.
-There is no global &quot;wait for <code>DOMContentLoaded</code>, then query the whole document&quot; pass. Each
-part comes alive in place, as the page streams in.</p>
-<p>Interaction is a direct DOM write.
-A handler changes the element it already has, with no diff, no re-render pass, and no
-scheduler between the click and the change. The update is as immediate as the code that
-makes it.</p>
-<h2 id="no-skeleton-screens">No skeleton screens<a class="anchor" href="#no-skeleton-screens" aria-hidden="true">#</a></h2>
-<p>A skeleton screen is gray boxes shown while the app loads. It hides slow loading instead of
-fixing it. It fakes speed. A fast page has no use for it.</p>
+<p>Interactive as soon as it parses. There is no framework runtime to download and run first. The HTML is the UI, with the state already in it. The page responds the moment the browser reads it.</p>
+<p>No hydration. There is no client-side render that re-runs the UI to attach it. There is no window where the page looks ready but does not answer. Server-side rendering is not a feature to add, because there was never a client render to undo.</p>
+<p>Sections initialize themselves in place. An inline <code>&lt;script&gt;</code> sets up its own section using <code>document.currentScript</code> as the anchor. There is no global pass that waits for <code>DOMContentLoaded</code>, then queries the whole document. Each part starts in place, as the page streams in.</p>
+<p>Interaction is a direct DOM write. A handler changes the element it already has. There is no diff and no scheduler between the click and the change. The update is as immediate as the code that makes it.</p>
+<h2 id="skeletons">Skeletons<a class="anchor" href="#skeletons" aria-hidden="true">#</a></h2>
+<p>A skeleton screen is gray boxes shown while the app loads. It hides slow loading instead of fixing it. A fast page has no use for it.</p>
 <p class="doc-next"><a href="util.html">Next: Util →</a></p>
 </main>
 <script>

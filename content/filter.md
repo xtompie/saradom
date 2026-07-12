@@ -11,6 +11,8 @@ status: draft
 
 # Filter
 
+Filter a list of items by typing. Items that do not match the query are hidden.
+
 <div class="filter-demo">
 <!-- embed: content/filter.html -->
 </div>
@@ -27,4 +29,4 @@ Each item carries its search text in the `filter-item` attribute. The query matc
 
 ## Lanes
 
-Like `Visible`, `Filter` can share a space with other mechanisms. A `filter-space` names a `filter-lane`, and each item belongs to that lane; the filter touches only its own lane's items. Without `filter-lane` it filters every `[filter-item]` in the space, unchanged.
+`Filter` can share a space with other mechanisms. A `filter-space` names a `filter-lane`, and each item belongs to that lane. The filter touches only its own lane's items. Without `filter-lane` it filters every `[filter-item]` in the space, unchanged.

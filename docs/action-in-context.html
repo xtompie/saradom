@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/geist-mono.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <title>Action in context · Saradom</title>
-<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:title" content="Action in context">
-<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. No framework, no npm, no build step.">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Saradom">
 <meta property="og:url" content="https://xtompie.github.io/saradom/">
@@ -19,9 +18,9 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a class="active" href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">High UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a class="active" href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="action-in-context">Action in context<a class="anchor" href="#action-in-context" aria-hidden="true">#</a></h1>
-<p>The event has a current DOM element from which the operating space can be determined.</p>
+<p>Every event has a current element. That element sets the space where the action runs.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">counter-space</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">counter-value</span>&gt;</span>0<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Counter.Increment(this)"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
@@ -35,28 +34,11 @@ Counter.Increment = <span class="hljs-function">(<span class="hljs-params">ctx</
 };
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
 <h2 id="why">Why<a class="anchor" href="#why" aria-hidden="true">#</a></h2>
-<p>One function serves every instance.
-The same <code>Counter.Increment</code> runs for one counter or a hundred on the page. Nothing is
-created per widget: no instance, no component object, no per-copy state. The context is
-worked out at click time from <em>where</em> the event happened, so one piece of code covers
-them all.</p>
-<p>The element is passed in, not captured.
-The handler receives the triggering element as an argument. There is no <code>this</code> to bind,
-no closure holding the right scope, no lookup to figure out which copy was clicked.</p>
-<p>Nesting is the scope.
-From that node the rest is reached by walking the DOM: <code>closest</code> up to the space, then
-<code>querySelector</code> down to the parts. Identical widgets that each need their own state, and
-sometimes need to talk to a parent or sibling, are scoped by the surrounding markup
-already. There is nothing to wire: the tree that lays the UI out is the same tree that
-scopes it.</p>
-<p>No registry to keep.
-The element anchors everything, so there is no map from id to a state object to keep in
-step as things are added, moved, or removed. Removing the element leaves nothing behind,
-since there was never a second copy to clean up.</p>
-<p>The call stack is short.
-The attribute calls the function directly, so a click leads straight into it. The stack
-trace points at the real code, with no framework event system, synthetic event, or
-dispatch layer in between.</p>
+<p>One function serves every instance. The same <code>Counter.Increment</code> runs for one counter or a hundred. Nothing is created per widget: no instance, no component object. The context is found at click time, from where the event happened. One piece of code covers them all.</p>
+<p>The element is passed in, not captured. The handler receives the triggering element as an argument. There is no <code>this</code> to bind and no closure to hold the scope.</p>
+<p>Nesting is the scope. From that node the rest is reached by walking the DOM: <code>closest</code> up to the space, then <code>querySelector</code> down to the parts. Identical widgets each keep their own state, scoped by the surrounding markup. There is nothing to wire. The tree that lays out the UI is the same tree that scopes it.</p>
+<p>No registry to keep. State is on the element. There is no map from id to a state object. Nothing has to be kept in sync as elements are added or removed. Removing the element leaves nothing behind, because there was never a second copy to clean up.</p>
+<p>The call stack is short. The attribute calls the function directly, so a click leads straight into it. The stack trace points at the real code. There is no framework event system or dispatch layer in between.</p>
 <p class="doc-next"><a href="modularization.html">Next: Modularization →</a></p>
 </main>
 <script>

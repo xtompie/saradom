@@ -11,7 +11,7 @@ return [
         ['Event attributes', 'event-attributes.html'],
         ['Action in context', 'action-in-context.html'],
         ['Modularization', 'modularization.html'],
-        ['High UX Performance', 'ux-performance.html'],
+        ['UX Performance', 'ux-performance.html'],
     ],
     // Toolkits — optional single-file modules you drop in when needed.
     'Toolkits' => [
@@ -19,6 +19,7 @@ return [
         ['Val', 'val.html'],     // two-way binding between an object and the DOM
         ['Hx', 'hx.html'],       // htmx-style attributes wired to one function
         ['Notify', 'notify.html'], // up/down signals over the DOM, listeners as attributes
+        ['Compute', 'compute.html'], // derived values that refresh themselves on DOM change
         ['Vld', 'vld.html'],     // form validation rules as a pure function, optional DOM wiring
     ],
     // Complete, working things to read — smallest first.

@@ -1,10 +1,17 @@
 ---
+slug: val
 title: "Val"
+type: page
+tags: [val, dom-state]
+related: [util, compute, notify]
+track: tools
+order: 35
+status: draft
 ---
 
 # Val
 
-In Saradom a screen updates by swapping a whole HTML fragment. A swap is the simplest and fastest way to update, so it comes first. When a swap cannot do the job, the work happens on individual values. Val is for that: two-way binding between a JavaScript object and the [DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model). An element is marked, an object is written to it, and the same object is read back.
+In Saradom a screen usually updates by swapping a whole HTML fragment. When a swap cannot do the job, the work happens on individual values. Val is for that: two-way binding between a JavaScript object and the [DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model). An element is marked, an object is written to it, and the same object is read back.
 
 <!-- source: Val/Val.js -->
 
@@ -20,8 +27,6 @@ el.vset({ title: 'Dog', image: '/dog.jpg' });
 el.vget(); // => { title: 'Dog', image: '/dog.jpg' }
 </script>
 ```
-
-Elements are marked with attributes, and values are read and written on them.
 
 ## Mechanism
 
@@ -92,7 +97,7 @@ The element carries its own read and write rules. The script works with the obje
 dom.one('article').vset({ title: 'Dog' });
 ```
 
-A getter and setter per field becomes repetitive across a page. [Fx](#fx) remove that repetition.
+A getter and setter per field becomes repetitive across a page. An fx removes that repetition.
 
 ## Fx
 
@@ -146,7 +151,7 @@ Each fx binds one value to one element property.
 - `Hide` is the reverse of `Show`.
 - `If` shows a subtree when a field is set, and binds it only then.
 
-`Obj`, `Arr`, and `Render` bind nested objects and lists. See [Rendering](#rendering).
+`Obj`, `Arr`, and `Render` bind nested objects and lists.
 
 ### Showing with `Show` and `Hide`
 
@@ -205,7 +210,7 @@ box.vset({ error: false });                 // hides
 
 The read side is asymmetric. A hidden element returns `{}`, so its key drops out of the `vget` result. Only a shown element contributes its field.
 
-An fx can also be defined by hand. See [Custom fx](#custom-fx).
+An fx can also be defined by hand.
 
 ## Rendering
 
@@ -399,16 +404,28 @@ link.vset({ label: 'Dog', url: '/dog' }); // sets text and href
 link.vget(); // => { label: 'Dog', url: '/dog' }
 ```
 
-Built-in and custom fx mix freely in the same tree. See [Methods](#methods) for the full surface.
+Built-in and custom fx mix freely in the same tree.
+
+## Sync
+
+`vsync(data)` writes like `vset`, but only where the value changed. It reads the current value, compares, and sets only the fields that differ. Unchanged subtrees are skipped, including their `val-set`. A list is reconciled by position: an unchanged item is left untouched, a changed item is patched in place, extra items are appended, a shorter list drops its tail.
+
+```javascript
+const d = article.vget();
+d.title = 'Cat';
+article.vsync(d);                               // only the title element is written
+article.vsync((d) => ({ ...d, title: 'Cat' })); // same, given a function of the current state
+```
+
+An element with `val-set` is always written, because its effect cannot be read back to compare.
 
 ## Methods
 
 Val adds methods to `HTMLElement`. Each acts on the marked subtree of the element it is called on and returns the element, except the readers.
 
-- `vset(data)` writes an object into the subtree.
+- `vset(data)` writes an object into the subtree. Given a function, it reads the state, passes it in, and writes the result.
 - `vget()` reads the subtree back as an object. Reader.
-- `vpatch(data)` merges the object into the current state, then writes.
-- `vmodify(fn)` reads the state, passes it to `fn`, writes the result.
+- `vsync(data)` writes only the fields that changed. Given a function, it reads the state, passes it in, and writes what changed.
 - `vappend(items, tpl)` adds items to the end of a list.
 - `vprepend(items, tpl)` adds items to the start of a list.
 - `varr(data, tpl)` writes an array as list items. Called with no argument it reads the list back as an array. Reader in that form.
@@ -419,10 +436,10 @@ Val adds methods to `HTMLElement`. Each acts on the marked subtree of the elemen
 ```javascript
 const article = dom.one('article');
 
-article.vset({ title: 'Dog' });        // write
-article.vget();                        // read
-article.vpatch({ image: '/dog.jpg' }); // merge and write
-article.vmodify((d) => ({ ...d, seen: true }));
+article.vset({ title: 'Dog' });              // write
+article.vget();                              // read
+article.vset((d) => ({ ...d, seen: true }));  // read, change, write
+article.vsync((d) => ({ ...d, title: 'Cat' }));  // read, change, write only the diff
 ```
 
 ### Attributes
@@ -441,4 +458,4 @@ article.vmodify((d) => ({ ...d, seen: true }));
 
 `vset`, `vget`, and their kin act on the element itself when it carries the `val` attribute, and on its marked subtree when it does not.
 
-Each method wraps the public `Val.*` API: `Val.Get`, `Val.Set`, `Val.Obj`, `Val.Arr`, `Val.Render`, `Val.Patch`, `Val.Append`, `Val.Prepend`, and `Val.Modify`. The same calls are available on `Val` for use without an element method.
+Each method wraps the public `Val.*` API: `Val.Get`, `Val.Set`, `Val.Obj`, `Val.Arr`, `Val.Render`, `Val.Append`, `Val.Prepend`, and `Val.Sync`. The same calls are available on `Val` for use without an element method.

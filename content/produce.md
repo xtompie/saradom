@@ -11,7 +11,7 @@ status: draft
 
 # Produce
 
-Nothing here is new. [Visible](visible.html), [Filter](filter.html), [Val](val.html), and a small script on load. Each was shown on its own. It is composed from pieces that already exist.
+Nothing here is new. Produce composes Visible, Filter, Val, and a small script that runs on load. Each was shown on its own. Here they work together.
 
 <!-- embed: Util/Util.js -->
 <!-- embed: Val/Val.js -->

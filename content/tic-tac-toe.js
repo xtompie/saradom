@@ -8,16 +8,17 @@ const Ttt = (() => {
         return null;
     };
 
+    const Turn = (m) => m.filter(Boolean).length % 2 ? 'O' : 'X';
+
     const Board = (space) => space.one('[ttt-board]');
     const Marks = (space) => Board(space).varr().map(c => c.mark);
 
     const Status = (space, m) => {
         const winner = Winner(m);
-        space.attr('ttt-winner', winner || null);
         space.one('[ttt-status]').vset(
             winner ? { winner: { mark: winner } } :
             m.every(Boolean) ? { draw: true } :
-            { next: { mark: space.attr('ttt-turn') } }
+            { next: { mark: Turn(m) } }
         );
     };
 
@@ -30,11 +31,10 @@ const Ttt = (() => {
 
     const Snapshot = (space, m) => {
         const history = space.one('[ttt-history]');
-        const move = history.children.length;
+        const index = history.children.length;
         history.vappend([{
             board: m.join(','),
-            turn: space.attr('ttt-turn'),
-            label: move === 0 ? 'Go to game start' : `Go to move #${move}`,
+            label: index === 0 ? 'Go to game start' : `Go to move #${index}`,
         }]);
         Select(history.lastElementChild);
     };
@@ -42,14 +42,13 @@ const Ttt = (() => {
     const Play = (ctx) => {
         const space = ctx.up('[ttt-space]');
         const cell = ctx.up('[ttt-cell]');
-        if (space.attr('ttt-winner') || cell.vget().mark) return;
+        const before = Marks(space);
+        if (Winner(before) || cell.vget().mark) return;
 
         const current = Current(space);
         while (current.nextElementSibling) current.nextElementSibling.remove();
 
-        const turn = space.attr('ttt-turn');
-        cell.vset({ mark: turn });
-        space.attr('ttt-turn', turn === 'X' ? 'O' : 'X');
+        cell.vset({ mark: Turn(before) });
 
         const m = Marks(space);
         Status(space, m);
@@ -62,7 +61,6 @@ const Ttt = (() => {
         const m = move.vget().board.split(',');
 
         Board(space).clear().vappend(m.map(mark => ({ mark })));
-        space.attr('ttt-turn', move.vget().turn);
         Status(space, m);
         Select(move);
     };
