@@ -35,6 +35,9 @@
 [kanban-columns] {
     display: contents;
 }
+[kanban-space] s-compute {
+    display: contents;
+}
 [kanban-column] {
     background: var(--soft);
     border: 1px solid var(--line);
@@ -654,7 +657,7 @@ Vld.Form = (() => {
 })();
 </script>
 <script>
-const Compute = (() => {
+(() => {
     const Debounce = (fn, ms) => {
         let timer;
         return function (...args) {
@@ -662,38 +665,54 @@ const Compute = (() => {
             timer = setTimeout(() => fn.apply(this, args), ms);
         };
     };
-    const Run = (el, name) => {
-        const code = el.getAttribute(name);
+    const Run = (el) => {
+        const code = el.getAttribute('run');
+        if (!code) {
+            return;
+        }
         return (function () {
             return eval(code).call(el);
         }).bind(el)();
     };
-    const All = (root, name) => {
-        root.querySelectorAll(`[${name}]`).forEach(el => Run(el, name));
-    };
-    const Init = (root, name, opts = {}) => {
-        const store = root._compute ??= {};
-        if (store[name]) {
-            return;
+    const Guard = (el) => {
+        const code = el.getAttribute('guard');
+        if (!code) {
+            return true;
         }
-        const config = { childList: true, subtree: opts.subtree !== false };
-        let observer;
-        const run = () => {
-            observer.disconnect();
-            All(root, name);
-            observer.observe(root, config);
-        };
-        const fire = opts.debounce ? Debounce(run, opts.debounce) : run;
-        observer = new MutationObserver(fire);
-        store[name] = observer;
-        run();
+        return (function () {
+            return eval(code).call(el);
+        }).bind(el)();
     };
-    return { Init };
+    class ComputeElement extends HTMLElement {
+        connectedCallback() {
+            if (this._observer) {
+                return;
+            }
+            const config = { childList: true, subtree: !this.hasAttribute('shallow') };
+            const ms = Number(this.getAttribute('debounce')) || 0;
+            const fire = () => {
+                this._observer.disconnect();
+                if (Guard(this)) Run(this);
+                this._observer.observe(this, config);
+            };
+            this._observer = new MutationObserver(ms ? Debounce(fire, ms) : fire);
+            const start = () => {
+                Run(this);                    // first run is ungated: it initialises the value
+                this._observer.observe(this, config);
+            };
+            document.readyState === 'loading'
+                ? document.addEventListener('DOMContentLoaded', start, { once: true })
+                : start();
+        }
+        disconnectedCallback() {
+            if (this._observer) {
+                this._observer.disconnect();
+                this._observer = null;
+            }
+        }
+    }
+    customElements.define('s-compute', ComputeElement);
 })();
-HTMLElement.prototype.compute = function (name, opts) {
-    Compute.Init(this, name, opts);
-    return this;
-};
 </script>
 <script>
 const Kanban = (() => {
@@ -751,7 +770,6 @@ const Kanban = (() => {
     const Init = (ctx, input) =>
         ctx.up('[kanban-space]')
             .vset(input)
-            .compute('kanban-onchange')
             .all('[kanban-drag]').each(i => new Sortable(i, { group: 'kanban', animation: 150 }));
 
     return { Init, Add, Edit, Save, Delete, Close, Select };
@@ -761,14 +779,16 @@ const Kanban = (() => {
     <div kanban-columns val val-fx="Arr" val-key="data" val-tpl="[kanban-column-tpl]"></div>
 
     <template kanban-column-tpl>
-        <div kanban-column>
-            <header>
-                <span kanban-column-title val val-fx="Text" val-key="title"></span>
-                <span kanban-onchange="() => this.textContent = this.up('[kanban-column]').all('[kanban-card]').length"></span>
-            </header>
-            <div kanban-cards kanban-drag val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></div>
-            <button kanban-add onclick="Kanban.Add(this)">+ Add card</button>
-        </div>
+        <s-compute run="() => this.one('[kanban-count]').textContent = this.all('[kanban-card]').length">
+            <div kanban-column>
+                <header>
+                    <span kanban-column-title val val-fx="Text" val-key="title"></span>
+                    <span kanban-count></span>
+                </header>
+                <div kanban-cards kanban-drag val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></div>
+                <button kanban-add onclick="Kanban.Add(this)">+ Add card</button>
+            </div>
+        </s-compute>
     </template>
 
     <template kanban-card-tpl>
@@ -827,19 +847,21 @@ const Kanban = (() => {
 <p>The whole board is one value. <code>vget</code> on the space reads it back as an object, ready to log, save, or send to a server.</p>
 <pre><code class="hljs language-javascript">dom.one(<span class="hljs-string">'[kanban-space]'</span>).vget();
 <span class="hljs-comment">// =&gt; { data: [ { title: 'To Do', cards: [ { title: 'Design landing page', color: '#8b5cf6' } ] } ] }</span></code></pre>
-<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Vld/Vld.js" target="_blank" rel="noopener">Vld.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Compute/Compute.js" target="_blank" rel="noopener">Compute.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
+<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Vld/Vld.js" target="_blank" rel="noopener">Vld.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Compute/SCompute.js" target="_blank" rel="noopener">SCompute.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-space</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-columns</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"data"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[kanban-column-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 
     <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">kanban-column-tpl</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-column</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">header</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-column-title</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-onchange</span>=<span class="hljs-string">"() =&gt; this.textContent = this.up('[kanban-column]').all('[kanban-card]').length"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-            <span class="hljs-tag">&lt;/<span class="hljs-name">header</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-cards</span> <span class="hljs-attr">kanban-drag</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"cards"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[kanban-card-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-add</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Add(this)"</span>&gt;</span>+ Add card<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">s-compute</span> <span class="hljs-attr">run</span>=<span class="hljs-string">"() =&gt; this.one('[kanban-count]').textContent = this.all('[kanban-card]').length"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-column</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">header</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-column-title</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-count</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">header</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-cards</span> <span class="hljs-attr">kanban-drag</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"cards"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[kanban-card-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-add</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Add(this)"</span>&gt;</span>+ Add card<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">s-compute</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
 
     <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">kanban-card-tpl</span>&gt;</span>
@@ -947,7 +969,6 @@ const Kanban = (() => {
     <span class="hljs-keyword">const</span> Init = <span class="hljs-function">(<span class="hljs-params">ctx, input</span>) =&gt;</span>
         ctx.up(<span class="hljs-string">'[kanban-space]'</span>)
             .vset(input)
-            .compute(<span class="hljs-string">'kanban-onchange'</span>)
             .all(<span class="hljs-string">'[kanban-drag]'</span>).each(<span class="hljs-function"><span class="hljs-params">i</span> =&gt;</span> <span class="hljs-keyword">new</span> Sortable(i, { <span class="hljs-attr">group</span>: <span class="hljs-string">'kanban'</span>, <span class="hljs-attr">animation</span>: <span class="hljs-number">150</span> }));
 
     <span class="hljs-keyword">return</span> { Init, Add, Edit, Save, Delete, Close, Select };

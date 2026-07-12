@@ -21,7 +21,7 @@ SortableJS moves the same DOM nodes Saradom reads. When a card is dragged to ano
 <!-- embed: Util/Util.js -->
 <!-- embed: Val/Val.js -->
 <!-- embed: Vld/Vld.js -->
-<!-- embed: Compute/Compute.js -->
+<!-- embed: Compute/SCompute.js -->
 <!-- embed: content/Kanban.js -->
 <!-- embed: content/kanban.html -->
 </div>
@@ -35,7 +35,7 @@ dom.one('[kanban-space]').vget();
 // => { data: [ { title: 'To Do', cards: [ { title: 'Design landing page', color: '#8b5cf6' } ] } ] }
 ```
 
-<!-- uses: Util/Util.js Val/Val.js Vld/Vld.js Compute/Compute.js https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js -->
+<!-- uses: Util/Util.js Val/Val.js Vld/Vld.js Compute/SCompute.js https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js -->
 
 <!-- code: content/kanban.html -->
 

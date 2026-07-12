@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Compute tests</title></head>
+<body>
+
+<div id="fixture"></div>
+<pre id="summary"></pre>
+
+<script src="../Util/Util.js"></script>
+<script src="Compute.js"></script>
+<script src="SCompute.js"></script>
+<script>
+let pass = 0, fail = 0;
+const failures = [];
+const fixture = document.getElementById('fixture');
+
+const assert = (cond, msg) => { if (!cond) throw new Error(msg); };
+
+const tick = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const test = async (name, fn) => {
+    try {
+        await fn();
+        pass++;
+        console.log(`PASS: ${name}`);
+    } catch (e) {
+        fail++;
+        failures.push(name);
+        console.error(`FAIL: ${name} — ${e.message}`);
+    }
+};
+
+const COUNT = `() => this.one('[total]').textContent = this.all('[item]').length`;
+// Idempotent counter: writes only when the value differs. Hard cap so a regressed
+// (looping) build fails the assert instead of hanging the page.
+const IDEM = (target) => `() => { window.__loop = (window.__loop||0)+1; if (window.__loop > 300) return; const n = String(this.all('[item]').length); const e = this.one('[${target}]'); if (e && e.textContent !== n) e.textContent = n; }`;
+
+(async () => {
+
+    // --- V1: method form -------------------------------------------------
+
+    await test('V1 compute runs once on the call and updates on add and remove', async () => {
+        fixture.innerHTML = `
+            <div space>
+                <span total="() => this.textContent = this.up('[space]').all('[item]').length">?</span>
+                <div list>
+                    <button item></button>
+                    <button item></button>
+                </div>
+            </div>
+        `;
+        const space = fixture.querySelector('[space]');
+        const total = fixture.querySelector('[total]');
+        const list = fixture.querySelector('[list]');
+        space.compute('total');
+        assert(total.textContent === '2', `first run should count 2, got ${total.textContent}`);
+        list.insertAdjacentHTML('beforeend', '<button item></button>');
+        await tick();
+        assert(total.textContent === '3', `add should recount to 3, got ${total.textContent}`);
+        list.querySelector('[item]').remove();
+        await tick();
+        assert(total.textContent === '2', `remove should recount to 2, got ${total.textContent}`);
+    });
+
+    await test('V1 uncompute stops the watch', async () => {
+        fixture.innerHTML = `
+            <div space>
+                <span total="() => this.textContent = this.up('[space]').all('[item]').length">?</span>
+                <div list><button item></button></div>
+            </div>
+        `;
+        const space = fixture.querySelector('[space]');
+        const total = fixture.querySelector('[total]');
+        const list = fixture.querySelector('[list]');
+        space.compute('total');
+        assert(total.textContent === '1', `first run should count 1, got ${total.textContent}`);
+        space.uncompute('total');
+        list.insertAdjacentHTML('beforeend', '<button item></button>');
+        await tick();
+        assert(total.textContent === '1', `after uncompute the value must not change, got ${total.textContent}`);
+    });
+
+    await test('V1 second uncompute for the same name is safe', async () => {
+        fixture.innerHTML = `<div space><span total="() => this.textContent = 'x'"></span></div>`;
+        const space = fixture.querySelector('[space]');
+        space.compute('total');
+        space.uncompute('total');
+        space.uncompute('total');
+    });
+
+    await test('V1 compute after uncompute re-attaches a fresh watch', async () => {
+        fixture.innerHTML = `
+            <div space>
+                <span total="() => this.textContent = this.up('[space]').all('[item]').length">?</span>
+                <div list><button item></button></div>
+            </div>
+        `;
+        const space = fixture.querySelector('[space]');
+        const total = fixture.querySelector('[total]');
+        const list = fixture.querySelector('[list]');
+        space.compute('total');
+        space.uncompute('total');
+        space.compute('total');
+        list.insertAdjacentHTML('beforeend', '<button item></button>');
+        await tick();
+        assert(total.textContent === '2', `re-attached watch should recount to 2, got ${total.textContent}`);
+    });
+
+    // --- V2: <s-compute> element form ------------------------------------
+
+    await test('V2 s-compute runs on connect and updates on add and remove', async () => {
+        fixture.innerHTML = `
+            <s-compute run="${COUNT}">
+                <span total>?</span>
+                <div list>
+                    <button item></button>
+                    <button item></button>
+                </div>
+            </s-compute>
+        `;
+        const total = fixture.querySelector('[total]');
+        const list = fixture.querySelector('[list]');
+        assert(total.textContent === '2', `first run should count 2, got ${total.textContent}`);
+        list.insertAdjacentHTML('beforeend', '<button item></button>');
+        await tick();
+        assert(total.textContent === '3', `add should recount to 3, got ${total.textContent}`);
+        list.querySelector('[item]').remove();
+        await tick();
+        assert(total.textContent === '2', `remove should recount to 2, got ${total.textContent}`);
+    });
+
+    await test('V2 shallow watches only the direct children', async () => {
+        fixture.innerHTML = `
+            <s-compute run="${COUNT}" shallow>
+                <span total>?</span>
+                <div list><button item></button></div>
+            </s-compute>
+        `;
+        const total = fixture.querySelector('[total]');
+        const list = fixture.querySelector('[list]');
+        assert(total.textContent === '1', `first run should count 1, got ${total.textContent}`);
+        list.insertAdjacentHTML('beforeend', '<button item></button>');
+        await tick();
+        assert(total.textContent === '1', `a nested add must not fire a shallow watch, got ${total.textContent}`);
+    });
+
+    await test('V2 disconnect stops the watch and does not throw', async () => {
+        fixture.innerHTML = `
+            <s-compute run="${COUNT}">
+                <span total>?</span>
+                <div list><button item></button></div>
+            </s-compute>
+        `;
+        const el = fixture.querySelector('s-compute');
+        const total = el.querySelector('[total]');
+        assert(total.textContent === '1', `first run should count 1, got ${total.textContent}`);
+        el.remove();
+        el.querySelector('[list]').insertAdjacentHTML('beforeend', '<button item></button>');
+        await tick();
+        assert(total.textContent === '1', `a detached element must not run its watch, got ${total.textContent}`);
+    });
+
+    await test('V2 debounce groups a burst into one final run', async () => {
+        fixture.innerHTML = `
+            <s-compute run="${COUNT}" debounce="60">
+                <span total>?</span>
+                <div list></div>
+            </s-compute>
+        `;
+        const total = fixture.querySelector('[total]');
+        const list = fixture.querySelector('[list]');
+        assert(total.textContent === '0', `first run is immediate, should count 0, got ${total.textContent}`);
+        list.insertAdjacentHTML('beforeend', '<button item></button>');
+        list.insertAdjacentHTML('beforeend', '<button item></button>');
+        await tick();
+        assert(total.textContent === '0', `within the debounce gap the value must not change yet, got ${total.textContent}`);
+        await sleep(120);
+        assert(total.textContent === '2', `after the gap one run should count 2, got ${total.textContent}`);
+    });
+
+    await test('V2 nested s-compute with idempotent writes update both and do not loop', async () => {
+        window.__loop = 0;
+        fixture.innerHTML = `
+            <s-compute run="${IDEM('outer-total')}">
+                <span outer-total>?</span>
+                <s-compute run="${IDEM('inner-total')}">
+                    <span inner-total>?</span>
+                    <div list><button item></button></div>
+                </s-compute>
+            </s-compute>
+        `;
+        const outer = fixture.querySelector('[outer-total]');
+        const inner = fixture.querySelector('[inner-total]');
+        assert(outer.textContent === '1', `outer first run counts 1, got ${outer.textContent}`);
+        assert(inner.textContent === '1', `inner first run counts 1, got ${inner.textContent}`);
+        fixture.querySelector('[list]').insertAdjacentHTML('beforeend', '<button item></button>');
+        await sleep(80);
+        assert(outer.textContent === '2', `outer should recount to 2, got ${outer.textContent}`);
+        assert(inner.textContent === '2', `inner should recount to 2, got ${inner.textContent}`);
+        assert(window.__loop < 50, `idempotent writes must settle, not loop; ran ${window.__loop} times`);
+    });
+
+    await test('V2 guard gates the run: first run is ungated, false skips, true runs', async () => {
+        window.__ran = 0;
+        fixture.innerHTML = `
+            <s-compute guard="() => this.hasAttribute('go')" run="() => { window.__ran++ }">
+                <div list></div>
+            </s-compute>
+        `;
+        const el = fixture.querySelector('s-compute');
+        const list = el.querySelector('[list]');
+        assert(window.__ran === 1, `first run is ungated, expected 1 got ${window.__ran}`);
+        list.insertAdjacentHTML('beforeend', '<span></span>');   // guard false → skip
+        await tick();
+        assert(window.__ran === 1, `guard false must skip the run, got ${window.__ran}`);
+        el.setAttribute('go', '');                                // guard true → run
+        list.insertAdjacentHTML('beforeend', '<span></span>');
+        await tick();
+        assert(window.__ran === 2, `guard true must allow the run, got ${window.__ran}`);
+    });
+
+    document.getElementById('summary').textContent =
+        `${pass} passed, ${fail} failed` + (failures.length ? `\n\nFailed:\n- ${failures.join('\n- ')}` : '');
+    window.__TEST_SUMMARY__ = { pass, fail, failures };
+})();
+</script>
+</body>
+</html>

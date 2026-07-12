@@ -8,6 +8,9 @@
 [kanban-columns] {
     display: contents;
 }
+[kanban-space] s-compute {
+    display: contents;
+}
 [kanban-column] {
     background: var(--soft);
     border: 1px solid var(--line);

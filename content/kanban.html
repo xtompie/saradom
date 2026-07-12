@@ -2,14 +2,16 @@
     <div kanban-columns val val-fx="Arr" val-key="data" val-tpl="[kanban-column-tpl]"></div>
 
     <template kanban-column-tpl>
-        <div kanban-column>
-            <header>
-                <span kanban-column-title val val-fx="Text" val-key="title"></span>
-                <span kanban-onchange="() => this.textContent = this.up('[kanban-column]').all('[kanban-card]').length"></span>
-            </header>
-            <div kanban-cards kanban-drag val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></div>
-            <button kanban-add onclick="Kanban.Add(this)">+ Add card</button>
-        </div>
+        <s-compute run="() => this.one('[kanban-count]').textContent = this.all('[kanban-card]').length">
+            <div kanban-column>
+                <header>
+                    <span kanban-column-title val val-fx="Text" val-key="title"></span>
+                    <span kanban-count></span>
+                </header>
+                <div kanban-cards kanban-drag val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></div>
+                <button kanban-add onclick="Kanban.Add(this)">+ Add card</button>
+            </div>
+        </s-compute>
     </template>
 
     <template kanban-card-tpl>

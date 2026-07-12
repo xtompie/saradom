@@ -1,0 +1,11 @@
+<s-compute run="() =>
+    this.one('[boxes-total]').textContent = this.all('[boxes-item]').length
+">
+    <p>Items: <span boxes-total>3</span></p>
+
+    <div boxes-list>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+    </div>
+</s-compute>

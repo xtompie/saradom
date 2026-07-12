@@ -32,9 +32,21 @@ const Compute = (() => {
         store[name] = observer;
         run();
     };
-    return { Init };
+    const Stop = (root, name) => {
+        const store = root._compute;
+        if (!store || !store[name]) {
+            return;
+        }
+        store[name].disconnect();
+        delete store[name];
+    };
+    return { Init, Stop };
 })();
 HTMLElement.prototype.compute = function (name, opts) {
     Compute.Init(this, name, opts);
+    return this;
+};
+HTMLElement.prototype.uncompute = function (name) {
+    Compute.Stop(this, name);
     return this;
 };

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<title>Compute V1 · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:title" content="Compute V1">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="compute-v1">Compute V1<a class="anchor" href="#compute-v1" aria-hidden="true">#</a></h1>
+<p>Compute watches the elements under a root and re-runs a callback when one is added or removed below it. The callback is an attribute that reads the DOM and writes a value, such as a count. Nothing runs until <code>el.compute('name')</code> is called. That call does the first run and starts the watch.</p>
+<p>This is the method form. It needs <code>compute()</code> to start and <code>uncompute()</code> to stop. An element form that needs neither is at <a href="compute.html">Compute</a>.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Compute/Compute.js" target="_blank" rel="noopener">Compute.js</a></p>
+<script>
+const dom = document;
+document.al = function(s) {
+    return Array.from(document.querySelectorAll(s));
+};
+document.one = function(s) {
+    return document.querySelector(s);
+};
+Array.prototype.each = function(f) {
+    return this.forEach(f);
+};
+Array.prototype.any = function() {
+    return this.length > 0;
+};
+Array.prototype.none = function() {
+    return this.length === 0;
+};
+DocumentFragment.prototype.one = function(s) {
+    return this.querySelector(s);
+};
+DocumentFragment.prototype.allfd = function(s) {
+    return Array.from(this.children).reduce((r, e) => {
+        return e.matches(s) ? r.concat(e) : r.concat(e.allfd(s));
+    }, []);
+}
+HTMLElement.prototype.all = function(s) {
+    return Array.from(this.querySelectorAll(s));
+}
+HTMLElement.prototype.allfd = function(s) {
+    return Array.from(this.children)
+        .filter(e => e instanceof HTMLElement)
+        .reduce((r, e) => {
+            return e.matches(s) ? r.concat(e) : r.concat(e.allfd(s));
+        }, []);
+}
+HTMLElement.prototype.attr = function(a, v) {
+    if (v === undefined) {
+        return this.getAttribute(a);
+    }
+    else if (v === null || v === false) {
+        this.removeAttribute(a);
+        return this;
+    } else {
+        this.setAttribute(a, v);
+        return this;
+    }
+}
+HTMLElement.prototype.attrt = function(a, v1, v2) {
+    this.attr(a, this.attr(a) === v1 ? v2 : v1);
+    return this;
+}
+HTMLElement.prototype.attrs = function(prefix, values) {
+    if (values === undefined) {
+        const pre = prefix === undefined ? '' : prefix + '-';
+        const out = {};
+        for (const a of this.attributes) {
+            if (a.name.startsWith(pre)) out[a.name.slice(pre.length)] = a.value;
+        }
+        return out;
+    }
+    const pre = prefix + '-';
+    Object.entries(values).each(([k, v]) => this.setAttribute(pre + k, v));
+    return this;
+}
+HTMLElement.prototype.clear = function() {
+    this.innerHTML = '';
+    return this;
+}
+HTMLElement.prototype.cls = function() {
+    return this.classList;
+}
+HTMLElement.prototype.flag = function(f, v = null) {
+    if (v === null) {
+        return this.hasAttribute(f);
+    }
+    v === true ? this.setAttribute(f, '') : this.removeAttribute(f);
+    return this;
+}
+HTMLElement.prototype.hide = function(v = true) {
+    this.style.display = v === true ? 'none' : '';
+    return this;
+}
+HTMLElement.prototype.one = function(s) {
+    return this.querySelector(s);
+}
+HTMLElement.prototype.tpl = function() {
+    return this.content.firstElementChild.cloneNode(true);
+}
+HTMLElement.prototype.show = function(v = true) {
+    this.style.display = v === true ? '' : 'none';
+    return this;
+}
+HTMLElement.prototype.up = function(s) {
+    if (s === undefined) {
+        return this.parentNode;
+    }
+    if (this.matches(s)) {
+        return this;
+    }
+    let node = this.closest(s);
+    if (node) {
+        return node;
+    }
+    return document.body;
+}
+KeyboardEvent.prototype.combo = function(combo) {
+    return `${this.altKey ? 'Alt+' : ''}${this.ctrlKey ? 'Ctrl+' : ''}${this.metaKey ? 'Meta+' : ''}${this.shiftKey ? 'Shift+' : ''}${this.key}` === combo;
+};
+String.prototype.cut = function(length) {
+    return this.length > length ? this.substring(0, length) + '...' : this;
+};
+</script>
+<script>
+const Val = (() => {
+    const Attr = (el, a, v) => {
+        if (v === undefined) return el.getAttribute(a);
+        if (v === null || v === false) { el.removeAttribute(a); return el; }
+        el.setAttribute(a, v);
+        return el;
+    };
+    const Allfd = (el, s) => Array.from(el.children)
+        .filter(e => e instanceof HTMLElement)
+        .reduce((r, e) => e.matches(s) ? r.concat(e) : r.concat(Allfd(e, s)), []);
+    const TplClone = t => t.content.firstElementChild.cloneNode(true);
+    const Tpl = tpl => typeof tpl === 'string' ? document.querySelector(tpl) : tpl;
+
+    const FxParams = (el) => {
+        const params = {};
+        Array.from(el.attributes).forEach(a => {
+            if (a.name.startsWith('val-') && !['val-set', 'val-get', 'val-fx', 'val-lane'].includes(a.name)) {
+                params[a.name.substring(4)] = a.value;
+            }
+        });
+        return params;
+    };
+    const Fx = (el, write, v = null) => {
+        const fx = Attr(el, 'val-fx');
+        if (fx && fx !== '' && Val.Fx[fx]) {
+            return write ? Val.Fx[fx].Set(el, v, FxParams(el)) : Val.Fx[fx].Get(el, FxParams(el));
+        }
+    };
+    const Sg = (el, write, v = null) => {
+        const code = Attr(el, write ? 'val-set' : 'val-get');
+        if (code) {
+            return write
+                ? (function () { return eval(code).call(el, v); }).bind(el)()
+                : (function () { return eval(code).call(el); }).bind(el)()
+            ;
+        }
+    };
+    const Get = el => ({ ...Fx(el, false) || {}, ...Sg(el, false) || {} });
+    const Set = (el, v) => { Fx(el, true, v); Sg(el, true, v); };
+    const Frag = (tpl, data) => {
+        const frag = TplClone(tpl);
+        Obj(frag, data);
+        return frag;
+    };
+    const Iter = (el, tpl, data, method) => {
+        const t = Tpl(tpl);
+        data.forEach(d => el[method](Frag(t, d)));
+    };
+    const Obj = (el, data = null, lane = null) => {
+        const sel = lane ? `[val][val-lane="${lane}"]` : '[val]';
+        if (data === null) {
+            const d = {};
+            if (el.hasAttribute('val')) Object.assign(d, Get(el));
+            Allfd(el, sel).reduce((r, e) => Object.assign(r, Get(e)), d);
+            return Object.keys(d).length === 0 ? null : d;
+        }
+        if (el.hasAttribute('val')) Set(el, data);
+        Allfd(el, sel).forEach(e => Set(e, data));
+    };
+    const Arr = (el, data = undefined, tpl = null) => {
+        if (data === undefined && tpl === null) {
+            return Array.from(el.children).map(e => Obj(e));
+        }
+        el.innerHTML = '';
+        if (data?.length) Iter(el, tpl, data, 'appendChild');
+    };
+    const Render = (el, tpl, data) => {
+        el.innerHTML = '';
+        if (data !== undefined && data !== null) el.appendChild(Frag(Tpl(tpl), data));
+    };
+    const Append = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data, 'appendChild');
+    const Prepend = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data.reverse(), 'prepend');
+
+    return { Get, Set, Append, Prepend, Obj, Arr, Render, FxParams, Allfd, Attr };
+})();
+
+Val.Fx = {
+    Obj: {
+        Get: (el, params) => {
+            const d = {};
+            Val.Allfd(el, '[val]').forEach(e => Object.assign(d, Val.Get(e)));
+            return params.key ? { [params.key]: d } : d;
+        },
+        Set: (el, data, params) => {
+            const val = params.key ? data[params.key] : data;
+            if (val === undefined || val === null) return;
+            Val.Allfd(el, '[val]').forEach(e => Val.Set(e, val));
+        }
+    },
+    Arr: {
+        Get: (el, params) => ({ [params.key]: Val.Arr(el) }),
+        Set: (el, data, params) => Val.Arr(el, data[params.key], params.tpl)
+    },
+    Render: {
+        Get: (el, params) => {
+            const d = {};
+            Val.Allfd(el, '[val]').forEach(e => Object.assign(d, Val.Get(e)));
+            return { [params.key]: d };
+        },
+        Set: (el, data, params) => Val.Render(el, params.tpl, data[params.key])
+    },
+    Text: {
+        Get: (el, params) => ({ [params.key]: el.textContent }),
+        Set: (el, data, params) => { el.textContent = data[params.key]; }
+    },
+    Html: {
+        Get: (el, params) => ({ [params.key]: el.innerHTML }),
+        Set: (el, data, params) => { el.innerHTML = data[params.key]; }
+    },
+    Input: {
+        Get: (el, params) => ({ [params.key]: el.value }),
+        Set: (el, data, params) => { el.value = data[params.key] || ''; }
+    },
+    Show: {
+        Get: (el, params) => ({ [params.key]: el.style.display !== 'none' }),
+        Set: (el, data, params) => { el.style.display = data[params.key] ? '' : 'none'; }
+    },
+    Hide: {
+        Get: (el, params) => ({ [params.key]: el.style.display === 'none' }),
+        Set: (el, data, params) => { el.style.display = data[params.key] ? 'none' : ''; }
+    },
+    Img: {
+        Get: (el, params) => ({ [params.key]: el.src }),
+        Set: (el, data, params) => { el.src = data[params.key]; }
+    },
+    Attr: {
+        Get: (el, params) => ({ [params.key]: Val.Attr(el, params.attr) }),
+        Set: (el, data, params) => { Val.Attr(el, params.attr, data[params.key]); }
+    },
+    Pattr: {
+        Get: (el, params) => ({ [params.key]: Val.Attr(el.parentElement, params.attr) }),
+        Set: (el, data, params) => { Val.Attr(el.parentElement, params.attr, data[params.key]); }
+    },
+    If: {
+        Get: (el, params) => {
+            const conditionMet = el.style.display !== 'none' && (!params.value || params.value === 'true');
+            if (!conditionMet) return {};
+            const result = Val.Allfd(el, '[val]').reduce((r, e) => Object.assign(r, Val.Get(e)), {});
+            return { [params.key]: result };
+        },
+        Set: (el, data, params) => {
+            const conditionMet = params.value ? params.value === data[params.key] : data[params.key];
+            el.style.display = conditionMet ? '' : 'none';
+            if (conditionMet && data[params.key]) {
+                Val.Allfd(el, '[val]').forEach(e => Val.Set(e, data[params.key]));
+            }
+        }
+    },
+    Fxs: {
+        Get: (el, params) => {
+            return Array.from(el.querySelector('[val-fxs]')?.children ?? []).reduce((result, fxEl) => {
+                const fx = Val.Attr(fxEl, 'val-fx');
+                return (fx && Val.Fx[fx])
+                    ? Object.assign(result, Val.Fx[fx].Get(el, Val.FxParams(fxEl)))
+                    : result;
+            }, {});
+        },
+        Set: (el, data, params) => {
+            Array.from(el.querySelector('[val-fxs]')?.children ?? []).forEach(fxEl => {
+                const fx = Val.Attr(fxEl, 'val-fx');
+                fx && Val.Fx[fx] && Val.Fx[fx].Set(el, data, Val.FxParams(fxEl));
+            });
+        }
+    }
+};
+
+// Sync — a diff-aware set. Reads the current value, writes only what changed, and
+// descends only into changed subtrees, so unchanged branches (and their val-sets)
+// are left alone. Lists are reconciled by position. Optional: drop this block to remove it.
+Val.Sync = (() => {
+    const eq = (a, b) => {
+        if (a === b) return true;
+        if (a == null || b == null) return a === b;
+        if (typeof a !== 'object' && typeof b !== 'object') return String(a) === String(b);
+        return JSON.stringify(a) === JSON.stringify(b);
+    };
+    const syncArr = (el, data) => {
+        const next = data[Val.FxParams(el).key] || [];
+        const kids = Array.from(el.children);
+        const cur = kids.map(c => Val.Obj(c));
+        const n = Math.min(kids.length, next.length);
+        for (let i = 0; i < n; i++) if (!eq(cur[i], next[i])) sync(kids[i], next[i]);
+        if (next.length > kids.length) Val.Append(el, next.slice(kids.length));
+        else for (let i = kids.length - 1; i >= next.length; i--) kids[i].remove();
+    };
+    const sync = (root, data) => {
+        const leaves = Val.Allfd(root, '[val]');
+        const targets = leaves.length ? leaves : (root.hasAttribute('val') ? [root] : []);
+        targets.forEach(e => {
+            if (e.hasAttribute('val-set')) { Val.Set(e, data); return; }
+            const fx = Val.Attr(e, 'val-fx');
+            if (fx === 'Arr') { syncArr(e, data); return; }
+            if (fx === 'Obj') {
+                const key = Val.FxParams(e).key;
+                const cur = Val.Get(e);
+                const curSub = key ? cur[key] : cur;
+                const nextSub = key ? data?.[key] : data;
+                if (!eq(curSub, nextSub)) sync(e, nextSub);
+                return;
+            }
+            const cur = Val.Get(e);
+            const keys = Object.keys(cur);
+            if (keys.length === 0 || keys.some(k => !eq(cur[k], data?.[k]))) Val.Set(e, data);
+        });
+    };
+    return sync;
+})();
+
+HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, data, tpl); return this; };
+HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
+HTMLElement.prototype.vget = function (lane) { lane = lane ?? this.getAttribute('val-lane'); return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane); };
+HTMLElement.prototype.vobj = function (data = null, lane) { lane = lane ?? this.getAttribute('val-lane'); return Val.Obj(this, data, lane); };
+HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
+HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
+HTMLElement.prototype.vset = function (data, lane) {
+    if (typeof data === 'function') {
+        const cur = this.vget();
+        const next = data(cur);
+        data = next === undefined ? cur : next;
+    }
+    lane = lane ?? this.getAttribute('val-lane');
+    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data, lane);
+    return this;
+};
+HTMLElement.prototype.vval = function (data) {
+    if (arguments.length === 0) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this);
+    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data);
+    return this;
+};
+HTMLElement.prototype.vsync = function (data) {
+    if (typeof data === 'function') {
+        const cur = this.vget();
+        const next = data(cur);
+        data = next === undefined ? cur : next;
+    }
+    Val.Sync(this, data);
+    return this;
+};
+</script>
+<script>
+const Compute = (() => {
+    const Debounce = (fn, ms) => {
+        let timer;
+        return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), ms);
+        };
+    };
+    const Run = (el, name) => {
+        const code = el.getAttribute(name);
+        return (function () {
+            return eval(code).call(el);
+        }).bind(el)();
+    };
+    const All = (root, name) => {
+        root.querySelectorAll(`[${name}]`).forEach(el => Run(el, name));
+    };
+    const Init = (root, name, opts = {}) => {
+        const store = root._compute ??= {};
+        if (store[name]) {
+            return;
+        }
+        const config = { childList: true, subtree: opts.subtree !== false };
+        let observer;
+        const run = () => {
+            observer.disconnect();
+            All(root, name);
+            observer.observe(root, config);
+        };
+        const fire = opts.debounce ? Debounce(run, opts.debounce) : run;
+        observer = new MutationObserver(fire);
+        store[name] = observer;
+        run();
+    };
+    const Stop = (root, name) => {
+        const store = root._compute;
+        if (!store || !store[name]) {
+            return;
+        }
+        store[name].disconnect();
+        delete store[name];
+    };
+    return { Init, Stop };
+})();
+HTMLElement.prototype.compute = function (name, opts) {
+    Compute.Init(this, name, opts);
+    return this;
+};
+HTMLElement.prototype.uncompute = function (name) {
+    Compute.Stop(this, name);
+    return this;
+};
+</script>
+<div class="demo">
+<div boxes-space>
+    <p>Items: <span boxes-total="() =>
+        this.textContent = this.up('[boxes-space]').all('[boxes-item]').length
+    ">3</span></p>
+
+    <div boxes-list>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+        <button boxes-item title="remove" onclick="this.remove()">×</button>
+    </div>
+
+    <script>
+        document.currentScript.up('[boxes-space]').compute('boxes-total')
+    </script>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">boxes-space</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Items: <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">boxes-total</span>=<span class="hljs-string">"() =&gt;
+        this.textContent = this.up('[boxes-space]').all('[boxes-item]').length
+    "</span>&gt;</span>3<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">boxes-list</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">boxes-item</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"remove"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.remove()"</span>&gt;</span>×<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">boxes-item</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"remove"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.remove()"</span>&gt;</span>×<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">boxes-item</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"remove"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.remove()"</span>&gt;</span>×<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+        <span class="hljs-built_in">document</span>.currentScript.up(<span class="hljs-string">'[boxes-space]'</span>).compute(<span class="hljs-string">'boxes-total'</span>)
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="call">Call<a class="anchor" href="#call" aria-hidden="true">#</a></h2>
+<p><code>el.compute('boxes-total')</code> runs the callback once and starts the watch. The caller names the attribute. By default the watch reaches every element under the root. A value read from two lists is placed on the element that holds both. A change in either list runs it again.</p>
+<h2 id="batching">Batching<a class="anchor" href="#batching" aria-hidden="true">#</a></h2>
+<p>Changes are grouped. Fifty boxes added in one step cause one run, not fifty. The run happens right after the change, in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide">microtask</a>.</p>
+<h2 id="options">Options<a class="anchor" href="#options" aria-hidden="true">#</a></h2>
+<p><code>el.compute(name, opts)</code> takes a second argument. <code>debounce</code> waits for a quiet gap in milliseconds before a run. Rapid changes spread across many ticks then cause one run, not one each. <code>subtree</code> set to false limits the watch to the root's direct children. A shallow list is watched with less work. The first run at the call is always immediate.</p>
+<pre><code class="hljs language-javascript">el.compute(<span class="hljs-string">'boxes-total'</span>, { <span class="hljs-attr">debounce</span>: <span class="hljs-number">100</span> })
+el.compute(<span class="hljs-string">'boxes-total'</span>, { <span class="hljs-attr">subtree</span>: <span class="hljs-literal">false</span> })</code></pre>
+<h2 id="stop">Stop<a class="anchor" href="#stop" aria-hidden="true">#</a></h2>
+<p><code>el.uncompute('boxes-total')</code> disconnects the observer and forgets the name. A later <code>el.compute('boxes-total')</code> then starts a fresh watch. A second <code>uncompute</code> for the same name does nothing. Removing the root from the document does not stop the observer on its own. Call <code>uncompute</code> first.</p>
+<h2 id="use">Use<a class="anchor" href="#use" aria-hidden="true">#</a></h2>
+<p>Compute fits a value read from a changing set of elements, like items in a cart or results appended after a fetch. <code>debounce</code> helps when those elements arrive in bursts, such as a streamed or paginated list. A value that depends on an input's text is a different job. Typing changes a property, not the DOM. An input event fits there, not Compute.</p>
+<h2 id="mechanism">Mechanism<a class="anchor" href="#mechanism" aria-hidden="true">#</a></h2>
+<p>Compute puts one <a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver">MutationObserver</a> on the root. It stores the observer on the element in <code>el._compute</code>. A second call for the same attribute is skipped. The observer is turned off during a run and turned back on after. Its own writes then do not trigger it. The observer runs until <code>uncompute</code>. Compute does not track a state object. It reacts to the DOM, whatever changed it.</p>
+<h2 id="limit">Limit<a class="anchor" href="#limit" aria-hidden="true">#</a></h2>
+<p>One root takes one watch. Two names on one root each get their own observer. A run turns off only its own observer. A callback's write is a DOM change the other observer still sees. The other observer runs, and its write is seen back. The two retrigger each other without end. The element form does not have this limit. One element carries one watch, and a nested watch is found by its tag and turned off during a run.</p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

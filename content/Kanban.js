@@ -53,7 +53,6 @@ const Kanban = (() => {
     const Init = (ctx, input) =>
         ctx.up('[kanban-space]')
             .vset(input)
-            .compute('kanban-onchange')
             .all('[kanban-drag]').each(i => new Sortable(i, { group: 'kanban', animation: 150 }));
 
     return { Init, Add, Edit, Save, Delete, Close, Select };
