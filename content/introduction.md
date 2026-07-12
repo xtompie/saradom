@@ -35,7 +35,7 @@ The idea is that today's frontends are over-engineered. Saradom's rules do not c
 - Drops into any backend, like PHP, Rails, or a plain HTML page.
 - Third-party libraries drop in, writing to the same DOM.
 - Adopt it one widget at a time. It coexists with whatever is already on the page.
-- The pattern holds as the app grows, because each module keeps its own state in its own markup.
+- The pattern holds as the app grows.
 
 ## Structure
 
