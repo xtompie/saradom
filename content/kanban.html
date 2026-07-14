@@ -8,17 +8,15 @@
                     <span kanban-column-title val val-fx="Text" val-key="title"></span>
                     <span kanban-count></span>
                 </header>
-                <div kanban-cards kanban-drag val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></div>
+                <s-sortable kanban-cards group="kanban" boundary="[kanban-space]" val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></s-sortable>
                 <button kanban-add onclick="Kanban.Add(this)">+ Add card</button>
             </div>
         </s-compute>
     </template>
 
     <template kanban-card-tpl>
-        <article kanban-card onclick="Kanban.Edit(this)">
-            <span kanban-card-title val val-fx="Text" val-key="title"
-                  val-set="(d) => this.up('[kanban-card]').style.setProperty('--kanban-color', d.color)"
-                  val-get="() => ({ color: this.up('[kanban-card]').style.getPropertyValue('--kanban-color').trim() })"></span>
+        <article kanban-card val val-fx="Attr" val-key="color" val-attr="kanban-color" onclick="Kanban.Edit(this)">
+            <span kanban-card-title val val-fx="Text" val-key="title"></span>
         </article>
     </template>
 

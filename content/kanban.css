@@ -40,11 +40,16 @@
     padding: .5rem .6rem;
     background: var(--code-bg);
     border: 1px solid var(--line);
-    border-left: 3px solid var(--kanban-color, var(--muted));
+    border-left: 3px solid var(--muted);
     border-radius: var(--r-sm);
     color: var(--ink);
     cursor: grab;
 }
+[kanban-color="#8b5cf6"] { border-left-color: #8b5cf6; }
+[kanban-color="#5a80e6"] { border-left-color: #5a80e6; }
+[kanban-color="#2dd4bf"] { border-left-color: #2dd4bf; }
+[kanban-color="#f59e0b"] { border-left-color: #f59e0b; }
+[kanban-color="#f43f5e"] { border-left-color: #f43f5e; }
 [kanban-card].sortable-chosen { cursor: grabbing; }
 [kanban-card].sortable-ghost { opacity: .35; }
 [kanban-card-title] { color: var(--ink); }

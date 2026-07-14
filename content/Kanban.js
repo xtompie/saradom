@@ -50,10 +50,7 @@ const Kanban = (() => {
         }
     };
 
-    const Init = (ctx, input) =>
-        ctx.up('[kanban-space]')
-            .vset(input)
-            .all('[kanban-drag]').each(i => new Sortable(i, { group: 'kanban', animation: 150 }));
+    const Init = (ctx, input) => ctx.up('[kanban-space]').vset(input);
 
     return { Init, Add, Edit, Save, Delete, Close, Select };
 })();
