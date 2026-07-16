@@ -92,7 +92,7 @@ article.vget(); <span class="hljs-comment">// =&gt; { title: 'Dog' }</span></cod
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"description"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span></code></pre>
 <h3 id="built-in-fx">Built-in fx<a class="anchor" href="#built-in-fx" aria-hidden="true">#</a></h3>
-<p>Each fx binds one value to one element property.</p>
+<p>Each fx binds one value to one place. It reads its own configuration from the element's <code>val-*</code> attributes.</p>
 <ul>
 <li><code>Text</code> binds <code>textContent</code>.</li>
 <li><code>Html</code> binds <code>innerHTML</code>.</li>
@@ -100,6 +100,10 @@ article.vget(); <span class="hljs-comment">// =&gt; { title: 'Dog' }</span></cod
 <li><code>Input</code> binds a form field value.</li>
 <li><code>Attr</code> binds a named attribute, given in <code>val-attr</code>.</li>
 <li><code>Pattr</code> binds a named attribute on the parent element, given in <code>val-attr</code>.</li>
+<li><code>Pflag</code> binds a boolean attribute on the parent element, given in <code>val-attr</code>. It is present when the value is truthy and absent otherwise.</li>
+<li><code>Prop</code> binds a non-primitive value by storing it on the element, not in the DOM.</li>
+<li><code>Pprop</code> is <code>Prop</code>, stored on the parent element.</li>
+<li><code>Select</code> picks one option from a set, radio-style.</li>
 <li><code>Show</code> shows the element when the value is true, and hides it otherwise.</li>
 <li><code>Hide</code> is the reverse of <code>Show</code>.</li>
 <li><code>If</code> shows a subtree when a field is set, and binds it only then.</li>
@@ -129,6 +133,37 @@ article.vset({
 
 article.vget();
 <span class="hljs-comment">// =&gt; { title: 'Dog', image: '/dog.jpg', description: 'Loyal friend' }</span></code></pre>
+<h3 id="flags-with-pflag">Flags with <code>Pflag</code><a class="anchor" href="#flags-with-pflag" aria-hidden="true">#</a></h3>
+<p><code>Pflag</code> binds a boolean attribute on the parent element. <code>val-attr</code> names the attribute. Set toggles it: present when the value is truthy, absent otherwise. Get returns whether the parent carries it.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pflag"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> flag = dom.one(<span class="hljs-string">'i'</span>);
+
+flag.vset({ <span class="hljs-attr">hidden</span>: <span class="hljs-literal">true</span> });  <span class="hljs-comment">// adds the hidden attribute to the parent</span>
+flag.vget();                  <span class="hljs-comment">// =&gt; { hidden: true }</span>
+flag.vset({ <span class="hljs-attr">hidden</span>: <span class="hljs-literal">false</span> }); <span class="hljs-comment">// removes it</span></code></pre>
+<p><code>Pattr</code> is the string sibling: it binds the attribute's value rather than its presence.</p>
+<h3 id="references-with-prop">References with <code>Prop</code><a class="anchor" href="#references-with-prop" aria-hidden="true">#</a></h3>
+<p><code>Prop</code> binds a value that should not be serialized into the DOM: a DOM element, an object, a function. It stores the value on the element under <code>el._val[key]</code> and reads it back from there. <code>Pprop</code> does the same on the parent element.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Prop"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"anchor"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> ref = dom.one(<span class="hljs-string">'i'</span>);
+
+ref.vset({ <span class="hljs-attr">anchor</span>: dom.one(<span class="hljs-string">'#target'</span>) }); <span class="hljs-comment">// stores the element reference</span>
+ref.vget();                               <span class="hljs-comment">// =&gt; { anchor: &lt;#target&gt; }</span></code></pre>
+<p>The reference lives on the element in memory. Nothing is written to any attribute.</p>
+<h3 id="picking-with-select">Picking with <code>Select</code><a class="anchor" href="#picking-with-select" aria-hidden="true">#</a></h3>
+<p><code>Select</code> binds one choice out of a set of options, radio-style. <code>val-from</code> selects the options and names the attribute that holds each option's value. <code>val-mark</code> names the attribute placed on the chosen option. <code>val-key</code> names the field.</p>
+<p>Set marks the option whose <code>val-from</code> value equals the data, and clears the rest. Get returns the marked option's value, or <code>null</code> when nothing is marked.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Select"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span> <span class="hljs-attr">val-from</span>=<span class="hljs-string">"opt"</span> <span class="hljs-attr">val-mark</span>=<span class="hljs-string">"picked"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">opt</span>=<span class="hljs-string">"red"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">opt</span>=<span class="hljs-string">"green"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">opt</span>=<span class="hljs-string">"blue"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> picker = dom.one(<span class="hljs-string">'[val-key="color"]'</span>);
+
+picker.vset({ <span class="hljs-attr">color</span>: <span class="hljs-string">'green'</span> }); <span class="hljs-comment">// marks the green button with picked</span>
+picker.vget();                   <span class="hljs-comment">// =&gt; { color: 'green' }</span></code></pre>
 <h3 id="conditional-with-if">Conditional with <code>If</code><a class="anchor" href="#conditional-with-if" aria-hidden="true">#</a></h3>
 <p><code>If</code> shows its element when a field is set, and hides it when the field is missing or false. While shown, the field's object binds the elements inside. A <code>val-value</code> narrows this to a match, so the element shows only when the field equals that value.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"If"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"error"</span>&gt;</span>
@@ -138,7 +173,6 @@ article.vget();
 box.vset({ <span class="hljs-attr">error</span>: { <span class="hljs-attr">text</span>: <span class="hljs-string">'Not found'</span> } }); <span class="hljs-comment">// shows and fills the message</span>
 box.vset({ <span class="hljs-attr">error</span>: <span class="hljs-literal">false</span> });                 <span class="hljs-comment">// hides</span></code></pre>
 <p>The read side is asymmetric. A hidden element returns <code>{}</code>, so its key drops out of the <code>vget</code> result. Only a shown element contributes its field.</p>
-<p>An fx can also be defined by hand.</p>
 <h2 id="rendering">Rendering<a class="anchor" href="#rendering" aria-hidden="true">#</a></h2>
 <p>Nested objects and lists bind with the same <code>val-fx</code> and <code>val-key</code>. Three fx cover them: <code>Obj</code> for a nested object, <code>Arr</code> for a list, and <code>Render</code> for one object from a template.</p>
 <h3 id="nested-objects">Nested objects<a class="anchor" href="#nested-objects" aria-hidden="true">#</a></h3>
@@ -199,58 +233,59 @@ list.vprepend([{ <span class="hljs-attr">name</span>: <span class="hljs-string">
 
 box.vset({ <span class="hljs-attr">badge</span>: { <span class="hljs-attr">label</span>: <span class="hljs-string">'new'</span> } });       <span class="hljs-comment">// renders the card</span>
 box.vrender({ <span class="hljs-attr">label</span>: <span class="hljs-string">'sale'</span> }, <span class="hljs-string">'[badge-card]'</span>); <span class="hljs-comment">// renders one object directly</span></code></pre>
+<h2 id="lanes">Lanes<a class="anchor" href="#lanes" aria-hidden="true">#</a></h2>
+<p>One DOM tree can hold several independent models. A lane keeps them apart. <code>val-lane</code> marks the root of a model and names it.</p>
+<p>Lanes are inherited. An element's lane is the nearest <code>val-lane</code> on it or on an ancestor (<code>el.closest('[val-lane]')</code>). You tag only the roots; everything inside inherits.</p>
+<p>A lane-scoped read or write descends the subtree but never crosses into an element whose <code>val-lane</code> differs. A foreign model is skipped whole, so separate models can nest inside one another without leaking into each other.</p>
+<p><code>vget</code>, <code>vset</code>, and <code>vsync</code> take no lane argument in normal use. Each resolves the lane from the element's nearest <code>val-lane</code>. A lane can still be passed explicitly when needed.</p>
+<p>The kanban board is the worked example. Three models share one tree:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-space</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"value"</span>&gt;</span>
+  <span class="hljs-comment">&lt;!-- the board: columns and cards --&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-modal</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"modal"</span> <span class="hljs-attr">hidden</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- the interface: anchor, hidden, mode --&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">kanban-form</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"form"</span>&gt;</span>
+      <span class="hljs-comment">&lt;!-- the card being edited: title, color --&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>The board carries <code>val-lane=&quot;value&quot;</code>, the modal <code>val-lane=&quot;modal&quot;</code>, and the form <code>val-lane=&quot;form&quot;</code>. Columns, cards, binders, and form fields carry no lane; they inherit from the nearest root.</p>
+<pre><code class="hljs language-javascript">space.vget(); <span class="hljs-comment">// the board only; the nested modal is skipped</span>
+modal.vget(); <span class="hljs-comment">// the interface only; the nested form is skipped</span>
+form.vget();  <span class="hljs-comment">// the card being edited</span></code></pre>
+<p>Each read returns only its own model. The modal sits inside the board and the form sits inside the modal, but a read of one never reaches into another.</p>
 <h2 id="custom-fx">Custom fx<a class="anchor" href="#custom-fx" aria-hidden="true">#</a></h2>
-<p>An fx is an object with two functions. <code>Get</code> reads a value from the element. <code>Set</code> writes a value into it. New fx are added to <code>Val.Fx</code> by name.</p>
+<p>An fx is an object with two functions. <code>Get</code> reads a value from the element. <code>Set</code> writes a value into it. Each reads its own configuration from the element's attributes. New fx are added to <code>Val.Fx</code> by name.</p>
 <pre><code class="hljs language-javascript">Val.Fx.Upper = {
-  <span class="hljs-attr">Get</span>: <span class="hljs-function">(<span class="hljs-params">el, params</span>) =&gt;</span> ({ [params.key]: el.textContent.toLowerCase() }),
-  <span class="hljs-attr">Set</span>: <span class="hljs-function">(<span class="hljs-params">el, data, params</span>) =&gt;</span> { el.textContent = <span class="hljs-built_in">String</span>(data[params.key]).toUpperCase(); },
+  <span class="hljs-attr">Get</span>: <span class="hljs-function">(<span class="hljs-params">el</span>) =&gt;</span> ({ [el.getAttribute(<span class="hljs-string">'val-key'</span>)]: el.textContent.toLowerCase() }),
+  <span class="hljs-attr">Set</span>: <span class="hljs-function">(<span class="hljs-params">el, data</span>) =&gt;</span> {
+    el.textContent = <span class="hljs-built_in">String</span>(data[el.getAttribute(<span class="hljs-string">'val-key'</span>)]).toUpperCase();
+  },
 };</code></pre>
 <p>The name is then used like any built-in fx.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">h1</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Upper"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span>cat<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span></code></pre>
 <pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> el = dom.one(<span class="hljs-string">'h1'</span>);
 el.vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'dog'</span> }); <span class="hljs-comment">// shows DOG</span>
 el.vget();                  <span class="hljs-comment">// =&gt; { title: 'dog' }</span></code></pre>
-<h3 id="parameters">Parameters<a class="anchor" href="#parameters" aria-hidden="true">#</a></h3>
-<p><code>params</code> holds every <code>val-*</code> attribute on the element, with the <code>val-</code> prefix removed. <code>val-set</code>, <code>val-get</code>, and <code>val-fx</code> are excluded. This passes options into an fx.</p>
+<p>An fx reads any option it needs from its own <code>val-*</code> attributes. A currency formatter reads <code>val-currency</code> the same way it reads <code>val-key</code>.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Money"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"price"</span> <span class="hljs-attr">val-currency</span>=<span class="hljs-string">"USD"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<pre><code class="hljs language-javascript"><span class="hljs-comment">// params inside the fx:</span>
-<span class="hljs-comment">// { key: 'price', currency: 'USD' }</span></code></pre>
-<p>An fx reads its own options from <code>params</code> and applies them in <code>Get</code> and <code>Set</code>.</p>
 <pre><code class="hljs language-javascript">Val.Fx.Money = {
-  <span class="hljs-attr">Get</span>: <span class="hljs-function">(<span class="hljs-params">el, params</span>) =&gt;</span> ({ [params.key]: <span class="hljs-built_in">Number</span>(el.textContent.replace(<span class="hljs-regexp">/[^0-9.]/g</span>, <span class="hljs-string">''</span>)) }),
-  <span class="hljs-attr">Set</span>: <span class="hljs-function">(<span class="hljs-params">el, data, params</span>) =&gt;</span> {
+  <span class="hljs-attr">Get</span>: <span class="hljs-function">(<span class="hljs-params">el</span>) =&gt;</span> ({
+    [el.getAttribute(<span class="hljs-string">'val-key'</span>)]: <span class="hljs-built_in">Number</span>(el.textContent.replace(<span class="hljs-regexp">/[^0-9.]/g</span>, <span class="hljs-string">''</span>)),
+  }),
+  <span class="hljs-attr">Set</span>: <span class="hljs-function">(<span class="hljs-params">el, data</span>) =&gt;</span> {
     el.textContent = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Intl</span>.NumberFormat(<span class="hljs-string">'en-US'</span>, {
       <span class="hljs-attr">style</span>: <span class="hljs-string">'currency'</span>,
-      <span class="hljs-attr">currency</span>: params.currency,
-    }).format(data[params.key]);
+      <span class="hljs-attr">currency</span>: el.getAttribute(<span class="hljs-string">'val-currency'</span>),
+    }).format(data[el.getAttribute(<span class="hljs-string">'val-key'</span>)]);
   },
 };</code></pre>
-<h3 id="composing-fx-with-fxs">Composing fx with <code>Fxs</code><a class="anchor" href="#composing-fx-with-fxs" aria-hidden="true">#</a></h3>
-<p><code>val-fx=&quot;Fxs&quot;</code> runs several fx on one element. The element holds a nested <code>[val-fxs]</code> container whose children each carry a single <code>val-fx</code> and its parameters. Each child fx acts on the outer element. A read merges every child result into one object. A write applies every child fx.</p>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Fxs"</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val-fxs</span> <span class="hljs-attr">hidden</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"url"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"href"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Attr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"tip"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-  Link
-<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span></code></pre>
-<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> link = dom.one(<span class="hljs-string">'a'</span>);
-
-link.vset({ <span class="hljs-attr">url</span>: <span class="hljs-string">'/dog'</span>, <span class="hljs-attr">tip</span>: <span class="hljs-string">'A dog'</span> });
-<span class="hljs-comment">// href="/dog" and title="A dog" on the same anchor</span>
-
-link.vget();
-<span class="hljs-comment">// =&gt; { url: '/dog', tip: 'A dog' }</span></code></pre>
-<p>The <code>[val-fxs]</code> container and its children hold no <code>val</code> attribute, so normal binding skips them and reads only the merged output.</p>
 <h3 id="calling-fx-by-hand">Calling fx by hand<a class="anchor" href="#calling-fx-by-hand" aria-hidden="true">#</a></h3>
-<p>The same result comes from a plain <code>val-set</code> and <code>val-get</code> that call the fx directly. Each fx is <code>Val.Fx.&lt;Name&gt;</code> with a <code>Get(el, params)</code> and a <code>Set(el, data, params)</code>. This trades the <code>[val-fxs]</code> markup for one line of code.</p>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">val</span>
-   <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(data) =&gt; { Val.Fx.Text.Set(this, data, { key: 'label' }); Val.Fx.Attr.Set(this, data, { key: 'url', attr: 'href' }); }"</span>
-   <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({ ...Val.Fx.Text.Get(this, { key: 'label' }), ...Val.Fx.Attr.Get(this, { key: 'url', attr: 'href' }) })"</span>&gt;</span>Link<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span></code></pre>
-<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> link = dom.one(<span class="hljs-string">'a'</span>);
-
-link.vset({ <span class="hljs-attr">label</span>: <span class="hljs-string">'Dog'</span>, <span class="hljs-attr">url</span>: <span class="hljs-string">'/dog'</span> }); <span class="hljs-comment">// sets text and href</span>
-link.vget(); <span class="hljs-comment">// =&gt; { label: 'Dog', url: '/dog' }</span></code></pre>
+<p>The same result comes from a plain <code>val-set</code> and <code>val-get</code> that call the fx directly. Each fx is <code>Val.Fx.&lt;Name&gt;</code> with a <code>Get(el)</code> and a <code>Set(el, data)</code>. The element still carries the <code>val-*</code> attributes each fx reads.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"label"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"href"</span>
+   <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(data) =&gt; { Val.Fx.Text.Set(this, data); Val.Fx.Attr.Set(this, data); }"</span>
+   <span class="hljs-attr">val-get</span>=<span class="hljs-string">"() =&gt; ({ ...Val.Fx.Text.Get(this), ...Val.Fx.Attr.Get(this) })"</span>&gt;</span>Link<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span></code></pre>
 <p>Built-in and custom fx mix freely in the same tree.</p>
 <h2 id="sync">Sync<a class="anchor" href="#sync" aria-hidden="true">#</a></h2>
 <p><code>vsync(data)</code> writes like <code>vset</code>, but only where the value changed. It reads the current value, compares, and sets only the fields that differ. Unchanged subtrees are skipped, including their <code>val-set</code>. A list is reconciled by position: an unchanged item is left untouched, a changed item is patched in place, extra items are appended, a shorter list drops its tail.</p>
@@ -258,13 +293,16 @@ link.vget(); <span class="hljs-comment">// =&gt; { label: 'Dog', url: '/dog' }</
 d.title = <span class="hljs-string">'Cat'</span>;
 article.vsync(d);                               <span class="hljs-comment">// only the title element is written</span>
 article.vsync(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">title</span>: <span class="hljs-string">'Cat'</span> })); <span class="hljs-comment">// same, given a function of the current state</span></code></pre>
+<p><code>vpatch(patch)</code> merges a partial object over the current state and syncs the diff. It is shorthand for <code>vsync((d) =&gt; ({ ...d, ...patch }))</code>.</p>
+<pre><code class="hljs language-javascript">modal.vpatch({ <span class="hljs-attr">hidden</span>: <span class="hljs-literal">true</span> }); <span class="hljs-comment">// reads the current state, sets only hidden</span></code></pre>
 <p>An element with <code>val-set</code> is always written, because its effect cannot be read back to compare.</p>
 <h2 id="methods">Methods<a class="anchor" href="#methods" aria-hidden="true">#</a></h2>
-<p>Val adds methods to <code>HTMLElement</code>. Each acts on the marked subtree of the element it is called on and returns the element, except the readers.</p>
+<p>Val adds methods to <code>HTMLElement</code>. Each acts on the marked subtree of the element it is called on and returns the element, except the readers. Each resolves its lane from the element's nearest <code>val-lane</code>, and each accepts a lane as an optional last argument.</p>
 <ul>
 <li><code>vset(data)</code> writes an object into the subtree. Given a function, it reads the state, passes it in, and writes the result.</li>
 <li><code>vget()</code> reads the subtree back as an object. Reader.</li>
 <li><code>vsync(data)</code> writes only the fields that changed. Given a function, it reads the state, passes it in, and writes what changed.</li>
+<li><code>vpatch(patch)</code> merges a partial object over the current state and syncs the diff.</li>
 <li><code>vappend(items, tpl)</code> adds items to the end of a list.</li>
 <li><code>vprepend(items, tpl)</code> adds items to the start of a list.</li>
 <li><code>varr(data, tpl)</code> writes an array as list items. Called with no argument it reads the list back as an array. Reader in that form.</li>
@@ -274,10 +312,11 @@ article.vsync(<span class="hljs-function">(<span class="hljs-params">d</span>) =
 </ul>
 <pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> article = dom.one(<span class="hljs-string">'article'</span>);
 
-article.vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span> });              <span class="hljs-comment">// write</span>
-article.vget();                              <span class="hljs-comment">// read</span>
-article.vset(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">seen</span>: <span class="hljs-literal">true</span> }));  <span class="hljs-comment">// read, change, write</span>
-article.vsync(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">title</span>: <span class="hljs-string">'Cat'</span> }));  <span class="hljs-comment">// read, change, write only the diff</span></code></pre>
+article.vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Dog'</span> });               <span class="hljs-comment">// write</span>
+article.vget();                               <span class="hljs-comment">// read</span>
+article.vset(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">seen</span>: <span class="hljs-literal">true</span> }));   <span class="hljs-comment">// read, change, write</span>
+article.vsync(<span class="hljs-function">(<span class="hljs-params">d</span>) =&gt;</span> ({ ...d, <span class="hljs-attr">title</span>: <span class="hljs-string">'Cat'</span> })); <span class="hljs-comment">// read, change, write only the diff</span>
+article.vpatch({ <span class="hljs-attr">title</span>: <span class="hljs-string">'Cat'</span> });             <span class="hljs-comment">// merge and sync the diff</span></code></pre>
 <h3 id="attributes">Attributes<a class="anchor" href="#attributes" aria-hidden="true">#</a></h3>
 <ul>
 <li><code>val</code> marks an element for binding.</li>
@@ -285,14 +324,17 @@ article.vsync(<span class="hljs-function">(<span class="hljs-params">d</span>) =
 <li><code>val-get</code> reads data from the element.</li>
 <li><code>val-fx</code> names an fx instead of <code>val-set</code> and <code>val-get</code>.</li>
 <li><code>val-key</code> names the field in the data object.</li>
-<li><code>val-attr</code> names the attribute for the <code>Attr</code> fx.</li>
+<li><code>val-attr</code> names the attribute for the <code>Attr</code>, <code>Pattr</code>, and <code>Pflag</code> fx.</li>
 <li><code>val-tpl</code> selects the template for a list or render.</li>
+<li><code>val-from</code> selects the options and value source for the <code>Select</code> fx.</li>
+<li><code>val-mark</code> names the marker attribute for the <code>Select</code> fx.</li>
 <li><code>val-value</code> gives the <code>If</code> fx a value to match, so the element shows only when the field equals it.</li>
-<li><code>val-fxs</code> marks the container that holds the child fx of the <code>Fxs</code> composition.</li>
+<li><code>val-lane</code> marks the root of a model and names it. Lanes are inherited by the subtree.</li>
 </ul>
-<p><code>val-set</code> and <code>val-get</code> run with <code>this</code> bound to the element. Any other <code>val-*</code> attribute is passed to an fx as a parameter.</p>
+<p><code>val-set</code> and <code>val-get</code> run with <code>this</code> bound to the element. An fx reads any other <code>val-*</code> attribute it needs directly from the element.</p>
 <p><code>vset</code>, <code>vget</code>, and their kin act on the element itself when it carries the <code>val</code> attribute, and on its marked subtree when it does not.</p>
-<p>Each method wraps the public <code>Val.*</code> API: <code>Val.Get</code>, <code>Val.Set</code>, <code>Val.Obj</code>, <code>Val.Arr</code>, <code>Val.Render</code>, <code>Val.Append</code>, <code>Val.Prepend</code>, and <code>Val.Sync</code>. The same calls are available on <code>Val</code> for use without an element method.</p>
+<p>Each method wraps the public <code>Val.*</code> API: <code>Val.Get</code>, <code>Val.Set</code>, <code>Val.Obj</code>, <code>Val.Arr</code>, <code>Val.Render</code>, <code>Val.Append</code>, <code>Val.Prepend</code>, <code>Val.Sync</code>, <code>Val.Patch</code>, <code>Val.Lane</code>, and <code>Val.Fd</code>. The same calls are available on <code>Val</code> for use without an element method.</p>
+<p><code>Val.Sync</code>, <code>Val.Patch</code>, <code>vsync</code>, and <code>vpatch</code> form one optional diff-sync block. It can be dropped as a unit when a project never needs the diff.</p>
 <p class="doc-next"><a href="hx.html">Next: Hx →</a></p>
 </main>
 <script>

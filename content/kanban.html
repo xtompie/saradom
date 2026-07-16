@@ -1,11 +1,11 @@
-<div kanban-space>
+<div kanban-space val-lane="value">
     <div kanban-columns val val-fx="Arr" val-key="data" val-tpl="[kanban-column-tpl]"></div>
 
     <template kanban-column-tpl>
         <s-compute run="() => this.one('[kanban-count]').textContent = this.all('[kanban-card]').length">
             <div kanban-column>
                 <header>
-                    <span kanban-column-title val val-fx="Text" val-key="title"></span>
+                    <span val val-fx="Text" val-key="title"></span>
                     <span kanban-count></span>
                 </header>
                 <s-sortable kanban-cards group="kanban" boundary="[kanban-space]" val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></s-sortable>
@@ -15,26 +15,30 @@
     </template>
 
     <template kanban-card-tpl>
-        <article kanban-card val val-fx="Attr" val-key="color" val-attr="kanban-color" onclick="Kanban.Edit(this)">
+        <article kanban-card onclick="Kanban.Edit(this)">
+            <i val val-fx="Pattr" val-key="color" val-attr="kanban-color" hidden></i>
             <span kanban-card-title val val-fx="Text" val-key="title"></span>
         </article>
     </template>
 
-    <template id="kanban-error-tpl">{message}</template>
-
-    <div kanban-modal val val-get="() => ({})" hidden kanban-modal-mode="add" vld-error-tpl="#kanban-error-tpl">
+    <div kanban-modal val-lane="modal" hidden kanban-modal-mode="add" vld-error-tpl="[kanban-error-tpl]">
+        <template kanban-error-tpl>{message}</template>
+        <i val val-fx="Pprop" val-key="anchor" hidden></i>
+        <i val val-fx="Pflag" val-key="hidden" val-attr="hidden" hidden></i>
+        <i val val-fx="Pattr" val-key="mode" val-attr="kanban-modal-mode" hidden></i>
+        <i val val-set="(d) => d.focus && this.up('[kanban-modal]').one('[kanban-focus]').focus()" hidden></i>
         <div onclick="Kanban.Close(this)"></div>
-        <section kanban-form>
-            <input kanban-input val val-fx="Input" val-key="title" type="text" placeholder="Title">
+        <section kanban-form val-lane="form">
+            <input kanban-focus val val-fx="Input" val-key="title" type="text" placeholder="Title">
             <div vld-error="title"></div>
-            <div kanban-color val val-fx="Attr" val-key="color" val-attr="kanban-color-val"
-                 val-set="(d) => Kanban.Select(this, d.color)">
+            <div kanban-color val val-fx="Select" val-key="color" val-from="kanban-option" val-mark="kanban-selected">
                 <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
                 <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
                 <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
                 <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
                 <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
             </div>
+            <div vld-error="color"></div>
             <footer>
                 <button onclick="Kanban.Save(this)">Save</button>
                 <button onclick="Kanban.Close(this)">Cancel</button>

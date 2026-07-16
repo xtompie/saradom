@@ -93,7 +93,7 @@
     border-radius: var(--r-lg);
     padding: 1.1rem;
 }
-[kanban-input] {
+[kanban-form] input {
     background: var(--code-bg);
     border: 1px solid var(--line);
     border-radius: var(--r-sm);
@@ -102,7 +102,7 @@
     padding: .5rem .65rem;
     outline: none;
 }
-[kanban-input]:focus { border-color: #5a80e6; }
+[kanban-form] input:focus { border-color: #5a80e6; }
 [kanban-color] {
     display: flex;
     gap: .45rem;
@@ -142,4 +142,4 @@
 [kanban-modal][kanban-modal-mode="add"] [kanban-delete] { display: none; }
 
 [kanban-modal] [vld-error]:not(:empty) { color: #f43f5e; font-size: .8rem; margin-top: .25rem; }
-[kanban-input]:has(+ [vld-error]:not(:empty)) { border-color: #f43f5e; }
+[kanban-form] input:has(+ [vld-error]:not(:empty)) { border-color: #f43f5e; }

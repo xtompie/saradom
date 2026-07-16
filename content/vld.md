@@ -178,7 +178,7 @@ Four pieces connect `Validate` to a form. `vld-space` marks the scope. The handl
 The form the data comes from is found from the space. If the space itself carries `vld-form`, it is the form. Otherwise the single `[vld-form]` inside it is used. That keeps the space free to be on a wrapper above the form, or on the `<form>` directly. Both attributes can go on one element when they coincide. Repeated field names, like checkboxes and multi-selects, collect into an array rather than collapsing to the last value.
 
 ```html
-<form vld-space vld-form vld-error-tpl="#signup-error" onsubmit="Vld.Form.Submit(this, event, this._vldRules)">
+<form vld-space vld-form vld-error-tpl="[signup-error]" onsubmit="Vld.Form.Submit(this, event, this._vldRules)">
     <script>
     document.currentScript.closest('[vld-space]')._vldRules = [
         [
@@ -202,14 +202,14 @@ The form the data comes from is found from the space. If the space itself carrie
     <div vld-error="password2"></div>
 
     <button>Sign up</button>
-</form>
 
-<template id="signup-error"><div class="signup-error">{message}</div></template>
+    <template signup-error><div class="signup-error">{message}</div></template>
+</form>
 ```
 
 Keeping the rules on the element is one way to solve a real problem, not a rule Vld imposes. A plain JS variable named `rules` would have to live somewhere a second form could reach it too. That is a global, almost always, and a second form on the same page would either share it by accident or fight over the name. Keeping them on the space instead means two forms are just two elements, each carrying its own rules, with nothing to collide. The handler passes them in like any other argument.
 
-`vld-error-tpl` holds a selector, and the element it points to supplies the error markup. Its inner HTML is the template, read once per submit. `{key}`, `{message}`, and `{path}` are replaced from the matching error. The target is found by that selector alone, never by tag. A `<template>` is the natural inert holder, but any element works. There is no built-in markup and no default class. The `vld-` prefix names attribute contracts, not styles, so the markup and its classes are defined in the page, not by Vld. No selector, or a selector that matches nothing, means nothing renders.
+`vld-error-tpl` holds a selector, and the element it points to supplies the error markup. Its inner HTML is the template, read once per submit. `{key}`, `{message}`, and `{path}` are replaced from the matching error. The target is the element that selector matches inside the space. There is no built-in markup and no default class. The `vld-` prefix names attribute contracts, not styles, so the markup and its classes are defined in the page, not by Vld. No selector, or a selector that matches nothing, means nothing renders.
 
 `ctx` does not have to be the form. Calling it from a plain button works the same way, since `Vld.Form.Submit` climbs to `[vld-space]` from wherever it is called, not just from the form itself. The climb to the space reaches the rules kept there:
 

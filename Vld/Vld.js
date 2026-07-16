@@ -107,7 +107,7 @@ Vld.Form = (() => {
 
     const Apply = (root, errors, tpl, attr = 'vld-error') => {
         const selector = tpl ?? root.getAttribute('vld-error-tpl');
-        const template = selector && document.querySelector(selector)?.innerHTML;
+        const template = selector && root.querySelector(selector)?.innerHTML;
 
         Clear(root, attr);
         if (!template) return errors;

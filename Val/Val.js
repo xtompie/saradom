@@ -8,22 +8,21 @@ const Val = (() => {
     const Allfd = (el, s) => Array.from(el.children)
         .filter(e => e instanceof HTMLElement)
         .reduce((r, e) => e.matches(s) ? r.concat(e) : r.concat(Allfd(e, s)), []);
+    const Lane = el => el.closest('[val-lane]')?.getAttribute('val-lane') ?? null;
+    const Fd = (el, lane) => Array.from(el.children)
+        .filter(e => e instanceof HTMLElement)
+        .reduce((r, e) => {
+            const l = e.getAttribute('val-lane');
+            if (lane && l && l !== lane) return r;
+            return e.hasAttribute('val') ? r.concat(e) : r.concat(Fd(e, lane));
+        }, []);
     const TplClone = t => t.content.firstElementChild.cloneNode(true);
     const Tpl = tpl => typeof tpl === 'string' ? document.querySelector(tpl) : tpl;
 
-    const FxParams = (el) => {
-        const params = {};
-        Array.from(el.attributes).forEach(a => {
-            if (a.name.startsWith('val-') && !['val-set', 'val-get', 'val-fx', 'val-lane'].includes(a.name)) {
-                params[a.name.substring(4)] = a.value;
-            }
-        });
-        return params;
-    };
     const Fx = (el, write, v = null) => {
         const fx = Attr(el, 'val-fx');
         if (fx && fx !== '' && Val.Fx[fx]) {
-            return write ? Val.Fx[fx].Set(el, v, FxParams(el)) : Val.Fx[fx].Get(el, FxParams(el));
+            return write ? Val.Fx[fx].Set(el, v) : Val.Fx[fx].Get(el);
         }
     };
     const Sg = (el, write, v = null) => {
@@ -47,15 +46,15 @@ const Val = (() => {
         data.forEach(d => el[method](Frag(t, d)));
     };
     const Obj = (el, data = null, lane = null) => {
-        const sel = lane ? `[val][val-lane="${lane}"]` : '[val]';
+        lane = lane ?? Lane(el);
         if (data === null) {
             const d = {};
             if (el.hasAttribute('val')) Object.assign(d, Get(el));
-            Allfd(el, sel).reduce((r, e) => Object.assign(r, Get(e)), d);
+            Fd(el, lane).reduce((r, e) => Object.assign(r, Get(e)), d);
             return Object.keys(d).length === 0 ? null : d;
         }
         if (el.hasAttribute('val')) Set(el, data);
-        Allfd(el, sel).forEach(e => Set(e, data));
+        Fd(el, lane).forEach(e => Set(e, data));
     };
     const Arr = (el, data = undefined, tpl = null) => {
         if (data === undefined && tpl === null) {
@@ -71,111 +70,148 @@ const Val = (() => {
     const Append = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data, 'appendChild');
     const Prepend = (el, data, tpl = null) => Iter(el, tpl === null ? Attr(el, 'val-tpl') : tpl, data.reverse(), 'prepend');
 
-    return { Get, Set, Append, Prepend, Obj, Arr, Render, FxParams, Allfd, Attr };
+    return { Get, Set, Append, Prepend, Obj, Arr, Render, Allfd, Fd, Lane, Attr };
 })();
 
 Val.Fx = {
     Obj: {
-        Get: (el, params) => {
+        Get: (el) => {
+            const key = el.getAttribute('val-key');
             const d = {};
-            Val.Allfd(el, '[val]').forEach(e => Object.assign(d, Val.Get(e)));
-            return params.key ? { [params.key]: d } : d;
+            Val.Fd(el, Val.Lane(el)).forEach(e => Object.assign(d, Val.Get(e)));
+            return key ? { [key]: d } : d;
         },
-        Set: (el, data, params) => {
-            const val = params.key ? data[params.key] : data;
+        Set: (el, data) => {
+            const key = el.getAttribute('val-key');
+            const val = key ? data[key] : data;
             if (val === undefined || val === null) return;
-            Val.Allfd(el, '[val]').forEach(e => Val.Set(e, val));
+            Val.Fd(el, Val.Lane(el)).forEach(e => Val.Set(e, val));
         }
     },
     Arr: {
-        Get: (el, params) => ({ [params.key]: Val.Arr(el) }),
-        Set: (el, data, params) => Val.Arr(el, data[params.key], params.tpl)
+        Get: (el) => ({ [el.getAttribute('val-key')]: Val.Arr(el) }),
+        Set: (el, data) => Val.Arr(el, data[el.getAttribute('val-key')], el.getAttribute('val-tpl'))
     },
     Render: {
-        Get: (el, params) => {
+        Get: (el) => {
             const d = {};
-            Val.Allfd(el, '[val]').forEach(e => Object.assign(d, Val.Get(e)));
-            return { [params.key]: d };
+            Val.Fd(el, Val.Lane(el)).forEach(e => Object.assign(d, Val.Get(e)));
+            return { [el.getAttribute('val-key')]: d };
         },
-        Set: (el, data, params) => Val.Render(el, params.tpl, data[params.key])
+        Set: (el, data) => Val.Render(el, el.getAttribute('val-tpl'), data[el.getAttribute('val-key')])
     },
     Text: {
-        Get: (el, params) => ({ [params.key]: el.textContent }),
-        Set: (el, data, params) => { el.textContent = data[params.key]; }
+        Get: (el) => ({ [el.getAttribute('val-key')]: el.textContent }),
+        Set: (el, data) => { el.textContent = data[el.getAttribute('val-key')]; }
     },
     Html: {
-        Get: (el, params) => ({ [params.key]: el.innerHTML }),
-        Set: (el, data, params) => { el.innerHTML = data[params.key]; }
+        Get: (el) => ({ [el.getAttribute('val-key')]: el.innerHTML }),
+        Set: (el, data) => { el.innerHTML = data[el.getAttribute('val-key')]; }
     },
     Input: {
-        Get: (el, params) => ({ [params.key]: el.value }),
-        Set: (el, data, params) => { el.value = data[params.key] || ''; }
+        Get: (el) => ({ [el.getAttribute('val-key')]: el.value }),
+        Set: (el, data) => { el.value = data[el.getAttribute('val-key')] || ''; }
     },
     Show: {
-        Get: (el, params) => ({ [params.key]: el.style.display !== 'none' }),
-        Set: (el, data, params) => { el.style.display = data[params.key] ? '' : 'none'; }
+        Get: (el) => ({ [el.getAttribute('val-key')]: el.style.display !== 'none' }),
+        Set: (el, data) => { el.style.display = data[el.getAttribute('val-key')] ? '' : 'none'; }
     },
     Hide: {
-        Get: (el, params) => ({ [params.key]: el.style.display === 'none' }),
-        Set: (el, data, params) => { el.style.display = data[params.key] ? 'none' : ''; }
+        Get: (el) => ({ [el.getAttribute('val-key')]: el.style.display === 'none' }),
+        Set: (el, data) => { el.style.display = data[el.getAttribute('val-key')] ? 'none' : ''; }
     },
     Img: {
-        Get: (el, params) => ({ [params.key]: el.src }),
-        Set: (el, data, params) => { el.src = data[params.key]; }
+        Get: (el) => ({ [el.getAttribute('val-key')]: el.src }),
+        Set: (el, data) => { el.src = data[el.getAttribute('val-key')]; }
     },
     Attr: {
-        Get: (el, params) => ({ [params.key]: Val.Attr(el, params.attr) }),
-        Set: (el, data, params) => { Val.Attr(el, params.attr, data[params.key]); }
+        Get: (el) => ({ [el.getAttribute('val-key')]: Val.Attr(el, el.getAttribute('val-attr')) }),
+        Set: (el, data) => { Val.Attr(el, el.getAttribute('val-attr'), data[el.getAttribute('val-key')]); }
     },
     Pattr: {
-        Get: (el, params) => ({ [params.key]: Val.Attr(el.parentElement, params.attr) }),
-        Set: (el, data, params) => { Val.Attr(el.parentElement, params.attr, data[params.key]); }
+        Get: (el) => ({ [el.getAttribute('val-key')]: Val.Attr(el.parentElement, el.getAttribute('val-attr')) }),
+        Set: (el, data) => { Val.Attr(el.parentElement, el.getAttribute('val-attr'), data[el.getAttribute('val-key')]); }
     },
-    If: {
-        Get: (el, params) => {
-            const conditionMet = el.style.display !== 'none' && (!params.value || params.value === 'true');
-            if (!conditionMet) return {};
-            const result = Val.Allfd(el, '[val]').reduce((r, e) => Object.assign(r, Val.Get(e)), {});
-            return { [params.key]: result };
+    Prop: {
+        Get: (el) => { const key = el.getAttribute('val-key'); return { [key]: el._val?.[key] }; },
+        Set: (el, data) => { const key = el.getAttribute('val-key'); (el._val ??= {})[key] = data[key]; }
+    },
+    Pprop: {
+        Get: (el) => { const key = el.getAttribute('val-key'); return { [key]: el.parentElement._val?.[key] }; },
+        Set: (el, data) => { const key = el.getAttribute('val-key'); (el.parentElement._val ??= {})[key] = data[key]; }
+    },
+    Pflag: {
+        Get: (el) => ({ [el.getAttribute('val-key')]: el.parentElement.hasAttribute(el.getAttribute('val-attr')) }),
+        Set: (el, data) => { el.parentElement.toggleAttribute(el.getAttribute('val-attr'), !!data[el.getAttribute('val-key')]); }
+    },
+    Select: {
+        Get: (el) => {
+            const key = el.getAttribute('val-key');
+            const from = el.getAttribute('val-from');
+            const mark = el.getAttribute('val-mark');
+            const sel = Val.Allfd(el, `[${from}]`).find(o => o.hasAttribute(mark));
+            return { [key]: sel ? sel.getAttribute(from) : null };
         },
-        Set: (el, data, params) => {
-            const conditionMet = params.value ? params.value === data[params.key] : data[params.key];
-            el.style.display = conditionMet ? '' : 'none';
-            if (conditionMet && data[params.key]) {
-                Val.Allfd(el, '[val]').forEach(e => Val.Set(e, data[params.key]));
-            }
+        Set: (el, data) => {
+            const from = el.getAttribute('val-from');
+            const mark = el.getAttribute('val-mark');
+            const value = data[el.getAttribute('val-key')];
+            Val.Allfd(el, `[${from}]`).forEach(o => o.toggleAttribute(mark, o.getAttribute(from) === value));
         }
     },
-    Fxs: {
-        Get: (el, params) => {
-            return Array.from(el.querySelector('[val-fxs]')?.children ?? []).reduce((result, fxEl) => {
-                const fx = Val.Attr(fxEl, 'val-fx');
-                return (fx && Val.Fx[fx])
-                    ? Object.assign(result, Val.Fx[fx].Get(el, Val.FxParams(fxEl)))
-                    : result;
-            }, {});
+    If: {
+        Get: (el) => {
+            const key = el.getAttribute('val-key');
+            const value = el.getAttribute('val-value');
+            const conditionMet = el.style.display !== 'none' && (!value || value === 'true');
+            if (!conditionMet) return {};
+            const result = Val.Fd(el, Val.Lane(el)).reduce((r, e) => Object.assign(r, Val.Get(e)), {});
+            return { [key]: result };
         },
-        Set: (el, data, params) => {
-            Array.from(el.querySelector('[val-fxs]')?.children ?? []).forEach(fxEl => {
-                const fx = Val.Attr(fxEl, 'val-fx');
-                fx && Val.Fx[fx] && Val.Fx[fx].Set(el, data, Val.FxParams(fxEl));
-            });
+        Set: (el, data) => {
+            const key = el.getAttribute('val-key');
+            const value = el.getAttribute('val-value');
+            const conditionMet = value ? value === data[key] : data[key];
+            el.style.display = conditionMet ? '' : 'none';
+            if (conditionMet && data[key]) {
+                Val.Fd(el, Val.Lane(el)).forEach(e => Val.Set(e, data[key]));
+            }
         }
     }
 };
 
-// Sync — a diff-aware set. Reads the current value, writes only what changed, and
-// descends only into changed subtrees, so unchanged branches (and their val-sets)
-// are left alone. Lists are reconciled by position. Optional: drop this block to remove it.
-Val.Sync = (() => {
+HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, data, tpl); return this; };
+HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
+HTMLElement.prototype.vget = function (lane) { lane = lane ?? Val.Lane(this); return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane); };
+HTMLElement.prototype.vobj = function (data = null, lane) { lane = lane ?? Val.Lane(this); return Val.Obj(this, data, lane); };
+HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
+HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
+HTMLElement.prototype.vset = function (data, lane) {
+    if (typeof data === 'function') {
+        const cur = this.vget();
+        const next = data(cur);
+        data = next === undefined ? cur : next;
+    }
+    lane = lane ?? Val.Lane(this);
+    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data, lane);
+    return this;
+};
+HTMLElement.prototype.vval = function (data) {
+    if (arguments.length === 0) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this);
+    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data);
+    return this;
+};
+(() => {
     const eq = (a, b) => {
         if (a === b) return true;
         if (a == null || b == null) return a === b;
         if (typeof a !== 'object' && typeof b !== 'object') return String(a) === String(b);
+        const plain = v => Array.isArray(v) || Object.getPrototypeOf(v) === Object.prototype;
+        if (!plain(a) || !plain(b)) return false;
         return JSON.stringify(a) === JSON.stringify(b);
     };
     const syncArr = (el, data) => {
-        const next = data[Val.FxParams(el).key] || [];
+        const next = data[el.getAttribute('val-key')] || [];
         const kids = Array.from(el.children);
         const cur = kids.map(c => Val.Obj(c));
         const n = Math.min(kids.length, next.length);
@@ -183,15 +219,16 @@ Val.Sync = (() => {
         if (next.length > kids.length) Val.Append(el, next.slice(kids.length));
         else for (let i = kids.length - 1; i >= next.length; i--) kids[i].remove();
     };
-    const sync = (root, data) => {
-        const leaves = Val.Allfd(root, '[val]');
+    const sync = (root, data, lane = null) => {
+        lane = lane ?? Val.Lane(root);
+        const leaves = Val.Fd(root, lane);
         const targets = leaves.length ? leaves : (root.hasAttribute('val') ? [root] : []);
         targets.forEach(e => {
             if (e.hasAttribute('val-set')) { Val.Set(e, data); return; }
             const fx = Val.Attr(e, 'val-fx');
             if (fx === 'Arr') { syncArr(e, data); return; }
             if (fx === 'Obj') {
-                const key = Val.FxParams(e).key;
+                const key = e.getAttribute('val-key');
                 const cur = Val.Get(e);
                 const curSub = key ? cur[key] : cur;
                 const nextSub = key ? data?.[key] : data;
@@ -203,36 +240,23 @@ Val.Sync = (() => {
             if (keys.length === 0 || keys.some(k => !eq(cur[k], data?.[k]))) Val.Set(e, data);
         });
     };
-    return sync;
-})();
 
-HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, data, tpl); return this; };
-HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
-HTMLElement.prototype.vget = function (lane) { lane = lane ?? this.getAttribute('val-lane'); return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane); };
-HTMLElement.prototype.vobj = function (data = null, lane) { lane = lane ?? this.getAttribute('val-lane'); return Val.Obj(this, data, lane); };
-HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
-HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
-HTMLElement.prototype.vset = function (data, lane) {
-    if (typeof data === 'function') {
-        const cur = this.vget();
-        const next = data(cur);
-        data = next === undefined ? cur : next;
-    }
-    lane = lane ?? this.getAttribute('val-lane');
-    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data, lane);
-    return this;
-};
-HTMLElement.prototype.vval = function (data) {
-    if (arguments.length === 0) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this);
-    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data);
-    return this;
-};
-HTMLElement.prototype.vsync = function (data) {
-    if (typeof data === 'function') {
-        const cur = this.vget();
-        const next = data(cur);
-        data = next === undefined ? cur : next;
-    }
-    Val.Sync(this, data);
-    return this;
-};
+    Val.Sync  = sync;
+    Val.Patch = (el, patch, lane) => {
+        lane = lane ?? Val.Lane(el);
+        const cur = el.hasAttribute('val') ? Val.Get(el) : Val.Obj(el, null, lane);
+        Val.Sync(el, { ...cur, ...patch }, lane);
+    };
+
+    HTMLElement.prototype.vsync = function (data, lane) {
+        lane = lane ?? Val.Lane(this);
+        if (typeof data === 'function') {
+            const cur = this.vget(lane);
+            const next = data(cur);
+            data = next === undefined ? cur : next;
+        }
+        Val.Sync(this, data, lane);
+        return this;
+    };
+    HTMLElement.prototype.vpatch = function (patch, lane) { Val.Patch(this, patch, lane); return this; };
+})();
