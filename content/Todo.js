@@ -2,12 +2,12 @@ const Todo = (() => {
     const Add = (ctx) => {
         const space = ctx.up('[todo-space]');
         const add = space.one('[todo-add]');
-        space.one('[todo-items]').vappend([{ ...add.vget(), status: 'todo'}]);
-        add.vset({ text: '' });
+        space.one('[todo-items]').vappend([{ ...add.val(), status: 'todo'}]);
+        add.val({ text: '' });
         Output(space);
     };
     const Check = (ctx) => {
-        ctx.up('[todo-item]').vset(d => ({ ...d, status: d.status === 'done' ? 'todo' : 'done' }));
+        ctx.up('[todo-item]').val(d => ({ ...d, status: d.status === 'done' ? 'todo' : 'done' }));
         Output(ctx.up('[todo-space]'));
     };
     const Remove = (ctx) => {

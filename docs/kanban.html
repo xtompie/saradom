@@ -167,8 +167,7 @@
 [kanban-delete]:hover { background: #f43f5e; border-color: #f43f5e; color: #fff; }
 [kanban-modal][kanban-modal-mode="add"] [kanban-delete] { display: none; }
 
-[kanban-modal] [vld-error]:not(:empty) { color: #f43f5e; font-size: .8rem; margin-top: .25rem; }
-[kanban-form] input:has(+ [vld-error]:not(:empty)) { border-color: #f43f5e; }
+[kanban-form] [val-lane="error"]:not(:empty) { color: #f43f5e; font-size: .8rem; }
 </style>
 <script>
 const dom = document;
@@ -294,12 +293,13 @@ const Val = (() => {
         .filter(e => e instanceof HTMLElement)
         .reduce((r, e) => e.matches(s) ? r.concat(e) : r.concat(Allfd(e, s)), []);
     const Lane = el => el.closest('[val-lane]')?.getAttribute('val-lane') ?? null;
-    const Fd = (el, lane) => Array.from(el.children)
+    const Fd = (el, lane, cur = Lane(el)) => Array.from(el.children)
         .filter(e => e instanceof HTMLElement)
         .reduce((r, e) => {
             const l = e.getAttribute('val-lane');
-            if (lane && l && l !== lane) return r;
-            return e.hasAttribute('val') ? r.concat(e) : r.concat(Fd(e, lane));
+            const ec = l != null ? l : cur;                 // effective lane at e (nearest tag wins)
+            if (e.hasAttribute('val')) return ec === lane ? r.concat(e) : r;
+            return r.concat(Fd(e, lane, ec));               // foreign lane is invisible, not a wall — keep descending
         }, []);
     const TplClone = t => t.content.firstElementChild.cloneNode(true);
     const Tpl = tpl => typeof tpl === 'string' ? document.querySelector(tpl) : tpl;
@@ -467,23 +467,13 @@ Val.Fx = {
 
 HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, data, tpl); return this; };
 HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
-HTMLElement.prototype.vget = function (lane) { lane = lane ?? Val.Lane(this); return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane); };
-HTMLElement.prototype.vobj = function (data = null, lane) { lane = lane ?? Val.Lane(this); return Val.Obj(this, data, lane); };
 HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
 HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
-HTMLElement.prototype.vset = function (data, lane) {
-    if (typeof data === 'function') {
-        const cur = this.vget();
-        const next = data(cur);
-        data = next === undefined ? cur : next;
-    }
+// low-level get/reset: val() reads, val(data) overwrites
+HTMLElement.prototype.val = function (data, lane) {
     lane = lane ?? Val.Lane(this);
+    if (data === undefined) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane);
     this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data, lane);
-    return this;
-};
-HTMLElement.prototype.vval = function (data) {
-    if (arguments.length === 0) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this);
-    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data);
     return this;
 };
 (() => {
@@ -533,17 +523,18 @@ HTMLElement.prototype.vval = function (data) {
         Val.Sync(el, { ...cur, ...patch }, lane);
     };
 
-    HTMLElement.prototype.vsync = function (data, lane) {
+    // smart set: diff, minimal DOM change; accepts data or a (cur) => next callback
+    HTMLElement.prototype.set = function (data, lane) {
         lane = lane ?? Val.Lane(this);
         if (typeof data === 'function') {
-            const cur = this.vget(lane);
+            const cur = this.val(undefined, lane);
             const next = data(cur);
             data = next === undefined ? cur : next;
         }
         Val.Sync(this, data, lane);
         return this;
     };
-    HTMLElement.prototype.vpatch = function (patch, lane) { Val.Patch(this, patch, lane); return this; };
+    HTMLElement.prototype.patch = function (patch, lane) { Val.Patch(this, patch, lane); return this; };
 })();
 </script>
 <script>
@@ -592,6 +583,8 @@ const Vld = (() => {
 
     return { Validate };
 })();
+
+Vld.byPath = (errors) => Object.fromEntries(errors.map((e) => [e.path, e.message]));
 
 Vld.Msg = {
     required: 'This field is required',
@@ -792,56 +785,21 @@ Vld.Form = (() => {
 })();
 </script>
 <script>
-const Kanban = (() => {
-    const rules = [
-        [
-            { path: 'title', rules: [{ min: 2 }] },
-            { path: 'color', rules: [] },
-        ],
-    ];
-
-    const Space = (ctx) => ctx.up('[kanban-space]');
-    const Modal = (ctx) => Space(ctx).one('[kanban-modal]');
-    const Form  = (ctx) => Space(ctx).one('[kanban-form]');
-
-    const Close = (ctx) => {
-        const modal = Modal(ctx);
-        modal.vpatch({ hidden: true });
-        Vld.Form.Clear(modal);
-    };
-
-    const Add = (ctx) => {
-        const cards = ctx.up('[kanban-column]').one('[kanban-cards]');
-        Modal(ctx).vset({ anchor: cards, mode: 'add', hidden: false, focus: true });
-        Form(ctx).vset({ title: '' });
-    };
-
-    const Edit = (ctx) => {
-        const card = ctx.up('[kanban-card]');
-        Modal(ctx).vset({ anchor: card, mode: 'edit', hidden: false, focus: true });
-        Form(ctx).vset(card.vget());
-    };
-
-    const Save = async (ctx) => {
-        const modal = Modal(ctx);
-        const { anchor, mode } = modal.vget();
-        const value = Form(ctx).vget();
-        if (!(await Vld.Form.Validate(modal, rules, value))) return;
-        mode === 'edit' ? anchor.vset(value) : anchor.vappend([value]);
-        Close(ctx);
-    };
-
-    const Delete = (ctx) => {
-        const { anchor, mode } = Modal(ctx).vget();
-        if (mode === 'edit' && confirm('Delete this card?')) {
-            anchor.remove();
-            Close(ctx);
+(() => {
+    class InitElement extends HTMLElement {
+        connectedCallback() {
+            if (this._ran) {
+                return;
+            }
+            this._ran = true;
+            const parent = this.parentElement;
+            const code = this.getAttribute('run');
+            if (parent && code) {
+                (function () { return eval(code); }).call(parent)(parent);
+            }
         }
-    };
-
-    const Init = (ctx, input) => Space(ctx).vset(input);
-
-    return { Init, Add, Edit, Save, Delete, Close };
+    }
+    customElements.define('s-init', InitElement);
 })();
 </script>
 <div kanban-space val-lane="value">
@@ -855,74 +813,98 @@ const Kanban = (() => {
                     <span kanban-count></span>
                 </header>
                 <s-sortable kanban-cards group="kanban" boundary="[kanban-space]" val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></s-sortable>
-                <button kanban-add onclick="Kanban.Add(this)">+ Add card</button>
+                <button kanban-add onclick="(() => {
+                    const space = this.up('[kanban-space]');
+                    space.one('[kanban-modal]').val({ anchor: this.up('[kanban-column]').one('[kanban-cards]'), mode: 'add', hidden: false, focus: true });
+                    space.one('[kanban-form]').val({});
+                    space.one('[kanban-form]').val({}, 'error');
+                })()">+ Add card</button>
             </div>
         </s-compute>
     </template>
 
     <template kanban-card-tpl>
-        <article kanban-card onclick="Kanban.Edit(this)">
+        <article kanban-card onclick="(() => {
+            const space = this.up('[kanban-space]');
+            space.one('[kanban-modal]').val({ anchor: this, mode: 'edit', hidden: false, focus: true });
+            space.one('[kanban-form]').val(this.val());
+            space.one('[kanban-form]').val({}, 'error');
+        })()">
             <i val val-fx="Pattr" val-key="color" val-attr="kanban-color" hidden></i>
             <span kanban-card-title val val-fx="Text" val-key="title"></span>
         </article>
     </template>
 
-    <div kanban-modal val-lane="modal" hidden kanban-modal-mode="add" vld-error-tpl="[kanban-error-tpl]">
-        <template kanban-error-tpl>{message}</template>
+    <div kanban-modal val-lane="modal" hidden kanban-modal-mode="add">
         <i val val-fx="Pprop" val-key="anchor" hidden></i>
         <i val val-fx="Pflag" val-key="hidden" val-attr="hidden" hidden></i>
         <i val val-fx="Pattr" val-key="mode" val-attr="kanban-modal-mode" hidden></i>
         <i val val-set="(d) => d.focus && this.up('[kanban-modal]').one('[kanban-focus]').focus()" hidden></i>
-        <div onclick="Kanban.Close(this)"></div>
+        <div onclick="this.up('[kanban-modal]').patch({ hidden: true })"></div>
         <section kanban-form val-lane="form">
-            <input kanban-focus val val-fx="Input" val-key="title" type="text" placeholder="Title">
-            <div vld-error="title"></div>
-            <div kanban-color val val-fx="Select" val-key="color" val-from="kanban-option" val-mark="kanban-selected">
-                <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+            <input kanban-focus kanban-rule="() => ({ path: 'title', rules: [{ min: 2 }] })" val val-fx="Input" val-key="title" type="text" placeholder="Title">
+            <div val-lane="error" val val-fx="Text" val-key="title"></div>
+            <div kanban-color kanban-rule="() => ({ path: 'color', rules: [] })" val val-fx="Select" val-key="color" val-from="kanban-option" val-mark="kanban-selected">
+                <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
             </div>
-            <div vld-error="color"></div>
+            <div val-lane="error" val val-fx="Text" val-key="color"></div>
             <footer>
-                <button onclick="Kanban.Save(this)">Save</button>
-                <button onclick="Kanban.Close(this)">Cancel</button>
-                <button kanban-delete onclick="Kanban.Delete(this)">Delete</button>
+                <button onclick="(async () => {
+                    const space = this.up('[kanban-space]');
+                    const form  = space.one('[kanban-form]');
+                    const modal = space.one('[kanban-modal]');
+                    const rules = [ [...space.all('[kanban-rule]')].flatMap(el => eval(el.attr('kanban-rule'))()) ];
+                    const value = form.val();
+                    const errors = await Vld.Validate(rules, value);
+                    form.val(Vld.byPath(errors), 'error');
+                    if (errors.length) return;
+                    const { anchor, mode } = modal.val();
+                    mode === 'edit' ? anchor.val(value) : anchor.vappend([value]);
+                    modal.patch({ hidden: true });
+                })()">Save</button>
+                <button onclick="this.up('[kanban-modal]').patch({ hidden: true })">Cancel</button>
+                <button kanban-delete onclick="(() => {
+                    const modal = this.up('[kanban-modal]');
+                    if (!confirm('Delete this card?')) return;
+                    modal.val().anchor.remove();
+                    modal.patch({ hidden: true });
+                })()">Delete</button>
             </footer>
         </section>
     </div>
 
-    <script>
-        Kanban.Init(document.currentScript, {
-            data: [
-                { title: 'To Do', cards: [
-                    { title: 'Design landing page', color: '#8b5cf6' },
-                    { title: 'Write API docs',      color: '#5a80e6' },
-                    { title: 'Fix login bug',       color: '#f43f5e' },
-                ] },
-                { title: 'In Progress', cards: [
-                    { title: 'Refactor auth module', color: '#f59e0b' },
-                    { title: 'Add dark mode',        color: '#2dd4bf' },
-                ] },
-                { title: 'Done', cards: [
-                    { title: 'Set up CI pipeline',   color: '#2dd4bf' },
-                ] },
-            ],
-        });
-    </script>
+    <s-init run="(el) => el.val({
+        data: [
+            { title: 'To Do', cards: [
+                { title: 'Design landing page', color: '#8b5cf6' },
+                { title: 'Write API docs',      color: '#5a80e6' },
+                { title: 'Fix login bug',       color: '#f43f5e' },
+            ] },
+            { title: 'In Progress', cards: [
+                { title: 'Refactor auth module', color: '#f59e0b' },
+                { title: 'Add dark mode',        color: '#2dd4bf' },
+            ] },
+            { title: 'Done', cards: [
+                { title: 'Set up CI pipeline',   color: '#2dd4bf' },
+            ] },
+        ],
+    })"></s-init>
 </div>
 
 </div>
 <h2 id="three-models-one-per-lane">Three models, one per lane<a class="anchor" href="#three-models-one-per-lane" aria-hidden="true">#</a></h2>
-<p>The board is one value. The modal holds two more — its interface, and the card being edited — kept apart by lane. Each is read from its own element with a bare <code>vget</code>.</p>
-<pre><code class="hljs language-javascript">dom.one(<span class="hljs-string">'[kanban-space]'</span>).vget(); <span class="hljs-comment">// { data: [ { title, cards: [ { title, color } ] } ] }</span>
-dom.one(<span class="hljs-string">'[kanban-modal]'</span>).vget(); <span class="hljs-comment">// { anchor, mode, hidden }</span>
-dom.one(<span class="hljs-string">'[kanban-form]'</span>).vget();  <span class="hljs-comment">// { title, color }</span></code></pre>
+<p>The board is one value. The modal holds two more — its interface, and the card being edited — kept apart by lane. Each is read from its own element with a bare <code>val()</code>.</p>
+<pre><code class="hljs language-javascript">dom.one(<span class="hljs-string">'[kanban-space]'</span>).val(); <span class="hljs-comment">// { data: [ { title, cards: [ { title, color } ] } ] }</span>
+dom.one(<span class="hljs-string">'[kanban-modal]'</span>).val(); <span class="hljs-comment">// { anchor, mode, hidden }</span>
+dom.one(<span class="hljs-string">'[kanban-form]'</span>).val();  <span class="hljs-comment">// { title, color }</span></code></pre>
 <p>The board value is ready to log, save, or send to a server; the modal's two models never leak into it.</p>
 <h2 id="drag-and-drop">Drag-and-drop<a class="anchor" href="#drag-and-drop" aria-hidden="true">#</a></h2>
 <p>Drag-and-drop is <a href="https://sortablejs.github.io/Sortable/">SortableJS</a>, wrapped in an <code>&lt;s-sortable&gt;</code> element so a list drags as soon as it connects. It moves the same DOM nodes Saradom reads, so dropping a card in another column recomputes that column's count — the order is already in the DOM, with no virtual tree to reconcile. The <code>boundary</code> attribute keeps two boards on one page apart: a card moves only between lists under the same <code>[kanban-space]</code>.</p>
-<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Vld/Vld.js" target="_blank" rel="noopener">Vld.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Compute/SCompute.js" target="_blank" rel="noopener">SCompute.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
+<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Vld/Vld.js" target="_blank" rel="noopener">Vld.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Compute/SCompute.js" target="_blank" rel="noopener">SCompute.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Init/SInit.js" target="_blank" rel="noopener">SInit.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-space</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"value"</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-columns</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"data"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[kanban-column-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 
@@ -934,114 +916,87 @@ dom.one(<span class="hljs-string">'[kanban-form]'</span>).vget();  <span class="
                     <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-count</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
                 <span class="hljs-tag">&lt;/<span class="hljs-name">header</span>&gt;</span>
                 <span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">kanban-cards</span> <span class="hljs-attr">group</span>=<span class="hljs-string">"kanban"</span> <span class="hljs-attr">boundary</span>=<span class="hljs-string">"[kanban-space]"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Arr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"cards"</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[kanban-card-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-add</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Add(this)"</span>&gt;</span>+ Add card<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-add</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"(() =&gt; {
+                    const space = this.up('[kanban-space]');
+                    space.one('[kanban-modal]').val({ anchor: this.up('[kanban-column]').one('[kanban-cards]'), mode: 'add', hidden: false, focus: true });
+                    space.one('[kanban-form]').val({});
+                    space.one('[kanban-form]').val({}, 'error');
+                })()"</span>&gt;</span>+ Add card<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
             <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
         <span class="hljs-tag">&lt;/<span class="hljs-name">s-compute</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
 
     <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">kanban-card-tpl</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">article</span> <span class="hljs-attr">kanban-card</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Edit(this)"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">article</span> <span class="hljs-attr">kanban-card</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"(() =&gt; {
+            const space = this.up('[kanban-space]');
+            space.one('[kanban-modal]').val({ anchor: this, mode: 'edit', hidden: false, focus: true });
+            space.one('[kanban-form]').val(this.val());
+            space.one('[kanban-form]').val({}, 'error');
+        })()"</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pattr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"kanban-color"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-card-title</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
         <span class="hljs-tag">&lt;/<span class="hljs-name">article</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
 
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-modal</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"modal"</span> <span class="hljs-attr">hidden</span> <span class="hljs-attr">kanban-modal-mode</span>=<span class="hljs-string">"add"</span> <span class="hljs-attr">vld-error-tpl</span>=<span class="hljs-string">"[kanban-error-tpl]"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">template</span> <span class="hljs-attr">kanban-error-tpl</span>&gt;</span>{message}<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-modal</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"modal"</span> <span class="hljs-attr">hidden</span> <span class="hljs-attr">kanban-modal-mode</span>=<span class="hljs-string">"add"</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pprop"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"anchor"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pflag"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pattr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"mode"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"kanban-modal-mode"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(d) =&gt; d.focus &amp;&amp; this.up('[kanban-modal]').one('[kanban-focus]').focus()"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Close(this)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-modal]').patch({ hidden: true })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">kanban-form</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"form"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">kanban-focus</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Input"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"Title"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">vld-error</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-color</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Select"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span> <span class="hljs-attr">val-from</span>=<span class="hljs-string">"kanban-option"</span> <span class="hljs-attr">val-mark</span>=<span class="hljs-string">"kanban-selected"</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#8b5cf6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#8b5cf6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#5a80e6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#5a80e6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#2dd4bf"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#2dd4bf"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f59e0b"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f59e0b"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f43f5e"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f43f5e"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">kanban-focus</span> <span class="hljs-attr">kanban-rule</span>=<span class="hljs-string">"() =&gt; ({ path: 'title', rules: [{ min: 2 }] })"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Input"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"Title"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"error"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-color</span> <span class="hljs-attr">kanban-rule</span>=<span class="hljs-string">"() =&gt; ({ path: 'color', rules: [] })"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Select"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span> <span class="hljs-attr">val-from</span>=<span class="hljs-string">"kanban-option"</span> <span class="hljs-attr">val-mark</span>=<span class="hljs-string">"kanban-selected"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#8b5cf6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#8b5cf6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#5a80e6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#5a80e6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#2dd4bf"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#2dd4bf"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f59e0b"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f59e0b"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f43f5e"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f43f5e"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
             <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">vld-error</span>=<span class="hljs-string">"color"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"error"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">footer</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Save(this)"</span>&gt;</span>Save<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Close(this)"</span>&gt;</span>Cancel<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-delete</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Kanban.Delete(this)"</span>&gt;</span>Delete<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"(async () =&gt; {
+                    const space = this.up('[kanban-space]');
+                    const form  = space.one('[kanban-form]');
+                    const modal = space.one('[kanban-modal]');
+                    const rules = [ [...space.all('[kanban-rule]')].flatMap(el =&gt; eval(el.attr('kanban-rule'))()) ];
+                    const value = form.val();
+                    const errors = await Vld.Validate(rules, value);
+                    form.val(Vld.byPath(errors), 'error');
+                    if (errors.length) return;
+                    const { anchor, mode } = modal.val();
+                    mode === 'edit' ? anchor.val(value) : anchor.vappend([value]);
+                    modal.patch({ hidden: true });
+                })()"</span>&gt;</span>Save<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-modal]').patch({ hidden: true })"</span>&gt;</span>Cancel<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-delete</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"(() =&gt; {
+                    const modal = this.up('[kanban-modal]');
+                    if (!confirm('Delete this card?')) return;
+                    modal.val().anchor.remove();
+                    modal.patch({ hidden: true });
+                })()"</span>&gt;</span>Delete<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
             <span class="hljs-tag">&lt;/<span class="hljs-name">footer</span>&gt;</span>
         <span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 
-    <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-        Kanban.Init(<span class="hljs-built_in">document</span>.currentScript, {
-            <span class="hljs-attr">data</span>: [
-                { <span class="hljs-attr">title</span>: <span class="hljs-string">'To Do'</span>, <span class="hljs-attr">cards</span>: [
-                    { <span class="hljs-attr">title</span>: <span class="hljs-string">'Design landing page'</span>, <span class="hljs-attr">color</span>: <span class="hljs-string">'#8b5cf6'</span> },
-                    { <span class="hljs-attr">title</span>: <span class="hljs-string">'Write API docs'</span>,      <span class="hljs-attr">color</span>: <span class="hljs-string">'#5a80e6'</span> },
-                    { <span class="hljs-attr">title</span>: <span class="hljs-string">'Fix login bug'</span>,       <span class="hljs-attr">color</span>: <span class="hljs-string">'#f43f5e'</span> },
-                ] },
-                { <span class="hljs-attr">title</span>: <span class="hljs-string">'In Progress'</span>, <span class="hljs-attr">cards</span>: [
-                    { <span class="hljs-attr">title</span>: <span class="hljs-string">'Refactor auth module'</span>, <span class="hljs-attr">color</span>: <span class="hljs-string">'#f59e0b'</span> },
-                    { <span class="hljs-attr">title</span>: <span class="hljs-string">'Add dark mode'</span>,        <span class="hljs-attr">color</span>: <span class="hljs-string">'#2dd4bf'</span> },
-                ] },
-                { <span class="hljs-attr">title</span>: <span class="hljs-string">'Done'</span>, <span class="hljs-attr">cards</span>: [
-                    { <span class="hljs-attr">title</span>: <span class="hljs-string">'Set up CI pipeline'</span>,   <span class="hljs-attr">color</span>: <span class="hljs-string">'#2dd4bf'</span> },
-                ] },
-            ],
-        });
-    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> Kanban = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> rules = [
-        [
-            { <span class="hljs-attr">path</span>: <span class="hljs-string">'title'</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">min</span>: <span class="hljs-number">2</span> }] },
-            { <span class="hljs-attr">path</span>: <span class="hljs-string">'color'</span>, <span class="hljs-attr">rules</span>: [] },
+    <span class="hljs-tag">&lt;<span class="hljs-name">s-init</span> <span class="hljs-attr">run</span>=<span class="hljs-string">"(el) =&gt; el.val({
+        data: [
+            { title: 'To Do', cards: [
+                { title: 'Design landing page', color: '#8b5cf6' },
+                { title: 'Write API docs',      color: '#5a80e6' },
+                { title: 'Fix login bug',       color: '#f43f5e' },
+            ] },
+            { title: 'In Progress', cards: [
+                { title: 'Refactor auth module', color: '#f59e0b' },
+                { title: 'Add dark mode',        color: '#2dd4bf' },
+            ] },
+            { title: 'Done', cards: [
+                { title: 'Set up CI pipeline',   color: '#2dd4bf' },
+            ] },
         ],
-    ];
-
-    <span class="hljs-keyword">const</span> Space = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> ctx.up(<span class="hljs-string">'[kanban-space]'</span>);
-    <span class="hljs-keyword">const</span> Modal = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> Space(ctx).one(<span class="hljs-string">'[kanban-modal]'</span>);
-    <span class="hljs-keyword">const</span> Form  = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> Space(ctx).one(<span class="hljs-string">'[kanban-form]'</span>);
-
-    <span class="hljs-keyword">const</span> Close = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> modal = Modal(ctx);
-        modal.vpatch({ <span class="hljs-attr">hidden</span>: <span class="hljs-literal">true</span> });
-        Vld.Form.Clear(modal);
-    };
-
-    <span class="hljs-keyword">const</span> Add = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> cards = ctx.up(<span class="hljs-string">'[kanban-column]'</span>).one(<span class="hljs-string">'[kanban-cards]'</span>);
-        Modal(ctx).vset({ <span class="hljs-attr">anchor</span>: cards, <span class="hljs-attr">mode</span>: <span class="hljs-string">'add'</span>, <span class="hljs-attr">hidden</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">focus</span>: <span class="hljs-literal">true</span> });
-        Form(ctx).vset({ <span class="hljs-attr">title</span>: <span class="hljs-string">''</span> });
-    };
-
-    <span class="hljs-keyword">const</span> Edit = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> card = ctx.up(<span class="hljs-string">'[kanban-card]'</span>);
-        Modal(ctx).vset({ <span class="hljs-attr">anchor</span>: card, <span class="hljs-attr">mode</span>: <span class="hljs-string">'edit'</span>, <span class="hljs-attr">hidden</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">focus</span>: <span class="hljs-literal">true</span> });
-        Form(ctx).vset(card.vget());
-    };
-
-    <span class="hljs-keyword">const</span> Save = <span class="hljs-keyword">async</span> (ctx) =&gt; {
-        <span class="hljs-keyword">const</span> modal = Modal(ctx);
-        <span class="hljs-keyword">const</span> { anchor, mode } = modal.vget();
-        <span class="hljs-keyword">const</span> value = Form(ctx).vget();
-        <span class="hljs-keyword">if</span> (!(<span class="hljs-keyword">await</span> Vld.Form.Validate(modal, rules, value))) <span class="hljs-keyword">return</span>;
-        mode === <span class="hljs-string">'edit'</span> ? anchor.vset(value) : anchor.vappend([value]);
-        Close(ctx);
-    };
-
-    <span class="hljs-keyword">const</span> Delete = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-        <span class="hljs-keyword">const</span> { anchor, mode } = Modal(ctx).vget();
-        <span class="hljs-keyword">if</span> (mode === <span class="hljs-string">'edit'</span> &amp;&amp; confirm(<span class="hljs-string">'Delete this card?'</span>)) {
-            anchor.remove();
-            Close(ctx);
-        }
-    };
-
-    <span class="hljs-keyword">const</span> Init = <span class="hljs-function">(<span class="hljs-params">ctx, input</span>) =&gt;</span> Space(ctx).vset(input);
-
-    <span class="hljs-keyword">return</span> { Init, Add, Edit, Save, Delete, Close };
-})();</code></pre>
+    })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">s-init</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
 <p class="doc-next"><a href="the-simple-way.html">Next: The simple way →</a></p>
 </main>
 <script>

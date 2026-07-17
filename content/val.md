@@ -23,8 +23,8 @@ In Saradom a screen usually updates by swapping a whole HTML fragment. When a sw
 
 <script>
 const el = dom.one('article');
-el.vset({ title: 'Dog', image: '/dog.jpg' });
-el.vget(); // => { title: 'Dog', image: '/dog.jpg' }
+el.val({ title: 'Dog', image: '/dog.jpg' });
+el.val(); // => { title: 'Dog', image: '/dog.jpg' }
 </script>
 ```
 
@@ -41,13 +41,13 @@ The `val` attribute marks an element for binding. Two attributes define what hap
 </article>
 ```
 
-Two element methods drive the binding. `vset` writes an object into the marked subtree. `vget` reads the current state back.
+One element method drives the binding: `val` writes an object into the marked subtree, and reads the current state back when called with no argument.
 
 ```javascript
 const article = dom.one('article');
 
-article.vset({ title: 'Dog' });
-article.vget(); // => { title: 'Dog' }
+article.val({ title: 'Dog' });
+article.val(); // => { title: 'Dog' }
 ```
 
 That is the whole mechanism. Everything else is convenience over these two calls.
@@ -65,8 +65,8 @@ One `val-set` can do more than one thing to the element. It is plain code, so it
 ```javascript
 const link = dom.one('a');
 
-link.vset({ label: 'Dog', url: '/dog' }); // sets text and href
-link.vget(); // => { label: 'Dog', url: '/dog' }
+link.val({ label: 'Dog', url: '/dog' }); // sets text and href
+link.val(); // => { label: 'Dog', url: '/dog' }
 ```
 
 ### Without Val
@@ -94,7 +94,7 @@ The element carries its own read and write rules. The script works with the obje
 ```
 
 ```javascript
-dom.one('article').vset({ title: 'Dog' });
+dom.one('article').val({ title: 'Dog' });
 ```
 
 A getter and setter per field becomes repetitive across a page. An fx removes that repetition.
@@ -111,8 +111,8 @@ An fx is a ready-made getter and setter. `val-fx` names it. That replaces `val-s
 
 ```javascript
 const article = dom.one('article');
-article.vset({ title: 'Dog' });
-article.vget(); // => { title: 'Dog' }
+article.val({ title: 'Dog' });
+article.val(); // => { title: 'Dog' }
 ```
 
 ### Without an fx
@@ -168,9 +168,9 @@ Each fx binds one value to one place. It reads its own configuration from the el
 ```javascript
 const badge = dom.one('p');
 
-badge.vset({ online: true });  // shows the element
-badge.vget();                  // => { online: true }
-badge.vset({ online: false }); // hides the element
+badge.val({ online: true });  // shows the element
+badge.val();                  // => { online: true }
+badge.val({ online: false }); // hides the element
 ```
 
 Several fields bind in one tree. A single write fills them all, and a single read returns the same shape.
@@ -186,13 +186,13 @@ Several fields bind in one tree. A single write fills them all, and a single rea
 ```javascript
 const article = dom.one('article');
 
-article.vset({
+article.val({
   title: 'Dog',
   image: '/dog.jpg',
   description: 'Loyal friend',
 });
 
-article.vget();
+article.val();
 // => { title: 'Dog', image: '/dog.jpg', description: 'Loyal friend' }
 ```
 
@@ -209,9 +209,9 @@ article.vget();
 ```javascript
 const flag = dom.one('i');
 
-flag.vset({ hidden: true });  // adds the hidden attribute to the parent
-flag.vget();                  // => { hidden: true }
-flag.vset({ hidden: false }); // removes it
+flag.val({ hidden: true });  // adds the hidden attribute to the parent
+flag.val();                  // => { hidden: true }
+flag.val({ hidden: false }); // removes it
 ```
 
 `Pattr` is the string sibling: it binds the attribute's value rather than its presence.
@@ -227,8 +227,8 @@ flag.vset({ hidden: false }); // removes it
 ```javascript
 const ref = dom.one('i');
 
-ref.vset({ anchor: dom.one('#target') }); // stores the element reference
-ref.vget();                               // => { anchor: <#target> }
+ref.val({ anchor: dom.one('#target') }); // stores the element reference
+ref.val();                               // => { anchor: <#target> }
 ```
 
 The reference lives on the element in memory. Nothing is written to any attribute.
@@ -250,8 +250,8 @@ Set marks the option whose `val-from` value equals the data, and clears the rest
 ```javascript
 const picker = dom.one('[val-key="color"]');
 
-picker.vset({ color: 'green' }); // marks the green button with picked
-picker.vget();                   // => { color: 'green' }
+picker.val({ color: 'green' }); // marks the green button with picked
+picker.val();                   // => { color: 'green' }
 ```
 
 ### Conditional with `If`
@@ -266,11 +266,11 @@ picker.vget();                   // => { color: 'green' }
 
 ```javascript
 const box = dom.one('[val-key="error"]');
-box.vset({ error: { text: 'Not found' } }); // shows and fills the message
-box.vset({ error: false });                 // hides
+box.val({ error: { text: 'Not found' } }); // shows and fills the message
+box.val({ error: false });                 // hides
 ```
 
-The read side is asymmetric. A hidden element returns `{}`, so its key drops out of the `vget` result. Only a shown element contributes its field.
+The read side is asymmetric. A hidden element returns `{}`, so its key drops out of the `val()` result. Only a shown element contributes its field.
 
 ## Rendering
 
@@ -294,12 +294,12 @@ Nested objects and lists bind with the same `val-fx` and `val-key`. Three fx cov
 ```javascript
 const article = dom.one('article');
 
-article.vset({
+article.val({
   title: 'Dog',
   author: { name: 'John Doe', email: 'john@example.com' },
 });
 
-article.vget();
+article.val();
 // => { title: 'Dog', author: { name: 'John Doe', email: 'john@example.com' } }
 ```
 
@@ -321,7 +321,7 @@ article.vget();
 ```
 
 ```javascript
-dom.one('article').vset({
+dom.one('article').val({
   title: 'Dog',
   tags: [{ name: 'pet' }, { name: 'animal' }, { name: 'loyal' }],
 });
@@ -367,19 +367,21 @@ list.vprepend([{ name: 'new' }]);
 ```javascript
 const box = dom.one('[val-key="badge"]');
 
-box.vset({ badge: { label: 'new' } });       // renders the card
+box.val({ badge: { label: 'new' } });       // renders the card
 box.vrender({ label: 'sale' }, '[badge-card]'); // renders one object directly
 ```
 
 ## Lanes
 
-One DOM tree can hold several independent models. A lane keeps them apart. `val-lane` marks the root of a model and names it.
+One DOM tree can hold several independent models. A lane keeps them apart. `val-lane` names a model.
 
-Lanes are inherited. An element's lane is the nearest `val-lane` on it or on an ancestor (`el.closest('[val-lane]')`). You tag only the roots; everything inside inherits.
+A lane is a dimension. When you read or write lane `X`, only lane-`X` elements exist — every other lane, and every element with no lane, is invisible. Reading with no lane is the mirror image: only lane-less elements exist, and every lane is invisible.
 
-A lane-scoped read or write descends the subtree but never crosses into an element whose `val-lane` differs. A foreign model is skipped whole, so separate models can nest inside one another without leaking into each other.
+An element's lane is the nearest `val-lane` on it or on an ancestor (`el.closest('[val-lane]')`).
 
-`vget`, `vset`, and `vsync` take no lane argument in normal use. Each resolves the lane from the element's nearest `val-lane`. A lane can still be passed explicitly when needed.
+A foreign lane is not a wall — it is transparent. A read passes straight through it and still collects any element that belongs to the target lane deeper inside. So `X > Y > X` reads both `X` elements; the `Y` in the middle simply does not exist for an `X` read, and a read of `Y` sees only `Y`.
+
+`val`, `set`, and `patch` resolve the lane from the element they are called on. A lane can be passed explicitly as the last argument to reach a different dimension of the same subtree — for example a form whose error messages live in an `error` lane: `form.val(messages, 'error')`.
 
 The kanban board is the worked example. Three models share one tree:
 
@@ -400,12 +402,12 @@ The kanban board is the worked example. Three models share one tree:
 The board carries `val-lane="value"`, the modal `val-lane="modal"`, and the form `val-lane="form"`. Columns, cards, binders, and form fields carry no lane; they inherit from the nearest root.
 
 ```javascript
-space.vget(); // the board only; the nested modal is skipped
-modal.vget(); // the interface only; the nested form is skipped
-form.vget();  // the card being edited
+space.val(); // the board only; the nested modal is skipped
+modal.val(); // the interface only; the nested form is skipped
+form.val();  // the card being edited
 ```
 
-Each read returns only its own model. The modal sits inside the board and the form sits inside the modal, but a read of one never reaches into another.
+Each read returns only its own model. The modal sits inside the board and the form inside the modal, but their elements belong to other lanes, so a `value` read passes straight through them and picks up nothing that is not the board.
 
 ## Custom fx
 
@@ -428,8 +430,8 @@ The name is then used like any built-in fx.
 
 ```javascript
 const el = dom.one('h1');
-el.vset({ title: 'dog' }); // shows DOG
-el.vget();                  // => { title: 'dog' }
+el.val({ title: 'dog' }); // shows DOG
+el.val();                  // => { title: 'dog' }
 ```
 
 An fx reads any option it needs from its own `val-*` attributes. A currency formatter reads `val-currency` the same way it reads `val-key`.
@@ -466,19 +468,19 @@ Built-in and custom fx mix freely in the same tree.
 
 ## Sync
 
-`vsync(data)` writes like `vset`, but only where the value changed. It reads the current value, compares, and sets only the fields that differ. Unchanged subtrees are skipped, including their `val-set`. A list is reconciled by position: an unchanged item is left untouched, a changed item is patched in place, extra items are appended, a shorter list drops its tail.
+`set(data)` writes like `val`, but only where the value changed. It reads the current value, compares, and sets only the fields that differ. Unchanged subtrees are skipped, including their `val-set`. A list is reconciled by position: an unchanged item is left untouched, a changed item is patched in place, extra items are appended, a shorter list drops its tail.
 
 ```javascript
-const d = article.vget();
+const d = article.val();
 d.title = 'Cat';
-article.vsync(d);                               // only the title element is written
-article.vsync((d) => ({ ...d, title: 'Cat' })); // same, given a function of the current state
+article.set(d);                               // only the title element is written
+article.set((d) => ({ ...d, title: 'Cat' })); // same, given a function of the current state
 ```
 
-`vpatch(patch)` merges a partial object over the current state and syncs the diff. It is shorthand for `vsync((d) => ({ ...d, ...patch }))`.
+`patch(patch)` merges a partial object over the current state and syncs the diff. It is shorthand for `set((d) => ({ ...d, ...patch }))`.
 
 ```javascript
-modal.vpatch({ hidden: true }); // reads the current state, sets only hidden
+modal.patch({ hidden: true }); // reads the current state, sets only hidden
 ```
 
 An element with `val-set` is always written, because its effect cannot be read back to compare.
@@ -487,25 +489,21 @@ An element with `val-set` is always written, because its effect cannot be read b
 
 Val adds methods to `HTMLElement`. Each acts on the marked subtree of the element it is called on and returns the element, except the readers. Each resolves its lane from the element's nearest `val-lane`, and each accepts a lane as an optional last argument.
 
-- `vset(data)` writes an object into the subtree. Given a function, it reads the state, passes it in, and writes the result.
-- `vget()` reads the subtree back as an object. Reader.
-- `vsync(data)` writes only the fields that changed. Given a function, it reads the state, passes it in, and writes what changed.
-- `vpatch(patch)` merges a partial object over the current state and syncs the diff.
+- `val(data)` overwrites the subtree with an object (raw: lists are rebuilt). `val()` with no argument reads the subtree back as an object. This is the low-level get/reset.
+- `set(data)` writes only the fields that changed. Given a function, it reads the state, passes it in, and writes what changed.
+- `patch(patch)` merges a partial object over the current state and syncs the diff.
 - `vappend(items, tpl)` adds items to the end of a list.
 - `vprepend(items, tpl)` adds items to the start of a list.
 - `varr(data, tpl)` writes an array as list items. Called with no argument it reads the list back as an array. Reader in that form.
-- `vobj(data)` writes an object into the subtree. Called with no argument it reads the subtree as an object. Reader in that form.
 - `vrender(data, tpl)` clears the element and renders one object from a template.
-- `vval(data)` writes when given an argument and reads when called with none. Reader in that form.
 
 ```javascript
 const article = dom.one('article');
 
-article.vset({ title: 'Dog' });               // write
-article.vget();                               // read
-article.vset((d) => ({ ...d, seen: true }));   // read, change, write
-article.vsync((d) => ({ ...d, title: 'Cat' })); // read, change, write only the diff
-article.vpatch({ title: 'Cat' });             // merge and sync the diff
+article.val({ title: 'Dog' });                // raw write
+article.val();                                // read
+article.set((d) => ({ ...d, title: 'Cat' })); // read, change, write only the diff
+article.patch({ title: 'Cat' });              // merge and sync the diff
 ```
 
 ### Attributes
@@ -520,12 +518,12 @@ article.vpatch({ title: 'Cat' });             // merge and sync the diff
 - `val-from` selects the options and value source for the `Select` fx.
 - `val-mark` names the marker attribute for the `Select` fx.
 - `val-value` gives the `If` fx a value to match, so the element shows only when the field equals it.
-- `val-lane` marks the root of a model and names it. Lanes are inherited by the subtree.
+- `val-lane` names a model. A lane is a dimension: a read or write of one lane sees only that lane, and passes through any other lane as if it were not there.
 
 `val-set` and `val-get` run with `this` bound to the element. An fx reads any other `val-*` attribute it needs directly from the element.
 
-`vset`, `vget`, and their kin act on the element itself when it carries the `val` attribute, and on its marked subtree when it does not.
+`val`, `set`, and their kin act on the element itself when it carries the `val` attribute, and on its marked subtree when it does not.
 
 Each method wraps the public `Val.*` API: `Val.Get`, `Val.Set`, `Val.Obj`, `Val.Arr`, `Val.Render`, `Val.Append`, `Val.Prepend`, `Val.Sync`, `Val.Patch`, `Val.Lane`, and `Val.Fd`. The same calls are available on `Val` for use without an element method.
 
-`Val.Sync`, `Val.Patch`, `vsync`, and `vpatch` form one optional diff-sync block. It can be dropped as a unit when a project never needs the diff.
+`Val.Sync`, `Val.Patch`, `set`, and `patch` form one optional diff-sync block. It can be dropped as a unit when a project never needs the diff.

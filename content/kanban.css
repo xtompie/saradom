@@ -141,5 +141,4 @@
 [kanban-delete]:hover { background: #f43f5e; border-color: #f43f5e; color: #fff; }
 [kanban-modal][kanban-modal-mode="add"] [kanban-delete] { display: none; }
 
-[kanban-modal] [vld-error]:not(:empty) { color: #f43f5e; font-size: .8rem; margin-top: .25rem; }
-[kanban-form] input:has(+ [vld-error]:not(:empty)) { border-color: #f43f5e; }
+[kanban-form] [val-lane="error"]:not(:empty) { color: #f43f5e; font-size: .8rem; }

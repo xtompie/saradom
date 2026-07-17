@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Val lane tests</title></head>
+<body>
+
+<div id="fixture"></div>
+<pre id="summary"></pre>
+
+<script src="../Util/Util.js"></script>
+<script src="Val.js"></script>
+<script>
+let pass = 0, fail = 0;
+const failures = [];
+const fixture = document.getElementById('fixture');
+const assert = (cond, msg) => { if (!cond) throw new Error(msg); };
+const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+const test = (name, fn) => {
+    try { fn(); pass++; console.log(`PASS: ${name}`); }
+    catch (e) { fail++; failures.push(name); console.error(`FAIL: ${name} — ${e.message}`); }
+};
+
+// A leaf that just holds a string via Text.
+const leaf = (key, val = '', lane = '') =>
+    `<span val val-fx="Text" val-key="${key}"${lane ? ` val-lane="${lane}"` : ''}>${val}</span>`;
+
+(() => {
+
+    // ── The dimension: reading lane X, everything not-X is invisible ──
+
+    test('read lane X ignores a sibling lane Y', () => {
+        fixture.innerHTML = `<div val-lane="X">
+            ${leaf('a', 'A')}
+            <div val-lane="Y">${leaf('b', 'B')}</div>
+        </div>`;
+        const root = fixture.firstElementChild;
+        assert(eq(root.val(), { a: 'A' }), `expected {a:'A'}, got ${JSON.stringify(root.val())}`);
+    });
+
+    test('read lane X ignores a nested lane Y deeper in the tree', () => {
+        fixture.innerHTML = `<div val-lane="X">
+            ${leaf('a', 'A')}
+            <div><div><div val-lane="Y">${leaf('b', 'B')}</div></div></div>
+        </div>`;
+        const root = fixture.firstElementChild;
+        assert(eq(root.val(), { a: 'A' }), `expected {a:'A'}, got ${JSON.stringify(root.val())}`);
+    });
+
+    // ── null is a real lane: reading no-lane sees only no-lane ──
+
+    test('read no-lane root sees only no-lane leaves, not lane subtrees', () => {
+        fixture.innerHTML = `<div>
+            ${leaf('a', 'A')}
+            <div val-lane="X">${leaf('b', 'B')}</div>
+        </div>`;
+        const root = fixture.firstElementChild;   // no lane → target is null
+        assert(eq(root.val(), { a: 'A' }), `expected {a:'A'}, got ${JSON.stringify(root.val())}`);
+    });
+
+    // ── inheritance inside a lane ──
+
+    test('untagged descendants inside a lane inherit it (any depth)', () => {
+        fixture.innerHTML = `<div val-lane="X">
+            <div><div>${leaf('a', 'A')}</div></div>
+            ${leaf('b', 'B')}
+        </div>`;
+        const root = fixture.firstElementChild;
+        assert(eq(root.val(), { a: 'A', b: 'B' }), `expected {a,b}, got ${JSON.stringify(root.val())}`);
+    });
+
+    // ── reading the nested lane from its own root is its own world ──
+
+    test('reading the nested lane from its root yields only that lane', () => {
+        fixture.innerHTML = `<div val-lane="X">
+            ${leaf('a', 'A')}
+            <div id="inner" val-lane="Y">${leaf('b', 'B')}</div>
+        </div>`;
+        const inner = fixture.querySelector('#inner');
+        assert(eq(inner.val(), { b: 'B' }), `expected {b:'B'}, got ${JSON.stringify(inner.val())}`);
+    });
+
+    // ── val is a wall: parent does not descend into a val element's children ──
+
+    test('val element is a leaf — parent read does not descend into its children', () => {
+        fixture.innerHTML = `<div val-lane="X">
+            ${leaf('a', 'A')}
+            <div val val-fx="Text" val-key="wrap">WRAP
+                ${leaf('b', 'B')}
+            </div>
+        </div>`;
+        const root = fixture.firstElementChild;
+        const got = root.val();
+        assert(!('b' in got), `parent must stop at the val wall; leaked b: ${JSON.stringify(got)}`);
+        assert('a' in got && 'wrap' in got, `expected a and wrap, got ${JSON.stringify(got)}`);
+    });
+
+    // ── writing respects the dimension too ──
+
+    test('vset into lane X writes only X leaves, leaves other lanes untouched', () => {
+        fixture.innerHTML = `<div val-lane="X">
+            ${leaf('a', 'old')}
+            <div val-lane="Y">${leaf('a', 'keepY')}</div>
+        </div>`;
+        const root = fixture.firstElementChild;
+        root.val({ a: 'new' });
+        const x = root.querySelector('[val-key="a"]');                       // the X leaf (first)
+        const y = root.querySelector('[val-lane="Y"] [val-key="a"]');        // the Y leaf
+        assert(x.textContent === 'new', `X leaf should be written, got ${x.textContent}`);
+        assert(y.textContent === 'keepY', `Y leaf must stay untouched, got ${y.textContent}`);
+    });
+
+    // ── a foreign lane is invisible, not a wall: X re-tagged under Y is still X ──
+    test('X > Y > X: the Y is invisible, so the inner X is seen when reading X', () => {
+        fixture.innerHTML = `<div val-lane="X">
+            ${leaf('a', 'A')}
+            <div val-lane="Y"><div val-lane="X">${leaf('c', 'C')}</div></div>
+        </div>`;
+        const root = fixture.firstElementChild;
+        assert(eq(root.val(), { a: 'A', c: 'C' }), `expected {a,c}, got ${JSON.stringify(root.val())}`);
+    });
+
+    // ── and the Y in between is still its own world when read from its own root ──
+    test('X > Y > X: reading the middle Y sees only Y, neither X leaks in', () => {
+        fixture.innerHTML = `<div val-lane="X">
+            ${leaf('a', 'A')}
+            <div id="midY" val-lane="Y">${leaf('b', 'B')}<div val-lane="X">${leaf('c', 'C')}</div></div>
+        </div>`;
+        const midY = fixture.querySelector('#midY');
+        assert(eq(midY.val(), { b: 'B' }), `expected {b:'B'}, got ${JSON.stringify(midY.val())}`);
+    });
+
+    // ── reading/writing a foreign lane from a root addresses only that lane ──
+    // This is the kanban error case: form root, error slots scattered in the subtree.
+    test('foreign lane from a root: read and write hit only that lane, form leaf untouched', () => {
+        fixture.innerHTML = `<div val-lane="form">
+            ${leaf('a', 'VAL')}
+            <div>${leaf('a', 'ERR', 'error')}</div>
+        </div>`;
+        const root = fixture.firstElementChild;
+        assert(eq(root.val(), { a: 'VAL' }), `form read: ${JSON.stringify(root.val())}`);
+        assert(eq(root.val(undefined, 'error'), { a: 'ERR' }), `error read: ${JSON.stringify(root.val(undefined, 'error'))}`);
+        root.val({ a: 'NEW' }, 'error');                                  // write the error dimension
+        assert(root.querySelector('[val-key="a"]:not([val-lane])').textContent === 'VAL', 'form leaf must stay VAL');
+        assert(root.querySelector('[val-lane="error"]').textContent === 'NEW', 'error leaf must be NEW');
+    });
+
+    document.getElementById('summary').textContent =
+        `${pass} passed, ${fail} failed` + (failures.length ? `\n\nFailed:\n- ${failures.join('\n- ')}` : '');
+    window.__TEST_SUMMARY__ = { pass, fail, failures };
+})();
+</script>
+</body>
+</html>

@@ -15,7 +15,7 @@ const Ttt = (() => {
 
     const Status = (space, m) => {
         const winner = Winner(m);
-        space.one('[ttt-status]').vset(
+        space.one('[ttt-status]').val(
             winner ? { winner: { mark: winner } } :
             m.every(Boolean) ? { draw: true } :
             { next: { mark: Turn(m) } }
@@ -43,12 +43,12 @@ const Ttt = (() => {
         const space = ctx.up('[ttt-space]');
         const cell = ctx.up('[ttt-cell]');
         const before = Marks(space);
-        if (Winner(before) || cell.vget().mark) return;
+        if (Winner(before) || cell.val().mark) return;
 
         const current = Current(space);
         while (current.nextElementSibling) current.nextElementSibling.remove();
 
-        cell.vset({ mark: Turn(before) });
+        cell.val({ mark: Turn(before) });
 
         const m = Marks(space);
         Status(space, m);
@@ -58,7 +58,7 @@ const Ttt = (() => {
     const Jump = (ctx) => {
         const space = ctx.up('[ttt-space]');
         const move = ctx.up('[ttt-move]');
-        const m = move.vget().board.split(',');
+        const m = move.val().board.split(',');
 
         Board(space).clear().vappend(m.map(mark => ({ mark })));
         Status(space, m);

@@ -9,12 +9,13 @@ const Val = (() => {
         .filter(e => e instanceof HTMLElement)
         .reduce((r, e) => e.matches(s) ? r.concat(e) : r.concat(Allfd(e, s)), []);
     const Lane = el => el.closest('[val-lane]')?.getAttribute('val-lane') ?? null;
-    const Fd = (el, lane) => Array.from(el.children)
+    const Fd = (el, lane, cur = Lane(el)) => Array.from(el.children)
         .filter(e => e instanceof HTMLElement)
         .reduce((r, e) => {
             const l = e.getAttribute('val-lane');
-            if (lane && l && l !== lane) return r;
-            return e.hasAttribute('val') ? r.concat(e) : r.concat(Fd(e, lane));
+            const ec = l != null ? l : cur;                 // effective lane at e (nearest tag wins)
+            if (e.hasAttribute('val')) return ec === lane ? r.concat(e) : r;
+            return r.concat(Fd(e, lane, ec));               // foreign lane is invisible, not a wall — keep descending
         }, []);
     const TplClone = t => t.content.firstElementChild.cloneNode(true);
     const Tpl = tpl => typeof tpl === 'string' ? document.querySelector(tpl) : tpl;
@@ -182,23 +183,13 @@ Val.Fx = {
 
 HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, data, tpl); return this; };
 HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
-HTMLElement.prototype.vget = function (lane) { lane = lane ?? Val.Lane(this); return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane); };
-HTMLElement.prototype.vobj = function (data = null, lane) { lane = lane ?? Val.Lane(this); return Val.Obj(this, data, lane); };
 HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
 HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
-HTMLElement.prototype.vset = function (data, lane) {
-    if (typeof data === 'function') {
-        const cur = this.vget();
-        const next = data(cur);
-        data = next === undefined ? cur : next;
-    }
+// low-level get/reset: val() reads, val(data) overwrites
+HTMLElement.prototype.val = function (data, lane) {
     lane = lane ?? Val.Lane(this);
+    if (data === undefined) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane);
     this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data, lane);
-    return this;
-};
-HTMLElement.prototype.vval = function (data) {
-    if (arguments.length === 0) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this);
-    this.hasAttribute('val') ? Val.Set(this, data) : Val.Obj(this, data);
     return this;
 };
 (() => {
@@ -248,15 +239,16 @@ HTMLElement.prototype.vval = function (data) {
         Val.Sync(el, { ...cur, ...patch }, lane);
     };
 
-    HTMLElement.prototype.vsync = function (data, lane) {
+    // smart set: diff, minimal DOM change; accepts data or a (cur) => next callback
+    HTMLElement.prototype.set = function (data, lane) {
         lane = lane ?? Val.Lane(this);
         if (typeof data === 'function') {
-            const cur = this.vget(lane);
+            const cur = this.val(undefined, lane);
             const next = data(cur);
             data = next === undefined ? cur : next;
         }
         Val.Sync(this, data, lane);
         return this;
     };
-    HTMLElement.prototype.vpatch = function (patch, lane) { Val.Patch(this, patch, lane); return this; };
+    HTMLElement.prototype.patch = function (patch, lane) { Val.Patch(this, patch, lane); return this; };
 })();

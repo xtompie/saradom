@@ -9,60 +9,84 @@
                     <span kanban-count></span>
                 </header>
                 <s-sortable kanban-cards group="kanban" boundary="[kanban-space]" val val-fx="Arr" val-key="cards" val-tpl="[kanban-card-tpl]"></s-sortable>
-                <button kanban-add onclick="Kanban.Add(this)">+ Add card</button>
+                <button kanban-add onclick="(() => {
+                    const space = this.up('[kanban-space]');
+                    space.one('[kanban-modal]').val({ anchor: this.up('[kanban-column]').one('[kanban-cards]'), mode: 'add', hidden: false, focus: true });
+                    space.one('[kanban-form]').val({});
+                    space.one('[kanban-form]').val({}, 'error');
+                })()">+ Add card</button>
             </div>
         </s-compute>
     </template>
 
     <template kanban-card-tpl>
-        <article kanban-card onclick="Kanban.Edit(this)">
+        <article kanban-card onclick="(() => {
+            const space = this.up('[kanban-space]');
+            space.one('[kanban-modal]').val({ anchor: this, mode: 'edit', hidden: false, focus: true });
+            space.one('[kanban-form]').val(this.val());
+            space.one('[kanban-form]').val({}, 'error');
+        })()">
             <i val val-fx="Pattr" val-key="color" val-attr="kanban-color" hidden></i>
             <span kanban-card-title val val-fx="Text" val-key="title"></span>
         </article>
     </template>
 
-    <div kanban-modal val-lane="modal" hidden kanban-modal-mode="add" vld-error-tpl="[kanban-error-tpl]">
-        <template kanban-error-tpl>{message}</template>
+    <div kanban-modal val-lane="modal" hidden kanban-modal-mode="add">
         <i val val-fx="Pprop" val-key="anchor" hidden></i>
         <i val val-fx="Pflag" val-key="hidden" val-attr="hidden" hidden></i>
         <i val val-fx="Pattr" val-key="mode" val-attr="kanban-modal-mode" hidden></i>
         <i val val-set="(d) => d.focus && this.up('[kanban-modal]').one('[kanban-focus]').focus()" hidden></i>
-        <div onclick="Kanban.Close(this)"></div>
+        <div onclick="this.up('[kanban-modal]').patch({ hidden: true })"></div>
         <section kanban-form val-lane="form">
-            <input kanban-focus val val-fx="Input" val-key="title" type="text" placeholder="Title">
-            <div vld-error="title"></div>
-            <div kanban-color val val-fx="Select" val-key="color" val-from="kanban-option" val-mark="kanban-selected">
-                <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').vset({ color: this.attr('kanban-option') })"></button>
+            <input kanban-focus kanban-rule="() => ({ path: 'title', rules: [{ min: 2 }] })" val val-fx="Input" val-key="title" type="text" placeholder="Title">
+            <div val-lane="error" val val-fx="Text" val-key="title"></div>
+            <div kanban-color kanban-rule="() => ({ path: 'color', rules: [] })" val val-fx="Select" val-key="color" val-from="kanban-option" val-mark="kanban-selected">
+                <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
             </div>
-            <div vld-error="color"></div>
+            <div val-lane="error" val val-fx="Text" val-key="color"></div>
             <footer>
-                <button onclick="Kanban.Save(this)">Save</button>
-                <button onclick="Kanban.Close(this)">Cancel</button>
-                <button kanban-delete onclick="Kanban.Delete(this)">Delete</button>
+                <button onclick="(async () => {
+                    const space = this.up('[kanban-space]');
+                    const form  = space.one('[kanban-form]');
+                    const modal = space.one('[kanban-modal]');
+                    const rules = [ [...space.all('[kanban-rule]')].flatMap(el => eval(el.attr('kanban-rule'))()) ];
+                    const value = form.val();
+                    const errors = await Vld.Validate(rules, value);
+                    form.val(Vld.byPath(errors), 'error');
+                    if (errors.length) return;
+                    const { anchor, mode } = modal.val();
+                    mode === 'edit' ? anchor.val(value) : anchor.vappend([value]);
+                    modal.patch({ hidden: true });
+                })()">Save</button>
+                <button onclick="this.up('[kanban-modal]').patch({ hidden: true })">Cancel</button>
+                <button kanban-delete onclick="(() => {
+                    const modal = this.up('[kanban-modal]');
+                    if (!confirm('Delete this card?')) return;
+                    modal.val().anchor.remove();
+                    modal.patch({ hidden: true });
+                })()">Delete</button>
             </footer>
         </section>
     </div>
 
-    <script>
-        Kanban.Init(document.currentScript, {
-            data: [
-                { title: 'To Do', cards: [
-                    { title: 'Design landing page', color: '#8b5cf6' },
-                    { title: 'Write API docs',      color: '#5a80e6' },
-                    { title: 'Fix login bug',       color: '#f43f5e' },
-                ] },
-                { title: 'In Progress', cards: [
-                    { title: 'Refactor auth module', color: '#f59e0b' },
-                    { title: 'Add dark mode',        color: '#2dd4bf' },
-                ] },
-                { title: 'Done', cards: [
-                    { title: 'Set up CI pipeline',   color: '#2dd4bf' },
-                ] },
-            ],
-        });
-    </script>
+    <s-init run="(el) => el.val({
+        data: [
+            { title: 'To Do', cards: [
+                { title: 'Design landing page', color: '#8b5cf6' },
+                { title: 'Write API docs',      color: '#5a80e6' },
+                { title: 'Fix login bug',       color: '#f43f5e' },
+            ] },
+            { title: 'In Progress', cards: [
+                { title: 'Refactor auth module', color: '#f59e0b' },
+                { title: 'Add dark mode',        color: '#2dd4bf' },
+            ] },
+            { title: 'Done', cards: [
+                { title: 'Set up CI pipeline',   color: '#2dd4bf' },
+            ] },
+        ],
+    })"></s-init>
 </div>

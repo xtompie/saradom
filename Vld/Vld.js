@@ -44,6 +44,8 @@ const Vld = (() => {
     return { Validate };
 })();
 
+Vld.byPath = (errors) => Object.fromEntries(errors.map((e) => [e.path, e.message]));
+
 Vld.Msg = {
     required: 'This field is required',
     email: 'Not a valid email address',
