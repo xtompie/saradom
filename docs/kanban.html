@@ -817,7 +817,7 @@ Vld.Form = (() => {
                     const space = this.up('[kanban-space]');
                     space.one('[kanban-modal]').val({ anchor: this.up('[kanban-column]').one('[kanban-cards]'), mode: 'add', hidden: false, focus: true });
                     space.one('[kanban-form]').val({});
-                    space.one('[kanban-form]').val({}, 'error');
+                    space.one('[kanban-errors]').val({});
                 })()">+ Add card</button>
             </div>
         </s-compute>
@@ -828,7 +828,7 @@ Vld.Form = (() => {
             const space = this.up('[kanban-space]');
             space.one('[kanban-modal]').val({ anchor: this, mode: 'edit', hidden: false, focus: true });
             space.one('[kanban-form]').val(this.val());
-            space.one('[kanban-form]').val({}, 'error');
+            space.one('[kanban-errors]').val({});
         })()">
             <i val val-fx="Pattr" val-key="color" val-attr="kanban-color" hidden></i>
             <span kanban-card-title val val-fx="Text" val-key="title"></span>
@@ -842,16 +842,18 @@ Vld.Form = (() => {
         <i val val-set="(d) => d.focus && this.up('[kanban-modal]').one('[kanban-focus]').focus()" hidden></i>
         <div onclick="this.up('[kanban-modal]').patch({ hidden: true })"></div>
         <section kanban-form val-lane="form">
-            <input kanban-focus kanban-rule="() => ({ path: 'title', rules: [{ min: 2 }] })" val val-fx="Input" val-key="title" type="text" placeholder="Title">
-            <div val-lane="error" val val-fx="Text" val-key="title"></div>
-            <div kanban-color kanban-rule="() => ({ path: 'color', rules: [] })" val val-fx="Select" val-key="color" val-from="kanban-option" val-mark="kanban-selected">
-                <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+            <div kanban-errors val-lane="error">
+                <input kanban-focus kanban-rule="() => ({ path: 'title', rules: [{ min: 2 }] })" val val-lane="form" val-fx="Input" val-key="title" type="text" placeholder="Title">
+                <div val val-fx="Text" val-key="title"></div>
+                <div kanban-color kanban-rule="() => ({ path: 'color', rules: [] })" val val-lane="form" val-fx="Select" val-key="color" val-from="kanban-option" val-mark="kanban-selected">
+                    <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                    <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                    <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                    <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                    <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                </div>
+                <div val val-fx="Text" val-key="color"></div>
             </div>
-            <div val-lane="error" val val-fx="Text" val-key="color"></div>
             <footer>
                 <button onclick="(async () => {
                     const space = this.up('[kanban-space]');
@@ -860,7 +862,7 @@ Vld.Form = (() => {
                     const rules = [ [...space.all('[kanban-rule]')].flatMap(el => eval(el.attr('kanban-rule'))()) ];
                     const value = form.val();
                     const errors = await Vld.Validate(rules, value);
-                    form.val(Vld.byPath(errors), 'error');
+                    space.one('[kanban-errors]').val(Vld.byPath(errors));
                     if (errors.length) return;
                     const { anchor, mode } = modal.val();
                     mode === 'edit' ? anchor.val(value) : anchor.vappend([value]);
@@ -896,12 +898,13 @@ Vld.Form = (() => {
 </div>
 
 </div>
-<h2 id="three-models-one-per-lane">Three models, one per lane<a class="anchor" href="#three-models-one-per-lane" aria-hidden="true">#</a></h2>
-<p>The board is one value. The modal holds two more — its interface, and the card being edited — kept apart by lane. Each is read from its own element with a bare <code>val()</code>.</p>
-<pre><code class="hljs language-javascript">dom.one(<span class="hljs-string">'[kanban-space]'</span>).val(); <span class="hljs-comment">// { data: [ { title, cards: [ { title, color } ] } ] }</span>
-dom.one(<span class="hljs-string">'[kanban-modal]'</span>).val(); <span class="hljs-comment">// { anchor, mode, hidden }</span>
-dom.one(<span class="hljs-string">'[kanban-form]'</span>).val();  <span class="hljs-comment">// { title, color }</span></code></pre>
-<p>The board value is ready to log, save, or send to a server; the modal's two models never leak into it.</p>
+<h2 id="four-models-one-per-lane">Four models, one per lane<a class="anchor" href="#four-models-one-per-lane" aria-hidden="true">#</a></h2>
+<p>The board is one value. The modal holds three more — its interface, the card being edited, and the validation messages — each kept apart by lane and read from its own root with a bare <code>val()</code>. The errors sit in the same subtree as the form fields: the fields carry <code>val-lane=&quot;form&quot;</code>, their error root carries <code>val-lane=&quot;error&quot;</code>, and the two read apart with no wrapper between the value and its messages.</p>
+<pre><code class="hljs language-javascript">dom.one(<span class="hljs-string">'[kanban-space]'</span>).val();  <span class="hljs-comment">// { data: [ { title, cards: [ { title, color } ] } ] }</span>
+dom.one(<span class="hljs-string">'[kanban-modal]'</span>).val();  <span class="hljs-comment">// { anchor, mode, hidden }</span>
+dom.one(<span class="hljs-string">'[kanban-form]'</span>).val();   <span class="hljs-comment">// { title, color }</span>
+dom.one(<span class="hljs-string">'[kanban-errors]'</span>).val(); <span class="hljs-comment">// { title, color } — messages</span></code></pre>
+<p>The board value is ready to log, save, or send to a server; the modal's three models never leak into it.</p>
 <h2 id="drag-and-drop">Drag-and-drop<a class="anchor" href="#drag-and-drop" aria-hidden="true">#</a></h2>
 <p>Drag-and-drop is <a href="https://sortablejs.github.io/Sortable/">SortableJS</a>, wrapped in an <code>&lt;s-sortable&gt;</code> element so a list drags as soon as it connects. It moves the same DOM nodes Saradom reads, so dropping a card in another column recomputes that column's count — the order is already in the DOM, with no virtual tree to reconcile. The <code>boundary</code> attribute keeps two boards on one page apart: a card moves only between lists under the same <code>[kanban-space]</code>.</p>
 <p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Util/Util.js" target="_blank" rel="noopener">Util.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Val/Val.js" target="_blank" rel="noopener">Val.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Vld/Vld.js" target="_blank" rel="noopener">Vld.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Compute/SCompute.js" target="_blank" rel="noopener">SCompute.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Init/SInit.js" target="_blank" rel="noopener">SInit.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
@@ -920,7 +923,7 @@ dom.one(<span class="hljs-string">'[kanban-form]'</span>).val();  <span class="h
                     const space = this.up('[kanban-space]');
                     space.one('[kanban-modal]').val({ anchor: this.up('[kanban-column]').one('[kanban-cards]'), mode: 'add', hidden: false, focus: true });
                     space.one('[kanban-form]').val({});
-                    space.one('[kanban-form]').val({}, 'error');
+                    space.one('[kanban-errors]').val({});
                 })()"</span>&gt;</span>+ Add card<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
             <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
         <span class="hljs-tag">&lt;/<span class="hljs-name">s-compute</span>&gt;</span>
@@ -931,7 +934,7 @@ dom.one(<span class="hljs-string">'[kanban-form]'</span>).val();  <span class="h
             const space = this.up('[kanban-space]');
             space.one('[kanban-modal]').val({ anchor: this, mode: 'edit', hidden: false, focus: true });
             space.one('[kanban-form]').val(this.val());
-            space.one('[kanban-form]').val({}, 'error');
+            space.one('[kanban-errors]').val({});
         })()"</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pattr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"kanban-color"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">kanban-card-title</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
@@ -945,16 +948,18 @@ dom.one(<span class="hljs-string">'[kanban-form]'</span>).val();  <span class="h
         <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-set</span>=<span class="hljs-string">"(d) =&gt; d.focus &amp;&amp; this.up('[kanban-modal]').one('[kanban-focus]').focus()"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-modal]').patch({ hidden: true })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">kanban-form</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"form"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">kanban-focus</span> <span class="hljs-attr">kanban-rule</span>=<span class="hljs-string">"() =&gt; ({ path: 'title', rules: [{ min: 2 }] })"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Input"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"Title"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"error"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-color</span> <span class="hljs-attr">kanban-rule</span>=<span class="hljs-string">"() =&gt; ({ path: 'color', rules: [] })"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Select"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span> <span class="hljs-attr">val-from</span>=<span class="hljs-string">"kanban-option"</span> <span class="hljs-attr">val-mark</span>=<span class="hljs-string">"kanban-selected"</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#8b5cf6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#8b5cf6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#5a80e6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#5a80e6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#2dd4bf"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#2dd4bf"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f59e0b"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f59e0b"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f43f5e"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f43f5e"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-errors</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"error"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">kanban-focus</span> <span class="hljs-attr">kanban-rule</span>=<span class="hljs-string">"() =&gt; ({ path: 'title', rules: [{ min: 2 }] })"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"form"</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Input"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"Title"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-color</span> <span class="hljs-attr">kanban-rule</span>=<span class="hljs-string">"() =&gt; ({ path: 'color', rules: [] })"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"form"</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Select"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span> <span class="hljs-attr">val-from</span>=<span class="hljs-string">"kanban-option"</span> <span class="hljs-attr">val-mark</span>=<span class="hljs-string">"kanban-selected"</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#8b5cf6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#8b5cf6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#5a80e6"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#5a80e6"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#2dd4bf"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#2dd4bf"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f59e0b"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f59e0b"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">kanban-option</span>=<span class="hljs-string">"#f43f5e"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"background:#f43f5e"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
             <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"error"</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"color"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">footer</span>&gt;</span>
                 <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"(async () =&gt; {
                     const space = this.up('[kanban-space]');
@@ -963,7 +968,7 @@ dom.one(<span class="hljs-string">'[kanban-form]'</span>).val();  <span class="h
                     const rules = [ [...space.all('[kanban-rule]')].flatMap(el =&gt; eval(el.attr('kanban-rule'))()) ];
                     const value = form.val();
                     const errors = await Vld.Validate(rules, value);
-                    form.val(Vld.byPath(errors), 'error');
+                    space.one('[kanban-errors]').val(Vld.byPath(errors));
                     if (errors.length) return;
                     const { anchor, mode } = modal.val();
                     mode === 'edit' ? anchor.val(value) : anchor.vappend([value]);

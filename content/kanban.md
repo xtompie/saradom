@@ -25,17 +25,18 @@ A drag-and-drop board in plain HTML and JavaScript.
 <!-- embed: content/kanban.html -->
 </div>
 
-## Three models, one per lane
+## Four models, one per lane
 
-The board is one value. The modal holds two more — its interface, and the card being edited — kept apart by lane. Each is read from its own element with a bare `val()`.
+The board is one value. The modal holds three more — its interface, the card being edited, and the validation messages — each kept apart by lane and read from its own root with a bare `val()`. The errors sit in the same subtree as the form fields: the fields carry `val-lane="form"`, their error root carries `val-lane="error"`, and the two read apart with no wrapper between the value and its messages.
 
 ```javascript
-dom.one('[kanban-space]').val(); // { data: [ { title, cards: [ { title, color } ] } ] }
-dom.one('[kanban-modal]').val(); // { anchor, mode, hidden }
-dom.one('[kanban-form]').val();  // { title, color }
+dom.one('[kanban-space]').val();  // { data: [ { title, cards: [ { title, color } ] } ] }
+dom.one('[kanban-modal]').val();  // { anchor, mode, hidden }
+dom.one('[kanban-form]').val();   // { title, color }
+dom.one('[kanban-errors]').val(); // { title, color } — messages
 ```
 
-The board value is ready to log, save, or send to a server; the modal's two models never leak into it.
+The board value is ready to log, save, or send to a server; the modal's three models never leak into it.
 
 ## Drag-and-drop
 

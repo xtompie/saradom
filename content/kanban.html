@@ -13,7 +13,7 @@
                     const space = this.up('[kanban-space]');
                     space.one('[kanban-modal]').val({ anchor: this.up('[kanban-column]').one('[kanban-cards]'), mode: 'add', hidden: false, focus: true });
                     space.one('[kanban-form]').val({});
-                    space.one('[kanban-form]').val({}, 'error');
+                    space.one('[kanban-errors]').val({});
                 })()">+ Add card</button>
             </div>
         </s-compute>
@@ -24,7 +24,7 @@
             const space = this.up('[kanban-space]');
             space.one('[kanban-modal]').val({ anchor: this, mode: 'edit', hidden: false, focus: true });
             space.one('[kanban-form]').val(this.val());
-            space.one('[kanban-form]').val({}, 'error');
+            space.one('[kanban-errors]').val({});
         })()">
             <i val val-fx="Pattr" val-key="color" val-attr="kanban-color" hidden></i>
             <span kanban-card-title val val-fx="Text" val-key="title"></span>
@@ -38,16 +38,18 @@
         <i val val-set="(d) => d.focus && this.up('[kanban-modal]').one('[kanban-focus]').focus()" hidden></i>
         <div onclick="this.up('[kanban-modal]').patch({ hidden: true })"></div>
         <section kanban-form val-lane="form">
-            <input kanban-focus kanban-rule="() => ({ path: 'title', rules: [{ min: 2 }] })" val val-fx="Input" val-key="title" type="text" placeholder="Title">
-            <div val-lane="error" val val-fx="Text" val-key="title"></div>
-            <div kanban-color kanban-rule="() => ({ path: 'color', rules: [] })" val val-fx="Select" val-key="color" val-from="kanban-option" val-mark="kanban-selected">
-                <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
-                <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+            <div kanban-errors val-lane="error">
+                <input kanban-focus kanban-rule="() => ({ path: 'title', rules: [{ min: 2 }] })" val val-lane="form" val-fx="Input" val-key="title" type="text" placeholder="Title">
+                <div val val-fx="Text" val-key="title"></div>
+                <div kanban-color kanban-rule="() => ({ path: 'color', rules: [] })" val val-lane="form" val-fx="Select" val-key="color" val-from="kanban-option" val-mark="kanban-selected">
+                    <button kanban-option="#8b5cf6" style="background:#8b5cf6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                    <button kanban-option="#5a80e6" style="background:#5a80e6" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                    <button kanban-option="#2dd4bf" style="background:#2dd4bf" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                    <button kanban-option="#f59e0b" style="background:#f59e0b" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                    <button kanban-option="#f43f5e" style="background:#f43f5e" onclick="this.up('[kanban-color]').val({ color: this.attr('kanban-option') })"></button>
+                </div>
+                <div val val-fx="Text" val-key="color"></div>
             </div>
-            <div val-lane="error" val val-fx="Text" val-key="color"></div>
             <footer>
                 <button onclick="(async () => {
                     const space = this.up('[kanban-space]');
@@ -56,7 +58,7 @@
                     const rules = [ [...space.all('[kanban-rule]')].flatMap(el => eval(el.attr('kanban-rule'))()) ];
                     const value = form.val();
                     const errors = await Vld.Validate(rules, value);
-                    form.val(Vld.byPath(errors), 'error');
+                    space.one('[kanban-errors]').val(Vld.byPath(errors));
                     if (errors.length) return;
                     const { anchor, mode } = modal.val();
                     mode === 'edit' ? anchor.val(value) : anchor.vappend([value]);
