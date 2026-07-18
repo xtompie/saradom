@@ -24,7 +24,7 @@ return [
     ],
     // Complete, working things to read — smallest first.
     'Examples' => [
-        ['Visible', 'visible.html'],
+        ['Switch', 'switch.html'],
         ['Filter', 'filter.html'],
         ['Todo list', 'todo.html'],
         ['Produce', 'produce.html'],

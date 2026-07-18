@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<title>Switch · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:title" content="Switch">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a class="active" href="switch.html">Switch</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="switch">Switch<a class="anchor" href="#switch" aria-hidden="true">#</a></h1>
+<p>Show one set of elements and hide the rest. Elements carry a tag inside a shared <code>switch-space</code>; one call decides each element's on/off from the active tags. The current set is written to the DOM as <code>switch-state</code>, readable there with no JavaScript variable holding it.</p>
+<p>Switch is the more generic successor of <a href="visible.html">Visible</a>: the tag attribute is configurable, and the effect is not limited to show/hide.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Switch/Switch.js" target="_blank" rel="noopener">Switch.js</a></p>
+<h2 id="signature">Signature<a class="anchor" href="#signature" aria-hidden="true">#</a></h2>
+<pre><code class="hljs language-javascript">&lt; <span class="hljs-keyword">switch</span>-space <span class="hljs-keyword">switch</span>-config-tag=<span class="hljs-string">"switch-tag"</span> <span class="hljs-keyword">switch</span>-state=<span class="hljs-string">"a b …"</span>&gt;
+    &lt; <span class="hljs-keyword">switch</span>-tag=<span class="hljs-string">"a b"</span> <span class="hljs-keyword">switch</span>-onchange=<span class="hljs-string">"(on) =&gt; …"</span>&gt;
+
+Switch.To(<span class="hljs-keyword">this</span>, <span class="hljs-string">'[switch-space]'</span>, <span class="hljs-string">'a b'</span>)            <span class="hljs-comment">// tags: array or space-separated string</span>
+Switch.Toggle(<span class="hljs-keyword">this</span>, <span class="hljs-string">'[switch-space]'</span>, when, then, otherwise)</code></pre>
+<p>The space is the second argument. It is a selector resolved from <code>ctx</code> with <code>closest</code>. There is no default space. Each call names its space. A nested space is never picked by accident.</p>
+<p><code>Switch.To(ctx, space, tags)</code> shows every target whose tag is in <code>tags</code>, hides the others, and writes <code>tags</code> to <code>switch-state</code>. Tags are an array or a space-separated string. A target with several tags is on when any of them matches. <code>Switch.Toggle(ctx, space, when, then, otherwise)</code> reads <code>switch-state</code>. When it includes <code>when</code>, the <code>then</code> set is shown, otherwise <code>otherwise</code>.</p>
+<p>Config on the space element, the one the selector matches:</p>
+<ul>
+<li><code>switch-config-tag</code> names the attribute a target's tag is read from. Default <code>switch-tag</code>.</li>
+<li><code>switch-state</code> holds the active set, space-separated.</li>
+</ul>
+<p>Config on each target:</p>
+<ul>
+<li><code>switch-tag</code> holds the target's tag(s), space-separated.</li>
+<li><code>switch-onchange</code> is the effect, <code>(on) =&gt; ...</code> with <code>this</code> the element. Left out, the target is shown when on and hidden when off.</li>
+</ul>
+<h2 id="tabs">Tabs<a class="anchor" href="#tabs" aria-hidden="true">#</a></h2>
+<p>One panel shows at a time. Each button selects its tag.</p>
+<div class="demo">
+<div switch-space switch-state="account">
+  <button onclick="Switch.To(this, '[switch-space]', 'account')">Account</button>
+  <button onclick="Switch.To(this, '[switch-space]', 'billing')">Billing</button>
+  <button onclick="Switch.To(this, '[switch-space]', 'team')">Team</button>
+
+  <section switch-tag="account">Account settings.</section>
+  <section switch-tag="billing" style="display:none">Billing details.</section>
+  <section switch-tag="team" style="display:none">Team members.</section>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">switch-space</span> <span class="hljs-attr">switch-state</span>=<span class="hljs-string">"account"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.To(this, '[switch-space]', 'account')"</span>&gt;</span>Account<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.To(this, '[switch-space]', 'billing')"</span>&gt;</span>Billing<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.To(this, '[switch-space]', 'team')"</span>&gt;</span>Team<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"account"</span>&gt;</span>Account settings.<span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"billing"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Billing details.<span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"team"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Team members.<span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="accordion">Accordion<a class="anchor" href="#accordion" aria-hidden="true">#</a></h2>
+<p>Each header toggles its panel. Opening one closes the rest.</p>
+<div class="demo">
+<div switch-space switch-state="shipping">
+  <button onclick="Switch.Toggle(this, '[switch-space]', 'shipping', '', 'shipping')">Shipping</button>
+  <div switch-tag="shipping">Ships in two days.</div>
+
+  <button onclick="Switch.Toggle(this, '[switch-space]', 'returns', '', 'returns')">Returns</button>
+  <div switch-tag="returns" style="display:none">Thirty day returns.</div>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">switch-space</span> <span class="hljs-attr">switch-state</span>=<span class="hljs-string">"shipping"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.Toggle(this, '[switch-space]', 'shipping', '', 'shipping')"</span>&gt;</span>Shipping<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"shipping"</span>&gt;</span>Ships in two days.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.Toggle(this, '[switch-space]', 'returns', '', 'returns')"</span>&gt;</span>Returns<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"returns"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Thirty day returns.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="radio">Radio<a class="anchor" href="#radio" aria-hidden="true">#</a></h2>
+<p>The extra input shows only when Other is selected.</p>
+<div class="demo">
+<div switch-space switch-state="">
+  <label><input type="radio" name="reason" onclick="Switch.To(this, '[switch-space]', '')"> Refund</label>
+  <label><input type="radio" name="reason" onclick="Switch.To(this, '[switch-space]', '')"> Exchange</label>
+  <label><input type="radio" name="reason" onclick="Switch.To(this, '[switch-space]', 'other')"> Other</label>
+
+  <input switch-tag="other" style="display:none" placeholder="Tell us more">
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">switch-space</span> <span class="hljs-attr">switch-state</span>=<span class="hljs-string">""</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"radio"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"reason"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.To(this, '[switch-space]', '')"</span>&gt;</span> Refund<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"radio"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"reason"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.To(this, '[switch-space]', '')"</span>&gt;</span> Exchange<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"radio"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"reason"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.To(this, '[switch-space]', 'other')"</span>&gt;</span> Other<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"other"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"Tell us more"</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="effect">Effect<a class="anchor" href="#effect" aria-hidden="true">#</a></h2>
+<p>Each target sets its own effect in <code>switch-onchange</code>. It runs with the computed boolean, <code>this</code> bound to the element. Left out, the target is shown when on and hidden when off.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">switch-space</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.To(this, '[switch-space]', 'a')"</span>&gt;</span>A<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.To(this, '[switch-space]', 'b')"</span>&gt;</span>B<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">details</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"a"</span> <span class="hljs-attr">switch-onchange</span>=<span class="hljs-string">"(on) =&gt; this.open = on"</span>&gt;</span>Panel A<span class="hljs-tag">&lt;/<span class="hljs-name">details</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"b"</span> <span class="hljs-attr">switch-onchange</span>=<span class="hljs-string">"(on) =&gt; this.style.opacity = on ? 1 : .35"</span>&gt;</span>Panel B<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<style>
+.demo [switch-space] { width:100%; max-width:22rem; text-align:left; }
+
+/* tabs: the panel is a card */
+.demo [switch-space] section[switch-tag] {
+  display:block; margin-top:.5rem; padding:.7rem .85rem;
+  background:var(--soft); border:1px solid var(--line); border-radius:var(--r-sm); color:var(--ink);
+}
+
+/* accordion: the header reads as a control, the panel as its value */
+.demo [switch-space] button[onclick*="Toggle"] {
+  display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; margin-top:.5rem;
+}
+.demo [switch-space] button[onclick*="Toggle"]::before {
+  content:"▸"; color:var(--muted); font-size:.75em;
+}
+.demo [switch-space] div[switch-tag] {
+  margin:.3rem 0 .1rem 1.5rem; color:var(--sub);
+}
+
+/* radio: the free-text input gets the demo input look */
+.demo [switch-space] input[switch-tag] {
+  display:block; width:100%; margin-top:.5rem;
+  background:var(--code-bg); border:1px solid var(--line); border-radius:var(--r-sm);
+  color:var(--ink); font:inherit; padding:.5rem .65rem; outline:none;
+}
+</style>
+<script>
+const Switch = (() => {
+    // Tag elements inside a switch space; one call decides each one's on/off from
+    // the active tags and applies an effect. By default it shows the on ones and
+    // hides the rest, and writes the active set to `switch-state`.
+    //
+    // The space is always given as a selector — the second argument — resolved from
+    // `ctx` with `closest`. There is no implicit space, so nested spaces never pick
+    // the wrong one: you name the target space.
+    //
+    // Config on the space element (the one the selector matches):
+    //   switch-config-tag — the attribute that holds a target's tag(s). Default `switch-tag`.
+    //   switch-state      — the active set, space-separated. Written on each call, read by Toggle.
+    //
+    // Config on each tagged element:
+    //   switch-onchange — the effect, `(on) => ...` with `this` the element. Each target
+    //                     decides its own. Left out, the target is shown when on and hidden
+    //                     when off.
+    //
+    // A target is on when any of its space-separated tags is in the active set (OR).
+    const apply = (space, tags) => {
+        tags = Array.isArray(tags) ? tags : String(tags).split(/\s+/).filter(Boolean);
+        const attr = space.getAttribute('switch-config-tag') || 'switch-tag';
+        space.querySelectorAll(`[${attr}]`).forEach(el => {
+            const on = el.getAttribute(attr).split(/\s+/).some(t => tags.includes(t));
+            const change = el.getAttribute('switch-onchange');
+            if (change) (function () { return eval(change); }).call(el)(on);
+            else el.style.display = on ? '' : 'none';
+        });
+        space.setAttribute('switch-state', tags.join(' '));
+    };
+
+    const To = (ctx, space, tags) => apply(ctx.closest(space), tags);
+
+    const Toggle = (ctx, space, when, then, otherwise) => {
+        space = ctx.closest(space);
+        const active = (space.getAttribute('switch-state') || '').split(/\s+/);
+        apply(space, active.includes(when) ? then : otherwise);
+    };
+
+    return { To, Toggle };
+})();
+</script>
+<p class="doc-next"><a href="filter.html">Next: Filter →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

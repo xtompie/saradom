@@ -3,7 +3,7 @@ slug: produce
 title: "Produce"
 type: example
 tags: [example, composition, dom-state]
-related: [filter, visible, val]
+related: [filter, switch, val]
 track: examples
 order: 20
 status: draft
@@ -11,11 +11,11 @@ status: draft
 
 # Produce
 
-Nothing here is new. Produce composes Visible, Filter, Val, and a small script that runs on load. Each was shown on its own. Here they work together.
+Nothing here is new. Produce composes Switch, Filter, Val, and a small script that runs on load. Each was shown on its own. Here they work together.
 
 <!-- embed: Util/Util.js -->
 <!-- embed: Val/Val.js -->
-<!-- embed: Visible/Visible.js -->
+<!-- embed: Switch/Switch.js -->
 <!-- embed: Filter/Filter.js -->
 <!-- embed: content/Produce.js -->
 <div class="produce-demo">

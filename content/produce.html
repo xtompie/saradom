@@ -1,9 +1,9 @@
-<div produce-space filter-space visible-space visible-state="category">
+<div produce-space filter-space switch-space switch-state="category">
     <div>
         <input filter-query type="text" oninput="Filter.Filter(this)">
-        <button onclick="Visible.Toggle(this, 'category', ['hidden'], ['category'])">
-            <span visible-tag="category">Hide category</span>
-            <span visible-tag="hidden" style="display:none">Show category</span>
+        <button onclick="Switch.Toggle(this, '[switch-space]', 'category', 'hidden', 'category')">
+            <span switch-tag="category">Hide category</span>
+            <span switch-tag="hidden" style="display:none">Show category</span>
         </button>
     </div>
     <ul produce-list val-tpl="[produce-row-tpl]"></ul>
@@ -11,7 +11,7 @@
         <li filter-item>
             <i val val-fx="Pattr" val-key="match" val-attr="filter-item" hidden></i>
             <span val val-fx="Text" val-key="name"></span>
-            <span val val-fx="Text" val-key="category" visible-tag="category"></span>
+            <span val val-fx="Text" val-key="category" switch-tag="category"></span>
         </li>
     </template>
     <script>

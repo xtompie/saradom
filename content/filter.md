@@ -3,7 +3,7 @@ slug: filter
 title: "Filter"
 type: example
 tags: [example, dom-state]
-related: [dom-state, visible]
+related: [dom-state, switch]
 track: examples
 order: 15
 status: draft

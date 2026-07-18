@@ -1,0 +1,9 @@
+<div switch-space switch-state="account">
+  <button onclick="Switch.To(this, '[switch-space]', 'account')">Account</button>
+  <button onclick="Switch.To(this, '[switch-space]', 'billing')">Billing</button>
+  <button onclick="Switch.To(this, '[switch-space]', 'team')">Team</button>
+
+  <section switch-tag="account">Account settings.</section>
+  <section switch-tag="billing" style="display:none">Billing details.</section>
+  <section switch-tag="team" style="display:none">Team members.</section>
+</div>

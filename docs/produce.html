@@ -18,9 +18,9 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="visible.html">Visible</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a class="active" href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="util.html">Util</a><a href="val.html">Val</a><a href="hx.html">Hx</a><a href="notify.html">Notify</a><a href="compute.html">Compute</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="switch.html">Switch</a><a href="filter.html">Filter</a><a href="todo.html">Todo list</a><a class="active" href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="produce">Produce<a class="anchor" href="#produce" aria-hidden="true">#</a></h1>
-<p>Nothing here is new. Produce composes Visible, Filter, Val, and a small script that runs on load. Each was shown on its own. Here they work together.</p>
+<p>Nothing here is new. Produce composes Switch, Filter, Val, and a small script that runs on load. Each was shown on its own. Here they work together.</p>
 <script>
 const dom = document;
 document.al = function(s) {
@@ -390,23 +390,46 @@ HTMLElement.prototype.val = function (data, lane) {
 })();
 </script>
 <script>
-const Visible = (() => {
-    const Visible = (ctx, tags) => {
-        const space = ctx.closest('[visible-space]');
-        const lane = space.getAttribute('visible-lane');
-        const selector = lane ? `[visible-tag][visible-lane="${lane}"]` : '[visible-tag]';
-        space.querySelectorAll(selector).forEach(el => {
-            el.style.display = tags.includes(el.getAttribute('visible-tag')) ? '' : 'none';
+const Switch = (() => {
+    // Tag elements inside a switch space; one call decides each one's on/off from
+    // the active tags and applies an effect. By default it shows the on ones and
+    // hides the rest, and writes the active set to `switch-state`.
+    //
+    // The space is always given as a selector — the second argument — resolved from
+    // `ctx` with `closest`. There is no implicit space, so nested spaces never pick
+    // the wrong one: you name the target space.
+    //
+    // Config on the space element (the one the selector matches):
+    //   switch-config-tag — the attribute that holds a target's tag(s). Default `switch-tag`.
+    //   switch-state      — the active set, space-separated. Written on each call, read by Toggle.
+    //
+    // Config on each tagged element:
+    //   switch-onchange — the effect, `(on) => ...` with `this` the element. Each target
+    //                     decides its own. Left out, the target is shown when on and hidden
+    //                     when off.
+    //
+    // A target is on when any of its space-separated tags is in the active set (OR).
+    const apply = (space, tags) => {
+        tags = Array.isArray(tags) ? tags : String(tags).split(/\s+/).filter(Boolean);
+        const attr = space.getAttribute('switch-config-tag') || 'switch-tag';
+        space.querySelectorAll(`[${attr}]`).forEach(el => {
+            const on = el.getAttribute(attr).split(/\s+/).some(t => tags.includes(t));
+            const change = el.getAttribute('switch-onchange');
+            if (change) (function () { return eval(change); }).call(el)(on);
+            else el.style.display = on ? '' : 'none';
         });
-        space.setAttribute('visible-state', tags.join(' '));
+        space.setAttribute('switch-state', tags.join(' '));
     };
 
-    const Toggle = (ctx, when, then, otherwise) => {
-        const space = ctx.closest('[visible-space]');
-        Visible(space, space.getAttribute('visible-state').split(' ').includes(when) ? then : otherwise);
+    const To = (ctx, space, tags) => apply(ctx.closest(space), tags);
+
+    const Toggle = (ctx, space, when, then, otherwise) => {
+        space = ctx.closest(space);
+        const active = (space.getAttribute('switch-state') || '').split(/\s+/);
+        apply(space, active.includes(when) ? then : otherwise);
     };
 
-    return { Visible, Toggle };
+    return { To, Toggle };
 })();
 </script>
 <script>
@@ -436,12 +459,12 @@ const Produce = (() => {
 })();
 </script>
 <div class="produce-demo">
-<div produce-space filter-space visible-space visible-state="category">
+<div produce-space filter-space switch-space switch-state="category">
     <div>
         <input filter-query type="text" oninput="Filter.Filter(this)">
-        <button onclick="Visible.Toggle(this, 'category', ['hidden'], ['category'])">
-            <span visible-tag="category">Hide category</span>
-            <span visible-tag="hidden" style="display:none">Show category</span>
+        <button onclick="Switch.Toggle(this, '[switch-space]', 'category', 'hidden', 'category')">
+            <span switch-tag="category">Hide category</span>
+            <span switch-tag="hidden" style="display:none">Show category</span>
         </button>
     </div>
     <ul produce-list val-tpl="[produce-row-tpl]"></ul>
@@ -449,7 +472,7 @@ const Produce = (() => {
         <li filter-item>
             <i val val-fx="Pattr" val-key="match" val-attr="filter-item" hidden></i>
             <span val val-fx="Text" val-key="name"></span>
-            <span val val-fx="Text" val-key="category" visible-tag="category"></span>
+            <span val val-fx="Text" val-key="category" switch-tag="category"></span>
         </li>
     </template>
     <script>
@@ -485,12 +508,12 @@ const Produce = (() => {
 }
 .produce-demo [produce-list] [visible-tag="category"] { color:var(--muted); font-size:.85rem; }
 </style>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">produce-space</span> <span class="hljs-attr">filter-space</span> <span class="hljs-attr">visible-space</span> <span class="hljs-attr">visible-state</span>=<span class="hljs-string">"category"</span>&gt;</span>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">produce-space</span> <span class="hljs-attr">filter-space</span> <span class="hljs-attr">switch-space</span> <span class="hljs-attr">switch-state</span>=<span class="hljs-string">"category"</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">filter-query</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">oninput</span>=<span class="hljs-string">"Filter.Filter(this)"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Visible.Toggle(this, 'category', ['hidden'], ['category'])"</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"category"</span>&gt;</span>Hide category<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Show category<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Switch.Toggle(this, '[switch-space]', 'category', 'hidden', 'category')"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"category"</span>&gt;</span>Hide category<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display:none"</span>&gt;</span>Show category<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
         <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">ul</span> <span class="hljs-attr">produce-list</span> <span class="hljs-attr">val-tpl</span>=<span class="hljs-string">"[produce-row-tpl]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
@@ -498,7 +521,7 @@ const Produce = (() => {
         <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">filter-item</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">i</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Pattr"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"match"</span> <span class="hljs-attr">val-attr</span>=<span class="hljs-string">"filter-item"</span> <span class="hljs-attr">hidden</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
             <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"name"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"category"</span> <span class="hljs-attr">visible-tag</span>=<span class="hljs-string">"category"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Text"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"category"</span> <span class="hljs-attr">switch-tag</span>=<span class="hljs-string">"category"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
         <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">

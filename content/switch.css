@@ -1,0 +1,25 @@
+.demo [switch-space] { width:100%; max-width:22rem; text-align:left; }
+
+/* tabs: the panel is a card */
+.demo [switch-space] section[switch-tag] {
+  display:block; margin-top:.5rem; padding:.7rem .85rem;
+  background:var(--soft); border:1px solid var(--line); border-radius:var(--r-sm); color:var(--ink);
+}
+
+/* accordion: the header reads as a control, the panel as its value */
+.demo [switch-space] button[onclick*="Toggle"] {
+  display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; margin-top:.5rem;
+}
+.demo [switch-space] button[onclick*="Toggle"]::before {
+  content:"▸"; color:var(--muted); font-size:.75em;
+}
+.demo [switch-space] div[switch-tag] {
+  margin:.3rem 0 .1rem 1.5rem; color:var(--sub);
+}
+
+/* radio: the free-text input gets the demo input look */
+.demo [switch-space] input[switch-tag] {
+  display:block; width:100%; margin-top:.5rem;
+  background:var(--code-bg); border:1px solid var(--line); border-radius:var(--r-sm);
+  color:var(--ink); font:inherit; padding:.5rem .65rem; outline:none;
+}
