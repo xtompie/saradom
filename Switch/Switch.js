@@ -1,22 +1,4 @@
 const Switch = (() => {
-    // Tag elements inside a switch space; one call decides each one's on/off from
-    // the active tags and applies an effect. By default it shows the on ones and
-    // hides the rest, and writes the active set to `switch-state`.
-    //
-    // The space is always given as a selector — the second argument — resolved from
-    // `ctx` with `closest`. There is no implicit space, so nested spaces never pick
-    // the wrong one: you name the target space.
-    //
-    // Config on the space element (the one the selector matches):
-    //   switch-config-tag — the attribute that holds a target's tag(s). Default `switch-tag`.
-    //   switch-state      — the active set, space-separated. Written on each call, read by Toggle.
-    //
-    // Config on each tagged element:
-    //   switch-onchange — the effect, `(on) => ...` with `this` the element. Each target
-    //                     decides its own. Left out, the target is shown when on and hidden
-    //                     when off.
-    //
-    // A target is on when any of its space-separated tags is in the active set (OR).
     const apply = (space, tags) => {
         tags = Array.isArray(tags) ? tags : String(tags).split(/\s+/).filter(Boolean);
         const attr = space.getAttribute('switch-config-tag') || 'switch-tag';

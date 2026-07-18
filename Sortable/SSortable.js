@@ -1,17 +1,4 @@
 (() => {
-    // A declarative wrapper over SortableJS. The element is the drag container; its
-    // children are the draggable items. It wires a Sortable when it connects and
-    // destroys it when it leaves the DOM, so a list added later drags without a manual
-    // `new Sortable` call.
-    //
-    // Attributes:
-    //   group     — shared group name; lists with the same name exchange items.
-    //   boundary  — a selector. Items only move between lists that share the same
-    //               nearest ancestor matching it. Two boards under separate
-    //               `[kanban-space]` roots stay isolated with one group name, no
-    //               unique names to coordinate. Left out, the group name alone rules.
-    //   animation — SortableJS animation in ms (default 150).
-    //   handle    — a selector for the drag handle, passed straight through.
     const Group = (el) => {
         const name = el.getAttribute('group');
         if (!name) {
@@ -34,6 +21,27 @@
                 group: Group(this),
                 animation: Number(this.getAttribute('animation')) || 150,
                 handle: this.getAttribute('handle') || undefined,
+                onEnd: (event) => {
+                    const key = this.getAttribute('sort-store');
+                    if (key) {
+                        const order = Array.from(this.querySelectorAll('[sort-item]')).map((el) => el.getAttribute('sort-item'));
+                        localStorage.setItem(key, JSON.stringify(order));
+                    }
+                    const code = this.getAttribute('onsort');
+                    if (code) new Function('event', code).call(this, event);
+                },
+            });
+        }
+        restore() {
+            const key = this.getAttribute('sort-store');
+            if (!key) {
+                return;
+            }
+            JSON.parse(localStorage.getItem(key) || '[]').forEach((name) => {
+                const item = this.querySelector('[sort-item="' + name + '"]');
+                if (item) {
+                    this.appendChild(item);
+                }
             });
         }
         disconnectedCallback() {

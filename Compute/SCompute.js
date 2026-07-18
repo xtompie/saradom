@@ -38,7 +38,7 @@
             };
             this._observer = new MutationObserver(ms ? Debounce(fire, ms) : fire);
             const start = () => {
-                Run(this);                    // first run is ungated: it initialises the value
+                Run(this);
                 this._observer.observe(this, config);
             };
             document.readyState === 'loading'

@@ -11,7 +11,7 @@ status: draft
 
 # Switch
 
-Show one set of elements and hide the rest. Elements carry a tag inside a shared `switch-space`; one call decides each element's on/off from the active tags. The current set is written to the DOM as `switch-state`, readable there with no JavaScript variable holding it.
+Switch drives each element's state from a shared set of tags — one call flips every tagged element on or off, hiding and showing by default, or running whatever effect the element defines. Elements carry their tag inside a shared `switch-space`, and the active set is written to the DOM as `switch-state`, readable there with no JavaScript variable holding it.
 
 Switch is the more generic successor of [Visible](visible.html): the tag attribute is configurable, and the effect is not limited to show/hide.
 

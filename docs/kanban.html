@@ -257,6 +257,12 @@ HTMLElement.prototype.one = function(s) {
 HTMLElement.prototype.tpl = function() {
     return this.content.firstElementChild.cloneNode(true);
 }
+HTMLElement.prototype.run = function(attr) {
+    const code = this.getAttribute(attr);
+    if (!code) return;
+    const val = new Function('return (' + code + ')').call(this);
+    return typeof val === 'function' ? val.call(this) : val;
+}
 HTMLElement.prototype.show = function(v = true) {
     this.style.display = v === true ? '' : 'none';
     return this;
@@ -297,9 +303,9 @@ const Val = (() => {
         .filter(e => e instanceof HTMLElement)
         .reduce((r, e) => {
             const l = e.getAttribute('val-lane');
-            const ec = l != null ? l : cur;                 // effective lane at e (nearest tag wins)
+            const ec = l != null ? l : cur;
             if (e.hasAttribute('val')) return ec === lane ? r.concat(e) : r;
-            return r.concat(Fd(e, lane, ec));               // foreign lane is invisible, not a wall — keep descending
+            return r.concat(Fd(e, lane, ec));
         }, []);
     const TplClone = t => t.content.firstElementChild.cloneNode(true);
     const Tpl = tpl => typeof tpl === 'string' ? document.querySelector(tpl) : tpl;
@@ -469,7 +475,6 @@ HTMLElement.prototype.vappend = function (data, tpl = null) { Val.Append(this, d
 HTMLElement.prototype.varr = function (data, tpl = null) { return Val.Arr(this, data, tpl); };
 HTMLElement.prototype.vprepend = function (data, tpl = null) { Val.Prepend(this, data, tpl); return this; };
 HTMLElement.prototype.vrender = function (data, tpl = null) { Val.Render(this, tpl, data); return this; };
-// low-level get/reset: val() reads, val(data) overwrites
 HTMLElement.prototype.val = function (data, lane) {
     lane = lane ?? Val.Lane(this);
     if (data === undefined) return this.hasAttribute('val') ? Val.Get(this) : Val.Obj(this, null, lane);
@@ -523,7 +528,6 @@ HTMLElement.prototype.val = function (data, lane) {
         Val.Sync(el, { ...cur, ...patch }, lane);
     };
 
-    // smart set: diff, minimal DOM change; accepts data or a (cur) => next callback
     HTMLElement.prototype.set = function (data, lane) {
         lane = lane ?? Val.Lane(this);
         if (typeof data === 'function') {
@@ -718,7 +722,7 @@ Vld.Form = (() => {
             };
             this._observer = new MutationObserver(ms ? Debounce(fire, ms) : fire);
             const start = () => {
-                Run(this);                    // first run is ungated: it initialises the value
+                Run(this);
                 this._observer.observe(this, config);
             };
             document.readyState === 'loading'
@@ -737,19 +741,6 @@ Vld.Form = (() => {
 </script>
 <script>
 (() => {
-    // A declarative wrapper over SortableJS. The element is the drag container; its
-    // children are the draggable items. It wires a Sortable when it connects and
-    // destroys it when it leaves the DOM, so a list added later drags without a manual
-    // `new Sortable` call.
-    //
-    // Attributes:
-    //   group     — shared group name; lists with the same name exchange items.
-    //   boundary  — a selector. Items only move between lists that share the same
-    //               nearest ancestor matching it. Two boards under separate
-    //               `[kanban-space]` roots stay isolated with one group name, no
-    //               unique names to coordinate. Left out, the group name alone rules.
-    //   animation — SortableJS animation in ms (default 150).
-    //   handle    — a selector for the drag handle, passed straight through.
     const Group = (el) => {
         const name = el.getAttribute('group');
         if (!name) {
@@ -772,6 +763,27 @@ Vld.Form = (() => {
                 group: Group(this),
                 animation: Number(this.getAttribute('animation')) || 150,
                 handle: this.getAttribute('handle') || undefined,
+                onEnd: (event) => {
+                    const key = this.getAttribute('sort-store');
+                    if (key) {
+                        const order = Array.from(this.querySelectorAll('[sort-item]')).map((el) => el.getAttribute('sort-item'));
+                        localStorage.setItem(key, JSON.stringify(order));
+                    }
+                    const code = this.getAttribute('onsort');
+                    if (code) new Function('event', code).call(this, event);
+                },
+            });
+        }
+        restore() {
+            const key = this.getAttribute('sort-store');
+            if (!key) {
+                return;
+            }
+            JSON.parse(localStorage.getItem(key) || '[]').forEach((name) => {
+                const item = this.querySelector('[sort-item="' + name + '"]');
+                if (item) {
+                    this.appendChild(item);
+                }
             });
         }
         disconnectedCallback() {

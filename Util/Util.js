@@ -85,6 +85,12 @@ HTMLElement.prototype.one = function(s) {
 HTMLElement.prototype.tpl = function() {
     return this.content.firstElementChild.cloneNode(true);
 }
+HTMLElement.prototype.run = function(attr) {
+    const code = this.getAttribute(attr);
+    if (!code) return;
+    const val = new Function('return (' + code + ')').call(this);
+    return typeof val === 'function' ? val.call(this) : val;
+}
 HTMLElement.prototype.show = function(v = true) {
     this.style.display = v === true ? '' : 'none';
     return this;
