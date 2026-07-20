@@ -1,16 +1,16 @@
 const HttpBuildQuery = (params) => {
-    const build = (key, val) => {
+    const enc = s => encodeURIComponent(s).replace(/%20/g, '+');
+    const out = [];
+    const walk = (key, val) => {
         if (val === true) val = "1";
         if (val === false) val = "0";
-        if (val === null || val === undefined) return '';
-        if (typeof val === "object" && val !== null) {
-            return Object.entries(val).map(([k, v]) => build(`${key}[${k}]`, v)).filter(s => s).join('&');
+        if (val === null || val === undefined) return;
+        if (typeof val === "object") {
+            Object.entries(val).forEach(([k, v]) => walk(`${key}[${k}]`, v));
+        } else {
+            out.push(`${enc(key)}=${enc(val)}`);
         }
-        if (['string', 'number', 'symbol', 'bigint'].includes(typeof val)) {
-            return `${encodeURIComponent(key)}=${encodeURIComponent(val)}`;
-        }
-        return '';
     };
-    return Object.entries(params).map(([k, v]) => build(k, v)).filter(s => s).join('&');
+    Object.entries(params).forEach(([k, v]) => walk(k, v));
+    return out.join('&');
 };
-

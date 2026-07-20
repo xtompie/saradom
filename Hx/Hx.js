@@ -45,10 +45,11 @@ const hx = (() => {
     };
 
     const createTask = el => {
-        const [method, url] = resolveMethodAndUrl(el);
+        const [method, rawUrl] = resolveMethodAndUrl(el);
         const target = findTarget(el);
-        if (!method || !url || !target) return null;
+        if (!method || !rawUrl || !target) return null;
 
+        const url = applyQuery(el, rawUrl);
         const body = buildBody(el, method);
         const options = buildOptions(method, body);
         const swap = param(el, 'hx-swap') || 'innerHTML';
@@ -76,11 +77,75 @@ const hx = (() => {
     const buildBody = (el, method) => {
         if (method === 'GET') return null;
         if (el.tagName === 'FORM') return new URLSearchParams(new FormData(el)).toString();
+        const vals = valsBody(el);
+        if (vals !== null) return vals;
         if (!el.name) return null;
         if (el.type === 'checkbox' || el.type === 'radio') {
             if (!el.checked) return null;
         }
         return `${encodeURIComponent(el.name)}=${encodeURIComponent(el.value || '')}`;
+    };
+
+    const evalVals = (el, name) => {
+        const code = param(el, name);
+        if (!code) return null;
+        try {
+            const fn = new Function('return (' + code + ')').call(el);
+            return fn.call(el) || null;
+        } catch {
+            return null;
+        }
+    };
+
+    const enc = s => encodeURIComponent(s).replace(/%20/g, '+');
+    const dec = s => decodeURIComponent(s.replace(/\+/g, ' '));
+
+    const flatten = params => {
+        const out = [];
+        const walk = (key, val) => {
+            if (val === true) val = '1';
+            if (val === false) val = '0';
+            if (val === null || val === undefined) return;
+            if (typeof val === 'object') {
+                Object.entries(val).forEach(([k, v]) => walk(`${key}[${k}]`, v));
+            } else {
+                out.push([key, val]);
+            }
+        };
+        Object.entries(params).forEach(([k, v]) => walk(k, v));
+        return out;
+    };
+
+    const parsePairs = qs => qs ? qs.split('&').filter(Boolean).map(p => {
+        const i = p.indexOf('=');
+        return i < 0 ? [dec(p), ''] : [dec(p.slice(0, i)), dec(p.slice(i + 1))];
+    }) : [];
+
+    const mergePairs = pairs => {
+        const map = new Map();
+        for (const [k, v] of pairs) map.set(k, v);
+        return [...map];
+    };
+
+    const encodePairs = pairs => pairs.map(([k, v]) => `${enc(k)}=${enc(v)}`).join('&');
+
+    const valsBody = el => {
+        const obj = evalVals(el, 'hx-vals-body');
+        return obj ? encodePairs(flatten(obj)) : null;
+    };
+
+    const applyQuery = (el, url) => {
+        const obj = evalVals(el, 'hx-vals-query');
+        const additions = obj ? flatten(obj) : [];
+        if (!additions.length) return url;
+        const hash = url.indexOf('#');
+        const frag = hash < 0 ? '' : url.slice(hash);
+        const rest = hash < 0 ? url : url.slice(0, hash);
+        const qi = rest.indexOf('?');
+        const base = qi < 0 ? rest : rest.slice(0, qi);
+        const existing = qi < 0 ? '' : rest.slice(qi + 1);
+        const merged = mergePairs([...parsePairs(existing), ...additions]);
+        return base + '?' + encodePairs(merged) + frag;
     };
 
     const buildOptions = (method, body) => {

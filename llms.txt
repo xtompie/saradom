@@ -1,0 +1,63 @@
+# Saradom — LLM build reference
+
+Architecture pattern (not a framework/library): plain HTML + JS, no build, no bundler, no imports.
+This file is a working cheat-sheet for an agent building modules/components in this repo.
+
+## 1. Foundations
+
+- State lives in the DOM (attribute, input `value`, `textContent`, `data-*`, or `_`-prefixed JS prop for handles like `el._timer`) — never in JS variables. The DOM is the single source of truth; no reactivity runtime, no sync.
+- Events are set inline in HTML attributes (`onclick="Todo.Add(this)"`) — never `addEventListener`; markup inserted later is live at once, nothing to unbind.
+- Module name = prefix of its attributes: object `Accordion` owns `accordion-*` markup; CSS targets the same attributes (`[todo-item-status="done"]`). Module is an IIFE returning its public API; all modules hang off one global `App`, folder-like dotted names.
+- UI is interactive as it parses (state comes ready from backend); components needing setup init in place, never via `DOMContentLoaded`/`defer`.
+- Interaction = direct DOM write on the element the handler already holds — no diff, no scheduler.
+
+## 2. Building a module (algorithm)
+
+1. **Structure** — lay out the elements the module needs.
+2. **Events** — define where an action *starts* (click, drag, input, submit…) as an inline attribute handler.
+3. **Prefixed attribute markers** — tag elements with `module-*` attributes the JS reads/writes. This is the **explicit contract** between HTML and JS (no type system).
+
+**Tool priority** (stop at the first that fits): native HTML → htmx (`Hx`) → generic toolkits (`Notify`/`Visible`/`Filter`/`Compute`/`Sortable`/`Util`) → your own small component last.
+
+## 3. Signature notation
+
+A signature is the contract: namespaced attributes, their values, the functions run on them, and nesting (`<` = element, indentation = descendant). Functions that touch storage/other elements listed below.
+
+```
+< pin-space pin-store="detail-properties">
+    < pin-target>                                  # where pinned items move to
+    < pin-name="propA" pin-on?>                     # instance root; pin-on flag when pinned
+        < pin-slot="propA">                         # original home, for restore
+        < onclick="Pin.Toggle(this)">
+    < script>Pin.Init(document.currentScript)</script>   # OR: <s-init run="(el)=>el.restore()">
+
+Pin.Toggle(btn)  Pin.Init(script)   # store = ordered array of pinned names in localStorage[pin-store]
+```
+
+## 4. Gotchas (bad → good)
+
+- **State in a CSS class → bad.** `classList.toggle('nav-off')` + CSS `.app.nav-off{…}` is wrong on both sides: state must live in an **attribute** and CSS must target that attribute. Use `el.flag('nav-off', !el.flag('nav-off'))` (Util: no 2nd arg = read, `true/false` = set/remove) and style `[nav-off]{…}` / `.app[nav-off] .sidebar{…}`. Classes are for **styling only** — never for state, never as a JS/CSS contract. Same for values: `attr('field-state','done')` + `[field-state="done"]`, not a `.is-done` class.
+- Grabbing by class / `parentElement` / siblings in JS → **bad**. Only by **prefixed attributes** (`.one/.all/.up` from Util). HTML may be rearranged; the attribute is the contract.
+- Module built for one specific thing → **bad**. Modules are **generic**; the value comes from the DOM (attribute or `textContent`), marked by the contract.
+- `document.addEventListener('DOMContentLoaded')` or `defer` for init → **bad** (too late, breaks UX-Performance). Init **in place**: inline `Component.Init(document.currentScript)`, or `<s-init run="(el)=>el.restore()">` as the **last child** (a custom element that reads children upgrades in `connectedCallback` *before* its children are parsed — so `s-init` goes last, after the children it acts on).
+- Store key on a sub-element → **bad**; it belongs on the instance **root**. One store, not two (membership + order = a single ordered array of names).
+- Coupling: an element carries **two attributes with the same value** (`pin-name` + `sort-item`); each module reads **only its own**. They "communicate" via equal value + shared storage key, never by reading each other's attributes.
+- Module prefix = the module's **own full name**, unique — never a short/generic truncation. `InlineEdit` owns `inline-edit-*`, **not** `inline-*` (leave `inline-*` free so a future `Inline` module can't collide). The prefix reserves a namespace; a generic stem is a landmine.
+- View↔edit toggle (inline editing) → **don't write a JS component**; swap two HX partials — a text view and an input — via `hx` (click text → GET the input partial pre-filled; submit → the view partial with `hx-fill` echoing the value). Reach for a JS module only when HX genuinely can't express it.
+- `id` only for native `popover`/`<dialog>`; otherwise a generic `[dropdown]` (trigger+menu bound by structure), not an id per menu.
+- htmx does **not** show the dropdown — the native `popover` does; htmx only loads content: `ontoggle="this.matches(':popover-open') && hx(this)"`. `hx(this)` **without `event`** = no `preventDefault`, so the native action (popover) still fires; `hx(this,event)` in a form = `preventDefault`.
+- Our `Hx`: `hx-target` supports `closest <sel>` (+ descendant after it), but **not** `find` after `closest`; `hx-swap` = `innerHTML|outerHTML|append|prepend|none` (**not** `beforeend`).
+- Name the storage key by **what it is** and whether it's a global preference or instance state (`detail-properties`, not `scrum1`).
+- Util helpers (`.one/.all/.up/.attr/.flag/.run`) live on `HTMLElement.prototype` — they throw on **SVG** elements (`<use>`, `<svg>`). For SVG use native `get/setAttribute`.
+
+## 5. Toolkits — quick contract
+
+- **`Hx`** — `hx-get|post|put|delete|patch="url"`, `hx-target` (`this` | `closest <sel> [desc]` | selector), `hx-swap` (`innerHTML`(default)`|outerHTML|append|prepend|none`), `hx-select`, `hx-indicator`, `hx-disable`. Trigger `hx(this[,event])`; form/anchor bodies auto-built. Owner resolved via `closest([hx-*])`.
+- **`Notify`** — `el.nup(name,data,stop?)` / `el.ndown(...)` / `el.nall(name,data)`; listener = an attribute `name="(data)=>…"` eval'd with `this`=element. Up walks ancestors, Down walks descendants, All = whole document.
+- **`Visible`** — `[visible-space]` (opt `visible-lane`), `[visible-tag]` children, mirror `visible-state`. `Visible.Visible(ctx,tags)` shows tags in the space; `Visible.Toggle(ctx,when,then,otherwise)`.
+- **`Filter`** — `[filter-space]` (opt `filter-lane`), `[filter-query]` input `oninput="Filter.Filter(this)"`, `[filter-item="searchable text"]` rows toggled by substring.
+- **`Util`** (globals, no import) — `el.one/all(sel)`, `el.up(sel)` (self-or-closest, falls back to body), `el.attr(a[,v])`, `el.attrt(a,v1,v2)` (toggle), `el.flag(f[,bool])`, `el.run(attr)` (eval attr, call if fn), `el.hide/show/clear`, `document.one/al(sel)`, `Array#each/any/none`, `String#cut(n)`. `dom` = `document`.
+- **`<s-sortable>`** (SortableJS wrapper) — attrs `group`,`boundary`(put-guard sel),`handle`,`animation`,`onsort`. `sort-store="key"` + `[sort-item="name"]` persist order to localStorage; call `restore()` (via a trailing `<s-init run="(el)=>el.restore()">`) to reapply.
+- **`<s-compute run="() => …">`** — MutationObserver on children (add `shallow` for childList-only, `debounce="ms"`, `guard`); recomputes derived DOM (counts, bars) on any change. `this`=the element.
+- **`<s-init run="(el)=>…">`** — runs once in `connectedCallback` with `this`=parent; the in-place init primitive.
+- **`<s-resizer resizer-store resizer-var resizer-min resizer-max>`** inside `[resizer-space]` — drag to set a CSS var (default `--panel-w`) on the space, clamped `resizer-min`..`resizer-max`, persisted to `localStorage[resizer-store]`.
