@@ -1,4 +1,4 @@
-<div class="comment" comment>
+<div class="comment" comment comment>
   <div class="avatar sm">SR</div>
   <div class="comment-body">
     <div class="comment-meta"><b>Sam Rivera</b> <span class="muted">· just now</span></div>
@@ -8,9 +8,9 @@
         <input type="checkbox" hidden react-like hx-post="fragments/comment-liked.html" hx-target="this" hx-swap="outerHTML" onchange="App.Ui.Hx(this, event)">
         <span class="c-emoji">👍</span><span react-count>0</span>
       </label>
-      <button type="button" class="c-act" hx-get="fragments/comment-reply.html" hx-target="closest .comment" hx-swap="append" onclick="App.Ui.Hx(this, event)">Reply</button>
-      <button type="button" class="c-act" hx-get="fragments/comment-edit.html" hx-target="closest .comment" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">Edit</button>
-      <button type="button" class="c-act" hx-post="fragments/comment-delete.html" hx-target="closest .comment" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">Delete</button>
+      <button type="button" class="c-act" hx-get="fragments/comment-reply.html" hx-target="closest [comment]" hx-swap="append" onclick="App.Ui.Hx(this, event)">Reply</button>
+      <button type="button" class="c-act" hx-get="fragments/comment-edit.html" hx-target="closest [comment]" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">Edit</button>
+      <button type="button" class="c-act" hx-post="fragments/comment-delete.html" hx-target="closest [comment]" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">Delete</button>
     </div>
   </div>
 </div>

@@ -199,15 +199,15 @@ code{background:var(--canvas);border-radius:6px;padding:.15em .4em;font:12px/1.4
 .status-row>*{height:32px}
 .status-row .btn{padding:0 11px}
 .status{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid transparent;background:rgba(5,21,36,.06);border-radius:3px;padding:0 11px;font:inherit;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer}
-.status[data-state="in-progress"]{background:var(--accent-soft);color:var(--accent)}
-.status[data-state="done"]{background:var(--green-soft);color:var(--green)}
+.status[field-state="in-progress"]{background:var(--accent-soft);color:var(--accent)}
+.status[field-state="done"]{background:var(--green-soft);color:var(--green)}
 .status:hover{background:rgba(5,21,36,.11)}
 .status-row [ui-dropdown-space]{display:inline-flex}
 .status-row .status{height:32px}
 .menu-status .status{pointer-events:none;height:auto;padding:3px 9px;font-size:12px;font-weight:600}
 .menu-status .status:hover{background:rgba(5,21,36,.06)}
-.menu-status .status[data-state="in-progress"]:hover{background:var(--accent-soft)}
-.menu-status .status[data-state="done"]:hover{background:var(--green-soft)}
+.menu-status .status[field-state="in-progress"]:hover{background:var(--accent-soft)}
+.menu-status .status[field-state="done"]:hover{background:var(--green-soft)}
 
 /* details: compact two-column (Jira-style, dense) */
 .fields{display:flex;flex-direction:column;gap:5px;font-size:13px}
@@ -219,7 +219,7 @@ code{background:var(--canvas);border-radius:6px;padding:.15em .4em;font:12px/1.4
 .prio{flex:none}
 .chip-static{display:inline-block;border:1px solid var(--border);background:var(--canvas);border-radius:4px;padding:0 7px;margin:1px 2px 1px 0;font-size:12px;color:var(--ink);cursor:pointer}
 .field-val{color:var(--muted);cursor:pointer;border-radius:4px;padding:2px 6px;margin:-2px -6px}
-.field-val.set{color:var(--ink)}
+.field-val[field-set="set"]{color:var(--ink)}
 .field-val:hover{background:var(--canvas)}
 .linkish.sm{font-size:12px}
 .pin{display:grid;place-items:center;border:0;background:transparent;cursor:pointer;color:var(--muted);opacity:0;width:22px;height:22px;border-radius:4px}
@@ -264,17 +264,17 @@ code{background:var(--canvas);border-radius:6px;padding:.15em .4em;font:12px/1.4
 .field-pick .field-val:hover{background:transparent}
 .field-pick .avatar.xs{cursor:inherit}
 .prio{color:#e56910}
-[field-priority][data-state="highest"] .prio{color:#ca3521}
-[field-priority][data-state="high"] .prio{color:#e34935}
-[field-priority][data-state="medium"] .prio{color:#e56910}
-[field-priority][data-state="low"] .prio{color:#2681db}
-[field-priority][data-state="lowest"] .prio{color:#0055cc}
+[field-priority][field-state="highest"] .prio{color:#ca3521}
+[field-priority][field-state="high"] .prio{color:#e34935}
+[field-priority][field-state="medium"] .prio{color:#e56910}
+[field-priority][field-state="low"] .prio{color:#2681db}
+[field-priority][field-state="lowest"] .prio{color:#0055cc}
 .menu-prio{min-width:180px}
 .menu-prio .menu-item .prio{color:#e56910}
-.menu-prio .menu-item .prio[data-state="highest"]{color:#ca3521}
-.menu-prio .menu-item .prio[data-state="high"]{color:#e34935}
-.menu-prio .menu-item .prio[data-state="low"]{color:#2681db}
-.menu-prio .menu-item .prio[data-state="lowest"]{color:#0055cc}
+.menu-prio .menu-item .prio[field-state="highest"]{color:#ca3521}
+.menu-prio .menu-item .prio[field-state="high"]{color:#e34935}
+.menu-prio .menu-item .prio[field-state="low"]{color:#2681db}
+.menu-prio .menu-item .prio[field-state="lowest"]{color:#0055cc}
 .label-chip{display:inline-flex;align-items:center;background:#eaeef2;color:#44546f;border-radius:3px;padding:2px 7px;margin-right:4px;font-size:12px;font-weight:500}
 
 /* M4 — native <details> collapsibles (zero JS) */
@@ -509,7 +509,7 @@ details:not([open])>summary .caret{transform:rotate(-90deg)}
 .sub-key{font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;white-space:nowrap}
 .sub-key:hover{color:var(--accent);text-decoration:underline}
 .sub-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
-.sub:has([subtask-status].is-done) .sub-title{color:var(--muted);text-decoration:line-through}
+.sub:has([subtask-status][subtask-state="done"]) .sub-title{color:var(--muted);text-decoration:line-through}
 .sub-prio{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--ink-2);white-space:nowrap}
 .sub-prio .ic{color:#e2a03e}
 .sub-actions{justify-self:center;display:inline-flex;align-items:center;gap:2px}
@@ -521,9 +521,9 @@ details:not([open])>summary .caret{transform:rotate(-90deg)}
 .sub:hover .sub-del{opacity:1}
 .sub-del:hover{color:#c9372c;background:#ffeceb}
 .sub-status{justify-self:start;flex:none;white-space:nowrap;border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:600;line-height:1;padding:4px 9px;border-radius:3px}
-.sub-status.is-todo{background:#eaeef2;color:#59636e}
-.sub-status.is-progress{background:var(--accent-soft);color:var(--accent)}
-.sub-status.is-done{background:var(--green-soft);color:var(--green)}
+.sub-status[subtask-state="todo"]{background:#eaeef2;color:#59636e}
+.sub-status[subtask-state="progress"]{background:var(--accent-soft);color:var(--accent)}
+.sub-status[subtask-state="done"]{background:var(--green-soft);color:var(--green)}
 .sub-add{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:13px;padding:7px 4px;margin-top:2px;border-radius:5px}
 .sub-add:hover{color:var(--accent)}
 .sub-progress .progress{flex:1;width:auto}
@@ -594,8 +594,8 @@ details:not([open])>summary .caret{transform:rotate(-90deg)}
 .linked-title{flex:1;min-width:0;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .linked-pri{flex:none}
 .linked-status{flex:none;font-size:11px;font-weight:600;line-height:1;padding:4px 8px;border-radius:3px;background:#eaeef2;color:#59636e}
-.linked-status.is-progress{background:var(--accent-soft);color:var(--accent)}
-.linked-status.is-done{background:var(--green-soft);color:var(--green)}
+.linked-status[linked-state="progress"]{background:var(--accent-soft);color:var(--accent)}
+.linked-status[linked-state="done"]{background:var(--green-soft);color:var(--green)}
 .linked-actions{display:inline-flex;align-items:center;flex:none;opacity:0;transition:opacity .12s ease}
 .linked:hover .linked-actions,.linked-actions:focus-within{opacity:1}
 .linked-del{font-size:16px;line-height:1;color:var(--muted)}

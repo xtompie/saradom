@@ -216,7 +216,7 @@ Status and assignee are Dropdown plus Hx. Each option carries its own payload:
 
 ```html
 <button class="menu-item" hx-post="fragments/subtask-status.html" hx-fill
-        hx-vals-body="() => ({ status: 'In Progress', cls: 'is-progress' })"
+        hx-vals-body="() => ({ status: 'In Progress', state: 'progress' })"
         hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML"
         onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)">...</button>
 ```
@@ -236,7 +236,7 @@ The progress bar computes itself. `<s-compute>` is the [Compute](compute.html) t
 Changing a status, adding a row, or deleting a row updates the bar. Nothing calls a recalculation. The strike-through on a done subtask is CSS reading state:
 
 ```css
-.sub:has([subtask-status].is-done) .sub-title{text-decoration:line-through}
+.sub:has([subtask-status][subtask-state="done"]) .sub-title{text-decoration:line-through}
 ```
 
 ## Activity

@@ -133,7 +133,7 @@ App.Ui = {};
 <p>The rows sit in an <code>&lt;s-sortable&gt;</code>, so they drag by their grip. The header sits outside it and stays aligned through the subgrid.</p>
 <p>Status and assignee are Dropdown plus Hx. Each option carries its own payload:</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"menu-item"</span> <span class="hljs-attr">hx-post</span>=<span class="hljs-string">"fragments/subtask-status.html"</span> <span class="hljs-attr">hx-fill</span>
-        <span class="hljs-attr">hx-vals-body</span>=<span class="hljs-string">"() =&gt; ({ status: 'In Progress', cls: 'is-progress' })"</span>
+        <span class="hljs-attr">hx-vals-body</span>=<span class="hljs-string">"() =&gt; ({ status: 'In Progress', state: 'progress' })"</span>
         <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"closest [ui-dropdown-space] [subtask-status]"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"outerHTML"</span>
         <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
 <p>The option is self-contained. There is no dictionary in JavaScript mapping option names to values.</p>
@@ -144,7 +144,7 @@ App.Ui = {};
   this.one('[subtask-count]').textContent = Math.round(done / rows.length * 100 || 0) + '% Done';
   ... }"</span>&gt;</span></code></pre>
 <p>Changing a status, adding a row, or deleting a row updates the bar. Nothing calls a recalculation. The strike-through on a done subtask is CSS reading state:</p>
-<pre><code class="hljs language-css"><span class="hljs-selector-class">.sub</span><span class="hljs-selector-pseudo">:has(</span><span class="hljs-selector-attr">[subtask-status]</span><span class="hljs-selector-class">.is-done</span>) <span class="hljs-selector-class">.sub-title</span>{<span class="hljs-attribute">text-decoration</span>:line-through}</code></pre>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.sub</span><span class="hljs-selector-pseudo">:has(</span><span class="hljs-selector-attr">[subtask-status]</span><span class="hljs-selector-attr">[subtask-state=<span class="hljs-string">"done"</span>]</span>) <span class="hljs-selector-class">.sub-title</span>{<span class="hljs-attribute">text-decoration</span>:line-through}</code></pre>
 <h2 id="activity">Activity<a class="anchor" href="#activity" aria-hidden="true">#</a></h2>
 <p>The All, Comments, History, and Work log tabs are Switch. A target can carry several tags, so &quot;All&quot; is not a special case:</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"radio"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"show"</span>

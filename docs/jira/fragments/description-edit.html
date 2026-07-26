@@ -1,4 +1,4 @@
-<form class="prose desc-edit" hx-post="fragments/description-edited.html" hx-fill hx-target="closest .sec .prose" hx-swap="outerHTML" onsubmit="App.Ui.Hx(this, event)">
+<form class="prose desc-edit" description hx-post="fragments/description-edited.html" hx-fill hx-target="closest [description]" hx-swap="outerHTML" onsubmit="App.Ui.Hx(this, event)">
   <textarea class="desc-textarea" name="text" rows="6">When a user's session token expires, the login page returns HTTP 500 instead of redirecting to sign-in.
 
 Repro: log in, wait for the token to expire, then submit any action.
@@ -7,6 +7,6 @@ Actual: 500 page, stack trace leaks.</textarea>
   <div class="row gap" style="margin-top:10px">
     <button type="submit" class="btn btn-primary btn-sm">Save</button>
     <button type="button" class="btn btn-sm"
-      hx-get="fragments/description-view.html" hx-target="closest .sec .prose" hx-swap="outerHTML" onclick="App.Ui.Hx(this,event)">Cancel</button>
+      hx-get="fragments/description-view.html" hx-target="closest [description]" hx-swap="outerHTML" onclick="App.Ui.Hx(this,event)">Cancel</button>
   </div>
 </form>

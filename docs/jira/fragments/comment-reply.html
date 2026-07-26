@@ -1,10 +1,10 @@
-<form class="comment-reply-form" hx-post="fragments/comment-replied.html" hx-fill hx-target="this" hx-swap="outerHTML" onsubmit="App.Ui.Hx(this, event)">
+<form class="comment-reply-form" comment-reply hx-post="fragments/comment-replied.html" hx-fill hx-target="this" hx-swap="outerHTML" onsubmit="App.Ui.Hx(this, event)">
   <div class="avatar sm">SR</div>
   <div class="grow">
     <textarea class="input" name="text" rows="2" placeholder="Reply…" autocomplete="off"></textarea>
     <div class="row gap comment-edit-foot">
       <button class="btn btn-primary btn-sm" type="submit">Reply</button>
-      <button class="btn btn-sm" type="button" onclick="this.closest('.comment-reply-form').remove()">Cancel</button>
+      <button class="btn btn-sm" type="button" onclick="this.up('[comment-reply]').remove()">Cancel</button>
     </div>
   </div>
 </form>
