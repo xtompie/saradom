@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<title>Dropdown · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:title" content="Dropdown">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="compute.html">Compute</a><a class="active" href="dropdown.html">Dropdown</a><a href="filter.html">Filter</a><a href="hx.html">Hx</a><a href="modal.html">Modal</a><a href="notify.html">Notify</a><a href="switch.html">Switch</a><a href="util.html">Util</a><a href="val.html">Val</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="dropdown">Dropdown<a class="anchor" href="#dropdown" aria-hidden="true">#</a></h1>
+<p>Dropdown opens a panel next to a trigger. An instance is three attributes: <code>dropdown-space</code> wraps the pair, <code>dropdown-trigger</code> is the element the panel anchors to, <code>dropdown-menu</code> is the panel. The trigger's click calls <code>Dropdown.Toggle(this)</code>. The native <code>popover</code> shows the panel in the top layer. CSS anchor positioning places it. The module only opens and closes.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Dropdown/Dropdown.js" target="_blank" rel="noopener">Dropdown.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Dropdown/Dropdown.css" target="_blank" rel="noopener">Dropdown.css</a></p>
+<script>
+const dom = document;
+document.al = function(s) {
+    return Array.from(document.querySelectorAll(s));
+};
+document.one = function(s) {
+    return document.querySelector(s);
+};
+Array.prototype.each = function(f) {
+    return this.forEach(f);
+};
+Array.prototype.any = function() {
+    return this.length > 0;
+};
+Array.prototype.none = function() {
+    return this.length === 0;
+};
+DocumentFragment.prototype.one = function(s) {
+    return this.querySelector(s);
+};
+DocumentFragment.prototype.allfd = function(s) {
+    return Array.from(this.children).reduce((r, e) => {
+        return e.matches(s) ? r.concat(e) : r.concat(e.allfd(s));
+    }, []);
+}
+HTMLElement.prototype.all = function(s) {
+    return Array.from(this.querySelectorAll(s));
+}
+HTMLElement.prototype.allfd = function(s) {
+    return Array.from(this.children)
+        .filter(e => e instanceof HTMLElement)
+        .reduce((r, e) => {
+            return e.matches(s) ? r.concat(e) : r.concat(e.allfd(s));
+        }, []);
+}
+HTMLElement.prototype.attr = function(a, v) {
+    if (v === undefined) {
+        return this.getAttribute(a);
+    }
+    else if (v === null || v === false) {
+        this.removeAttribute(a);
+        return this;
+    } else {
+        this.setAttribute(a, v);
+        return this;
+    }
+}
+HTMLElement.prototype.attrt = function(a, v1, v2) {
+    this.attr(a, this.attr(a) === v1 ? v2 : v1);
+    return this;
+}
+HTMLElement.prototype.attrs = function(prefix, values) {
+    if (values === undefined) {
+        const pre = prefix === undefined ? '' : prefix + '-';
+        const out = {};
+        for (const a of this.attributes) {
+            if (a.name.startsWith(pre)) out[a.name.slice(pre.length)] = a.value;
+        }
+        return out;
+    }
+    const pre = prefix + '-';
+    Object.entries(values).each(([k, v]) => this.setAttribute(pre + k, v));
+    return this;
+}
+HTMLElement.prototype.clear = function() {
+    this.innerHTML = '';
+    return this;
+}
+HTMLElement.prototype.cls = function() {
+    return this.classList;
+}
+HTMLElement.prototype.flag = function(f, v = null) {
+    if (v === null) {
+        return this.hasAttribute(f);
+    }
+    v === true ? this.setAttribute(f, '') : this.removeAttribute(f);
+    return this;
+}
+HTMLElement.prototype.hide = function(v = true) {
+    this.style.display = v === true ? 'none' : '';
+    return this;
+}
+HTMLElement.prototype.one = function(s) {
+    return this.querySelector(s);
+}
+HTMLElement.prototype.tpl = function() {
+    return this.content.firstElementChild.cloneNode(true);
+}
+HTMLElement.prototype.run = function(attr) {
+    const code = this.getAttribute(attr);
+    if (!code) return;
+    const val = new Function('return (' + code + ')').call(this);
+    return typeof val === 'function' ? val.call(this) : val;
+}
+HTMLElement.prototype.show = function(v = true) {
+    this.style.display = v === true ? '' : 'none';
+    return this;
+}
+HTMLElement.prototype.up = function(s) {
+    if (s === undefined) {
+        return this.parentNode;
+    }
+    if (this.matches(s)) {
+        return this;
+    }
+    let node = this.closest(s);
+    if (node) {
+        return node;
+    }
+    return document.body;
+}
+KeyboardEvent.prototype.combo = function(combo) {
+    return `${this.altKey ? 'Alt+' : ''}${this.ctrlKey ? 'Ctrl+' : ''}${this.metaKey ? 'Meta+' : ''}${this.shiftKey ? 'Shift+' : ''}${this.key}` === combo;
+};
+String.prototype.cut = function(length) {
+    return this.length > length ? this.substring(0, length) + '...' : this;
+};
+</script>
+<style>
+[dropdown-space]{display:contents;anchor-scope:--dd}
+[dropdown-trigger]{anchor-name:--dd}
+[dropdown-menu]{position:fixed;inset:auto;position-anchor:--dd;position-area:bottom span-right;position-try-fallbacks:flip-block,flip-inline,flip-block flip-inline}
+[dropdown-menu="bottom-end"]{position-area:bottom span-left}
+[dropdown-menu="top"]{position-area:top span-right}
+[dropdown-menu="top-end"]{position-area:top span-left}
+[dropdown-menu="right"]{position-area:right span-bottom}
+[dropdown-menu="left"]{position-area:left span-bottom}
+</style>
+<script>
+const Dropdown = (() => {
+    const menu = (ctx) => ctx.closest('[dropdown-space]').querySelector('[dropdown-menu]');
+
+    const fire = (m) => {
+        const space = m.closest('[dropdown-space]');
+        const code = space.getAttribute(m.matches(':popover-open') ? 'dropdown-onopen' : 'dropdown-onclose');
+        if (!code) {
+            return;
+        }
+        const value = new Function('return (' + code + ')').call(space);
+        if (typeof value === 'function') {
+            value.call(space);
+        }
+    };
+
+    const close = (m) => {
+        m.hidePopover();
+        fire(m);
+    };
+
+    const open = (m) => {
+        m.setAttribute('tabindex', '-1');
+        m.showPopover();
+        fire(m);
+    };
+
+    const Toggle = (btn) => {
+        const m = menu(btn);
+        m.matches(':popover-open') ? close(m) : open(m);
+    };
+
+    const Open = (btn) => {
+        const m = menu(btn);
+        if (!m.matches(':popover-open')) {
+            open(m);
+        }
+    };
+
+    const Close = (ctx) => {
+        const m = menu(ctx);
+        if (m.matches(':popover-open')) {
+            close(m);
+        }
+    };
+
+    const unpinned = () => Array.from(document.querySelectorAll('[dropdown-menu]:popover-open'))
+        .filter(m => !m.hasAttribute('dropdown-pin'));
+
+    const Down = (e) => {
+        unpinned().forEach(m => {
+            if (!m.closest('[dropdown-space]').contains(e.target)) {
+                close(m);
+            }
+        });
+    };
+
+    const Out = (e) => {
+        if (!e.relatedTarget) {
+            return;
+        }
+        unpinned().forEach(m => {
+            if (!m.closest('[dropdown-space]').contains(e.relatedTarget)) {
+                close(m);
+            }
+        });
+    };
+
+    const Esc = (e) => {
+        if (e.key === 'Escape') {
+            unpinned().forEach(close);
+        }
+    };
+
+    return { Toggle, Open, Close, Down, Out, Esc };
+})();
+</script>
+<style>
+.demo button[dropdown-trigger],.demo input[dropdown-trigger]{
+  background:var(--code-bg);border:1px solid var(--line);border-radius:var(--r-sm);
+  color:var(--ink);font:inherit;padding:.5rem .85rem;cursor:pointer;outline:none;transition:border-color .12s ease;
+}
+.demo input[dropdown-trigger]{cursor:text;width:12rem}
+.demo button[dropdown-trigger]:hover{border-color:var(--sub)}
+.demo input[dropdown-trigger]:focus{border-color:var(--accent)}
+
+.demo [dropdown-menu]{
+  margin:.3rem 0;min-width:11rem;padding:.35rem;background:var(--soft);border:1px solid var(--line);
+  border-radius:var(--r-sm);box-shadow:0 14px 36px rgba(0,0,0,.5);
+}
+.demo [dropdown-menu] a{display:block;padding:.45rem .65rem;border-radius:var(--r-sm);
+  color:var(--ink);text-decoration:none}
+.demo [dropdown-menu] a:hover{background:var(--line)}
+.demo [dropdown-menu] p{margin:.2rem .65rem .45rem;font-size:.8rem;color:var(--muted)}
+.demo [dropdown-menu] button{display:block;width:100%;background:var(--code-bg);border:1px solid var(--line);
+  border-radius:var(--r-sm);color:var(--ink);font:inherit;font-size:.85rem;padding:.4rem .65rem;cursor:pointer}
+.demo [dropdown-menu] button:hover{border-color:var(--sub)}
+</style>
+<script>
+document.body.setAttribute('onpointerdown', 'Dropdown.Down(event)');
+document.body.setAttribute('onfocusout', 'Dropdown.Out(event)');
+document.body.setAttribute('onkeydown', 'Dropdown.Esc(event)');
+</script>
+<div class="demo">
+<div dropdown-space>
+    <button dropdown-trigger onclick="Dropdown.Toggle(this)">Options</button>
+    <div dropdown-menu popover="manual">
+        <a href="#">Rename</a>
+        <a href="#">Duplicate</a>
+        <a href="#">Delete</a>
+    </div>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-space</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">dropdown-trigger</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Dropdown.Toggle(this)"</span>&gt;</span>Options<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-menu</span> <span class="hljs-attr">popover</span>=<span class="hljs-string">"manual"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>Rename<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>Duplicate<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>Delete<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="closing">Closing<a class="anchor" href="#closing" aria-hidden="true">#</a></h2>
+<p>A dropdown closes when the user clicks elsewhere, moves focus elsewhere, or hits Escape. That part is wired once per page: three attributes on <code>body</code>. This is the only setup the toolkit needs — without it the panels open but never close on their own.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">onpointerdown</span>=<span class="hljs-string">"Dropdown.Down(event)"</span>
+      <span class="hljs-attr">onfocusout</span>=<span class="hljs-string">"Dropdown.Out(event)"</span>
+      <span class="hljs-attr">onkeydown</span>=<span class="hljs-string">"Dropdown.Esc(event)"</span>&gt;</span></code></pre>
+<p>This page runs them — the demo above closes on any click elsewhere, and on Escape.</p>
+<h2 id="opening-on-focus">Opening on focus<a class="anchor" href="#opening-on-focus" aria-hidden="true">#</a></h2>
+<p>An input opens its panel when the user enters it — by click, by Tab, or by a shortcut that calls <code>focus()</code>. The trigger calls <code>Dropdown.Open(this)</code> instead of <code>Toggle</code>. <code>Open</code> does nothing when the panel is already open, because arriving at the input should never close it.</p>
+<div class="demo">
+<div dropdown-space>
+    <input dropdown-trigger type="search" placeholder="Search" onfocus="Dropdown.Open(this)">
+    <div dropdown-menu popover="manual">
+        <a href="#">Recently viewed</a>
+        <a href="#">Suggested for you</a>
+    </div>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-space</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">dropdown-trigger</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"search"</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">"Search"</span> <span class="hljs-attr">onfocus</span>=<span class="hljs-string">"Dropdown.Open(this)"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-menu</span> <span class="hljs-attr">popover</span>=<span class="hljs-string">"manual"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>Recently viewed<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>Suggested for you<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<h2 id="reacting-to-open">Reacting to open<a class="anchor" href="#reacting-to-open" aria-hidden="true">#</a></h2>
+<p>The instance can declare what should happen when it opens. <code>dropdown-onopen</code> sits on the space — the root of the component, where behavior of the whole widget belongs — and is evaluated with <code>this</code> = the space each time the panel opens; <code>dropdown-onclose</code> mirrors it. From the space the callback finds what it needs by attribute. Here it stamps the time into <code>[report-generated]</code>:</p>
+<div class="demo">
+<div dropdown-space
+     dropdown-onopen="() => this.one('[report-generated]').textContent = 'Generated at ' + new Date().toLocaleTimeString()">
+    <button dropdown-trigger onclick="Dropdown.Toggle(this)">Report</button>
+    <div dropdown-menu popover="manual">
+        <p report-generated>…</p>
+        <a href="#">Download</a>
+    </div>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-space</span>
+     <span class="hljs-attr">dropdown-onopen</span>=<span class="hljs-string">"() =&gt; this.one('[report-generated]').textContent = 'Generated at ' + new Date().toLocaleTimeString()"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">dropdown-trigger</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Dropdown.Toggle(this)"</span>&gt;</span>Report<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-menu</span> <span class="hljs-attr">popover</span>=<span class="hljs-string">"manual"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">report-generated</span>&gt;</span>…<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>Download<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>With <a href="hx.html">Hx</a> the same attribute gives lazy content — a panel that loads itself at the moment it opens:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-space</span> <span class="hljs-attr">dropdown-onopen</span>=<span class="hljs-string">"() =&gt; hx(this.one('[dropdown-menu]'))"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">dropdown-trigger</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Dropdown.Toggle(this)"</span>&gt;</span>Notifications<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-menu</span> <span class="hljs-attr">popover</span>=<span class="hljs-string">"manual"</span>
+         <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/fragments/notifications.html"</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"this"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Loading…<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>The dropdown never heard of Hx. Hx never heard of dropdowns. One attribute on the space connects them.</p>
+<h2 id="pinned-open">Pinned open<a class="anchor" href="#pinned-open" aria-hidden="true">#</a></h2>
+<p>Sometimes a panel should stay until it is closed on purpose. The <code>dropdown-pin</code> flag takes it out of the routers' jurisdiction: clicks outside, focus leaving, Escape — none of them touch it. It closes only through <code>Dropdown.Close(this)</code> on an explicit button, or another click on its trigger.</p>
+<div class="demo">
+<div dropdown-space>
+    <button dropdown-trigger onclick="Dropdown.Toggle(this)">Pinned panel</button>
+    <div dropdown-menu popover="manual" dropdown-pin>
+        <p>Clicks outside do not close me.</p>
+        <button onclick="Dropdown.Close(this)">Close</button>
+    </div>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-space</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">dropdown-trigger</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Dropdown.Toggle(this)"</span>&gt;</span>Pinned panel<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-menu</span> <span class="hljs-attr">popover</span>=<span class="hljs-string">"manual"</span> <span class="hljs-attr">dropdown-pin</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Clicks outside do not close me.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Dropdown.Close(this)"</span>&gt;</span>Close<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>The flag is a plain attribute, so it can also be set at runtime — a panel the user pins stops auto-closing.</p>
+<h2 id="position">Position<a class="anchor" href="#position" aria-hidden="true">#</a></h2>
+<p>By default the panel opens under the trigger, left edges aligned. The value of <code>dropdown-menu</code> names a preferred place instead: <code>bottom-end</code>, <code>top</code>, <code>top-end</code>, <code>right</code>, <code>left</code>.</p>
+<div class="demo">
+<div dropdown-space>
+    <button dropdown-trigger onclick="Dropdown.Toggle(this)">Drop-up</button>
+    <div dropdown-menu="top" popover="manual">
+        <a href="#">Opens above</a>
+        <a href="#">Second entry</a>
+    </div>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-space</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">dropdown-trigger</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Dropdown.Toggle(this)"</span>&gt;</span>Drop-up<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-menu</span>=<span class="hljs-string">"top"</span> <span class="hljs-attr">popover</span>=<span class="hljs-string">"manual"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>Opens above<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>Second entry<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>The preference is a preference, not a promise. When there is no room — a trigger at the bottom of the page, a flyout at the right edge — the browser flips the panel to the other side on its own (<code>position-try-fallbacks</code> in the toolkit's CSS). A dropdown in a footer becomes a drop-up without anyone asking.</p>
+<h2 id="use">Use<a class="anchor" href="#use" aria-hidden="true">#</a></h2>
+<p>Dropdown fits anything that opens next to its trigger and goes away: menus, pickers, notification panels, search suggestions, sidebar flyouts. A flow that must be completed or cancelled is a different job — that is a <a href="modal.html">Modal</a>, which blocks the page behind it. A dropdown never blocks; the page stays live.</p>
+<h2 id="mechanism">Mechanism<a class="anchor" href="#mechanism" aria-hidden="true">#</a></h2>
+<p>The module resolves the panel from the trigger by structure: up to the space, down to the panel. Opening is <code>showPopover()</code>, closing is <code>hidePopover()</code>, and each evaluates the space's <code>dropdown-onopen</code> or <code>dropdown-onclose</code>. On open the panel gets <code>tabindex=&quot;-1&quot;</code>, so a click inside it keeps focus within the space.</p>
+<p>Many instances share one page without touching each other. Every panel positions against the same anchor name, <code>--dd</code>, and <code>anchor-scope</code> on the space closes that name inside the instance — no ids, no generated names.</p>
+<p>Closing is the module's on purpose. The browser's own light-dismiss (<code>popover</code> without a value) breaks a dropdown that opens on <code>focus</code>: the click that gives the input focus opens the popover, and the click phase of the same click counts as &quot;outside&quot; and dismisses it. <code>Down</code> closes every open panel whose space does not contain the clicked element; <code>Out</code> does the same check when focus lands on an element outside, and ignores a <code>focusout</code> with no destination — focus that just evaporated is an artifact, for example a drag-and-drop library re-inserting the dragged element, not a user leaving.</p>
+<p>CSS anchor positioning ships in Chrome and Edge; elsewhere the panel still opens in the top layer, but ignores its anchor.</p>
+<p class="doc-next"><a href="filter.html">Next: Filter →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

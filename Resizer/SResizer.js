@@ -6,10 +6,10 @@
                 return;
             }
             const num = (v, fallback) => (v !== null && Number.isFinite(Number(v)) ? Number(v) : fallback);
-            const varName = this.getAttribute('resizer-var') || '--panel-w';
-            const store = this.getAttribute('resizer-store');
-            const min = num(this.getAttribute('resizer-min'), 240);
-            const max = num(this.getAttribute('resizer-max'), 640);
+            const varName = this.getAttribute('var') || '--panel-w';
+            const store = this.getAttribute('store');
+            const min = num(this.getAttribute('min'), 240);
+            const max = num(this.getAttribute('max'), 640);
             const clamp = w => Math.max(min, Math.min(max, w));
             const read = () => {
                 const v = parseFloat(getComputedStyle(scope).getPropertyValue(varName));

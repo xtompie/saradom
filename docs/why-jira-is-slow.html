@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<title>Why is Jira so slow? · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:title" content="Why is Jira so slow?">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="compute.html">Compute</a><a href="dropdown.html">Dropdown</a><a href="filter.html">Filter</a><a href="hx.html">Hx</a><a href="modal.html">Modal</a><a href="notify.html">Notify</a><a href="switch.html">Switch</a><a href="util.html">Util</a><a href="val.html">Val</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="why-is-jira-so-slow">Why is Jira so slow?<a class="anchor" href="#why-is-jira-so-slow" aria-hidden="true">#</a></h1>
+<p>The Jira issue page is a <a href="https://react.dev/">React</a> single page application. Showing one issue takes <strong>about 700 MB of RAM in Chrome</strong> and 15.6 MB of transfer in 239 network requests. The weight is not the issue, it is the way the page is built: of its 9,810 React components, 54% are wrapping, not content: context providers, error boundaries, analytics, render profiling. Measured on a live Jira Cloud instance, July 2026.</p>
+<p>This demo is the same page with the same interactions, in plain HTML and JavaScript on the Saradom pattern: inline editing, dropdowns, subtasks, comments, search, notifications, drag and drop. Everything ships as one HTML file, one CSS file, one JavaScript file. Demo: <a href="jira/">the page</a>. Source: <a href="https://github.com/xtompie/saradom/tree/main/jira">jira/ in the repository</a>.</p>
+<p>The article walks the page mechanism by mechanism. It is a developer article, not a guide to tuning a Jira instance.</p>
+<h2 id="one-global">One global<a class="anchor" href="#one-global" aria-hidden="true">#</a></h2>
+<p>The app has one global variable.</p>
+<pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> App = {};
+App.Ui = {};
+<span class="hljs-built_in">window</span>.App = App;</code></pre>
+<p>Each module is one file. It attaches itself: <code>App.Ui.Hx = (() =&gt; { ... })();</code>. Generic modules use attributes with the <code>ui-</code> prefix: <code>ui-dropdown-space</code>, <code>ui-pin-name</code>, <code>ui-shortcut-c</code>. Domain modules use their own name as the prefix: <code>subtask-</code>, <code>notif-</code>, <code>field-</code>.</p>
+<p>SortableJS is the one outside library. It sets <code>window.Sortable</code> when it loads. The next script claims it, the way described in <a href="the-simple-way.html">The simple way</a>:</p>
+<pre><code class="hljs language-javascript">App.Ui.Sortable = Sortable;
+<span class="hljs-keyword">delete</span> <span class="hljs-built_in">window</span>.Sortable;</code></pre>
+<p>After that line the library is part of <code>App</code> and <code>window</code> is clean again.</p>
+<h2 id="collapse">Collapse<a class="anchor" href="#collapse" aria-hidden="true">#</a></h2>
+<p>The button in the top bar collapses the sidebar. The two do not know each other. The button announces a name. The layout element listens for that name.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sidebar-toggle</span>=<span class="hljs-string">"() =&gt; this.flag('sidebar-off', !this.flag('sidebar-off'))"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">nav</span> <span class="hljs-attr">sidebar-nav</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">nav</span>&gt;</span>
+  ...
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.nall('sidebar-toggle')"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<pre><code class="hljs language-css"><span class="hljs-selector-attr">[sidebar-toggle]</span>{<span class="hljs-attribute">display</span>:grid;<span class="hljs-attribute">grid-template-columns</span>:<span class="hljs-number">300px</span> <span class="hljs-number">1</span>fr}
+<span class="hljs-selector-attr">[sidebar-toggle]</span><span class="hljs-selector-attr">[sidebar-off]</span>{<span class="hljs-attribute">grid-template-columns</span>:<span class="hljs-number">1</span>fr}
+<span class="hljs-selector-attr">[sidebar-toggle]</span><span class="hljs-selector-attr">[sidebar-off]</span> <span class="hljs-selector-attr">[sidebar-nav]</span>{<span class="hljs-attribute">display</span>:none}</code></pre>
+<p><code>nall(name)</code> finds every element with an attribute called <code>name</code> and runs its value as a callback, with <code>this</code> set to that element. This is the <a href="notify.html">Notify</a> toolkit. The <code>sidebar-toggle</code> attribute is the listener. The <code>sidebar-off</code> attribute is the state. CSS reads the state. There is no class toggling and no listener registration.</p>
+<h2 id="fragments">Fragments<a class="anchor" href="#fragments" aria-hidden="true">#</a></h2>
+<p>Parts of the page come from the server as HTML fragments. The <a href="hx.html">Hx</a> toolkit reads htmx-style attributes: a method attribute with a URL, <code>hx-target</code> for where the response goes, <code>hx-swap</code> for how. <code>App.Ui.Hx(this)</code> triggers the request. The Development card loads its body on first open:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">details</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"pdetails"</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"fragments/development.html"</span>
+         <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"find .pcard-body"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"innerHTML"</span>
+         <span class="hljs-attr">ontoggle</span>=<span class="hljs-string">"this.open &amp;&amp; App.Ui.Hx(this)"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">summary</span>&gt;</span>Development<span class="hljs-tag">&lt;/<span class="hljs-name">summary</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"pcard-body"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Loading…<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">details</span>&gt;</span></code></pre>
+<p>The open and close behavior is the native <code>&lt;details&gt;</code> element. The <code>ontoggle</code> attribute is its native event. One line of attributes adds the lazy load.</p>
+<p>Hx attributes inherit. The element that triggers a request may not carry the method itself. Hx walks up through <code>closest</code> and takes the first method it finds. When one ancestor has <code>hx-get</code> and another has <code>hx-post</code>, GET wins. This bites inside lazily loaded menus: the menu carries <code>hx-get</code> for its own content, and a POST button inside it would inherit that GET. The button covers the inherited attribute with an empty one:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">notif</span> <span class="hljs-attr">hx-get</span>=<span class="hljs-string">""</span> <span class="hljs-attr">hx-post</span>=<span class="hljs-string">"fragments/notif-read.html"</span>
+        <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"closest [notif] [notif-state]"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"outerHTML"</span>
+        <span class="hljs-attr">onclick</span>=<span class="hljs-string">"App.Ui.Hx(this)"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p><code>hx-get=&quot;&quot;</code> is a shadow. It stops the walk before the ancestor and lets the button's own POST through.</p>
+<h2 id="dropdown">Dropdown<a class="anchor" href="#dropdown" aria-hidden="true">#</a></h2>
+<p>Every menu on the page is the <a href="dropdown.html">Dropdown</a> toolkit: a <code>ui-dropdown-space</code> wrapper, a trigger, and a menu that is a native <a href="https://developer.mozilla.org/en-US/docs/Web/API/Popover_API">popover</a>. Position comes from CSS anchors, scoped per instance, so no element needs an <code>id</code>. The app switcher also loads its content on open:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">ui-dropdown-space</span> <span class="hljs-attr">ui-dropdown-onopen</span>=<span class="hljs-string">"() =&gt; App.Ui.Hx(this.one('[ui-dropdown-menu]'))"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">ui-dropdown-trigger</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"App.Ui.Dropdown.Toggle(this)"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">ui-dropdown-menu</span> <span class="hljs-attr">popover</span>=<span class="hljs-string">"manual"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"menu menu-start menu-apps"</span>
+       <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"fragments/app-switcher.html"</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"this"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"innerHTML"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"menu-empty"</span>&gt;</span>Loading…<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>Dropdown fires <code>ui-dropdown-onopen</code> and does not know what is attached to it. Hx exposes one function and does not know who calls it. The space declares the connection in one attribute.</p>
+<p>Menus open on click with <code>Toggle</code>, or on focus with <code>Open</code>. The search field uses <code>Open</code>, so focusing the input opens the panel. Closing is routed once, on <code>body</code>:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">onkeydown</span>=<span class="hljs-string">"App.Ui.Shortcut.Route(this, event); App.Ui.Dropdown.Esc(event)"</span>
+      <span class="hljs-attr">onpointerdown</span>=<span class="hljs-string">"App.Ui.Dropdown.Down(event)"</span>
+      <span class="hljs-attr">onfocusout</span>=<span class="hljs-string">"App.Ui.Dropdown.Out(event)"</span>&gt;</span></code></pre>
+<p>A click outside the space closes the menu. Tabbing out closes it. Escape closes it. The menu position is the attribute value: <code>ui-dropdown-menu=&quot;bottom-end&quot;</code>, with CSS fallbacks that flip it when there is no room.</p>
+<h2 id="notifications">Notifications<a class="anchor" href="#notifications" aria-hidden="true">#</a></h2>
+<p>The bell shows an unread count. The panel loads through Hx. Clicking a notification POSTs, and the server response updates the count by itself.</p>
+<p>The bell:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">ui-dropdown-trigger</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"App.Ui.Dropdown.Toggle(this)"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">svg</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ic"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">use</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#i-bell"</span>/&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">svg</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"badge"</span> <span class="hljs-attr">notif-total</span>=<span class="hljs-string">"3"</span>
+        <span class="hljs-attr">notif-count</span>=<span class="hljs-string">"(n) =&gt; { const c = Number(n); this.textContent = c; this.attr('notif-total', c); this.hide(!c); }"</span>&gt;</span>3<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p>The server response to the POST is the read dot plus one line of behavior:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"notif-dot"</span> <span class="hljs-attr">notif-state</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">s-init</span> <span class="hljs-attr">run</span>=<span class="hljs-string">"() =&gt; this.nall('notif-count', document.al('[notif-unread]').length)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">s-init</span>&gt;</span></code></pre>
+<p><code>s-init</code> runs its callback at the place it is inserted. Here it counts the remaining unread dots and announces the number. Two elements listen on <code>notif-count</code>: the badge at the bell and the &quot;N unread&quot; line in the panel. The server does not know the badge. The badge does not know the panel. The response carries one sentence: the unread count is N.</p>
+<p>The panel itself is two files, named by state: <code>notifications-unread.html</code> and <code>notifications-read.html</code>. On open, the <code>notif-total</code> attribute at the bell picks which one loads. The panel arrives in the right state. Nothing is patched after loading. &quot;Mark all as read&quot; POSTs and gets the whole read-state panel back, which announces <code>notif-count</code> 0 on arrival.</p>
+<h2 id="sortable">Sortable<a class="anchor" href="#sortable" aria-hidden="true">#</a></h2>
+<p><code>&lt;s-sortable&gt;</code> is a custom element that wraps SortableJS. The app switcher list from the previous section is one:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"apps-list"</span> <span class="hljs-attr">handle</span>=<span class="hljs-string">"[app-grip]"</span> <span class="hljs-attr">store</span>=<span class="hljs-string">"app-switcher"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"menu-item app-item"</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"jira"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"menu-item app-item"</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"confluence"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"menu-item app-item"</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"bitbucket"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"menu-item app-item"</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"trello"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"#"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">s-init</span> <span class="hljs-attr">run</span>=<span class="hljs-string">"(el) =&gt; el.restore()"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">s-init</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span></code></pre>
+<p>When a drag ends, the element collects <code>sort-item</code> names in DOM order and saves the array to <code>localStorage</code> under the <code>store</code> key. <code>restore()</code> reorders the children from that array. The <code>s-init</code> as last child calls it during parsing, before the page renders further, so there is no flicker and no <code>DOMContentLoaded</code> handler. The list above arrives inside an Hx fragment. Custom elements upgrade on insertion, so it works without any wiring.</p>
+<p>On the element's own tag the attributes are bare: <code>handle</code>, <code>store</code>. On other elements they carry the module prefix: <code>sort-item</code>. The tag itself is the scope.</p>
+<h2 id="search">Search<a class="anchor" href="#search" aria-hidden="true">#</a></h2>
+<p>The search panel is a large widget with no new mechanism in it. The input opens the panel through <code>Dropdown.Open</code> on focus. The Jira and Home tabs are the <a href="switch.html">Switch</a> toolkit. The recent list filters as it is typed into, with the <a href="filter.html">Filter</a> toolkit. Typing in the main input POSTs to the results fragment. The filter sidebar collects its checked values in <code>hx-vals-body</code> and reloads the same fragment. A big widget is the same attributes as a small one, more times.</p>
+<h2 id="modal">Modal<a class="anchor" href="#modal" aria-hidden="true">#</a></h2>
+<p>Create and Delete are separate pages: <code>create.html</code>, <code>delete.html</code>. Each works as a page on its own. The <a href="modal.html">Modal</a> toolkit opens one in a fullscreen dialog with an iframe:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"App.Ui.Modal.Open('create.html', (r) =&gt; r &amp;&amp; this.nall('ui-toast', r.key + ' created'))"</span>&gt;</span>
+  Create
+<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p>The page inside ends itself with <code>Modal.Result(data)</code> or <code>Modal.Cancel()</code>. The dialog closes and the callback gets the result, or <code>null</code>. The two pages do not know each other. Here the callback announces <code>ui-toast</code> through Notify, and the toast element shows it for three seconds. The dialog calls <code>showModal()</code> only after the iframe has loaded, so a fast page appears in one paint with its content ready.</p>
+<h2 id="editing">Editing<a class="anchor" href="#editing" aria-hidden="true">#</a></h2>
+<p>The issue title is edited in place. There is no inline edit component. There is a pair of fragments that call each other: <code>title-show.html</code> and <code>title-edit.html</code>.</p>
+<p>The show side. A click POSTs the current text and gets the editor back:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"edit-view"</span> <span class="hljs-attr">hx-post</span>=<span class="hljs-string">"fragments/title-edit.html"</span> <span class="hljs-attr">hx-fill</span>
+      <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"this"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"outerHTML"</span>
+      <span class="hljs-attr">hx-vals-body</span>=<span class="hljs-string">"() =&gt; ({ value: this.textContent.trim() })"</span>
+      <span class="hljs-attr">onclick</span>=<span class="hljs-string">"App.Ui.Hx(this, event)"</span>&gt;</span>{{value}}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></code></pre>
+<p>The edit side. Enter, blur, or the confirm button POSTs the input value and gets the show side back:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"edit-wrap"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"edit-input"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"{{value}}"</span>
+         <span class="hljs-attr">hx-post</span>=<span class="hljs-string">"fragments/title-show.html"</span> <span class="hljs-attr">hx-fill</span>
+         <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"closest .edit-wrap"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"outerHTML"</span>
+         <span class="hljs-attr">hx-vals-body</span>=<span class="hljs-string">"() =&gt; ({ value: this.value.trim() || '{{value}}' })"</span>
+         <span class="hljs-attr">onblur</span>=<span class="hljs-string">"App.Ui.Hx(this, event)"</span> <span class="hljs-attr">onkeydown</span>=<span class="hljs-string">"..."</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"edit-ctrls"</span> <span class="hljs-attr">onmousedown</span>=<span class="hljs-string">"event.preventDefault()"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">s-init</span> <span class="hljs-attr">run</span>=<span class="hljs-string">"() =&gt; { const i = this.one('input'); i.focus(); i.select &amp;&amp; i.select(); }"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">s-init</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></code></pre>
+<p>The state travels in the POST parameters. Show sends its <code>textContent</code>. Edit sends its input value. The DOM is the source of truth. The <code>s-init</code> in the response focuses and selects the input at the moment it appears. Escape has no logic of its own: it clicks the Cancel button, so there is one cancel path. The <code>onmousedown</code> on the controls prevents the input's blur from saving first.</p>
+<p>Each editable thing is its own pair, named after itself: <code>field-show</code> and <code>field-edit</code> for the Details fields, <code>field-labels</code> and <code>field-labels-edit</code> for labels, <code>description-view</code> and <code>description-edit</code>, <code>comment-view</code> and <code>comment-edit</code>. A new editable place is a new pair of HTML files. No new JavaScript.</p>
+<p>On this static demo, <code>hx-fill</code> substitutes the <code>{{value}}</code> placeholders from the POST body in the browser. It stands in for a backend, so the demo runs on GitHub Pages. It is not part of the pattern.</p>
+<h2 id="subtasks">Subtasks<a class="anchor" href="#subtasks" aria-hidden="true">#</a></h2>
+<p>The subtask table is a grid with <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid">subgrid</a> rows. Header and rows share one set of columns without a <code>&lt;table&gt;</code>:</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.subs</span>{<span class="hljs-attribute">display</span>:grid;<span class="hljs-attribute">grid-template-columns</span>:auto auto <span class="hljs-built_in">minmax</span>(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>fr) auto auto auto auto}
+<span class="hljs-selector-class">.subs-head</span>, <span class="hljs-selector-class">.subs-body</span>, <span class="hljs-selector-class">.sub</span>{<span class="hljs-attribute">display</span>:grid;<span class="hljs-attribute">grid-template-columns</span>:subgrid;<span class="hljs-attribute">grid-column</span>:<span class="hljs-number">1</span>/-<span class="hljs-number">1</span>}</code></pre>
+<p>The rows sit in an <code>&lt;s-sortable&gt;</code>, so they drag by their grip. The header sits outside it and stays aligned through the subgrid.</p>
+<p>Status and assignee are Dropdown plus Hx. Each option carries its own payload:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"menu-item"</span> <span class="hljs-attr">hx-post</span>=<span class="hljs-string">"fragments/subtask-status.html"</span> <span class="hljs-attr">hx-fill</span>
+        <span class="hljs-attr">hx-vals-body</span>=<span class="hljs-string">"() =&gt; ({ status: 'In Progress', cls: 'is-progress' })"</span>
+        <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"closest [ui-dropdown-space] [subtask-status]"</span> <span class="hljs-attr">hx-swap</span>=<span class="hljs-string">"outerHTML"</span>
+        <span class="hljs-attr">onclick</span>=<span class="hljs-string">"this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p>The option is self-contained. There is no dictionary in JavaScript mapping option names to values.</p>
+<p>The progress bar computes itself. <code>&lt;s-compute&gt;</code> is the <a href="compute.html">Compute</a> toolkit: a MutationObserver under its subtree, one batched recalculation per change:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-compute</span> <span class="hljs-attr">run</span>=<span class="hljs-string">"() =&gt; {
+  const rows = this.all('[subtask]');
+  const done = rows.filter(r =&gt; r.one('[subtask-status]').textContent.trim() === 'Done').length;
+  this.one('[subtask-count]').textContent = Math.round(done / rows.length * 100 || 0) + '% Done';
+  ... }"</span>&gt;</span></code></pre>
+<p>Changing a status, adding a row, or deleting a row updates the bar. Nothing calls a recalculation. The strike-through on a done subtask is CSS reading state:</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.sub</span><span class="hljs-selector-pseudo">:has(</span><span class="hljs-selector-attr">[subtask-status]</span><span class="hljs-selector-class">.is-done</span>) <span class="hljs-selector-class">.sub-title</span>{<span class="hljs-attribute">text-decoration</span>:line-through}</code></pre>
+<h2 id="activity">Activity<a class="anchor" href="#activity" aria-hidden="true">#</a></h2>
+<p>The All, Comments, History, and Work log tabs are Switch. A target can carry several tags, so &quot;All&quot; is not a special case:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"radio"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"show"</span>
+  <span class="hljs-attr">onchange</span>=<span class="hljs-string">"App.Ui.Switch.To(this, '[ui-switch-space]', 'comment history worklog')"</span>&gt;</span>All<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"radio"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"show"</span> <span class="hljs-attr">checked</span>
+  <span class="hljs-attr">onchange</span>=<span class="hljs-string">"App.Ui.Switch.To(this, '[ui-switch-space]', 'comment')"</span>&gt;</span>Comments<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span></code></pre>
+<p>&quot;Newest first&quot; does not reorder the DOM. It flips one attribute value, and CSS reverses the rendering:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"const s = this.up('[ui-switch-space]'); s.attrt('activity-order','new','old'); ..."</span>&gt;</span></code></pre>
+<pre><code class="hljs language-css"><span class="hljs-selector-attr">[ui-switch-space]</span><span class="hljs-selector-attr">[activity-order=<span class="hljs-string">"new"</span>]</span> <span class="hljs-selector-class">.feed</span>{<span class="hljs-attribute">display</span>:flex;<span class="hljs-attribute">flex-direction</span>:column-reverse}</code></pre>
+<p>The 👍 reaction on a comment is a hidden checkbox exchanged between two state fragments. <code>comment-unliked.html</code> holds an unchecked box that POSTs for the liked one. <code>comment-liked.html</code> holds a checked box that POSTs for the unliked one. The like state is which fragment is in the DOM. An <code>&lt;s-compute&gt;</code> over the feed adds the checked boxes to the base counts.</p>
+<h2 id="pin">Pin<a class="anchor" href="#pin" aria-hidden="true">#</a></h2>
+<p>Pin is one of the three modules written for this page. The Details panel pins fields to a shelf at the top, and the shelf is sortable. The design is four attributes and one storage key.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">ui-pin-space</span> <span class="hljs-attr">ui-pin-store</span>=<span class="hljs-string">"detail-properties"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"pinned"</span> <span class="hljs-attr">ui-pin-target</span> <span class="hljs-attr">store</span>=<span class="hljs-string">"detail-properties"</span> <span class="hljs-attr">handle</span>=<span class="hljs-string">"[field-grip]"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span>
+  ...
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">ui-pin-slot</span>=<span class="hljs-string">"due"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"field"</span> <span class="hljs-attr">field-name</span>=<span class="hljs-string">"due"</span> <span class="hljs-attr">ui-pin-name</span>=<span class="hljs-string">"due"</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"due"</span>&gt;</span>
+      ... <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"pin"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"App.Ui.Pin.Toggle(this)"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">App.Ui.Pin.Init(<span class="hljs-built_in">document</span>.currentScript)</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p><code>ui-pin-name</code> is the identity of a pinnable thing. <code>ui-pin-slot</code> is its home: the place it returns to when unpinned. <code>ui-pin-target</code> is the shelf. <code>ui-pin-store</code> is the storage key on the scope. <code>Toggle</code> moves the element between its slot and the shelf and saves the list of pinned names.</p>
+<p>The store is one ordered array of names. Membership and order are the same fact: which names are in the array, and in what order. Splitting them into two keys would mean two sources that can disagree.</p>
+<p>The shelf is also an <code>&lt;s-sortable&gt;</code> with the same store key. Dragging a pinned field writes the same array that pinning writes. The field carries three attributes with equal values: <code>ui-pin-name=&quot;due&quot;</code>, <code>sort-item=&quot;due&quot;</code>, <code>field-name=&quot;due&quot;</code>. Each module reads only its own attribute. The modules cooperate through equal values and a shared key. Neither has a reference to the other, and neither reads the other's attributes.</p>
+<p><code>Pin.Init(document.currentScript)</code> restores the pinned state in place, during parsing, the same way <code>s-init</code> and <code>restore()</code> work elsewhere on the page.</p>
+<h2 id="copy">Copy<a class="anchor" href="#copy" aria-hidden="true">#</a></h2>
+<p>Copy puts a value on the clipboard. Two attributes:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">ui-copy-space</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">ui-copy</span>=<span class="hljs-string">"https://example.atlassian.net/browse/SCRUM-1"</span>&gt;</span>SCRUM-1<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"App.Ui.Copy.Value(this)"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>The button looks up in its own <code>ui-copy-space</code> for the <code>[ui-copy]</code> element. The value is the attribute, or the element's <code>textContent</code> when the attribute is empty. Feedback is the <code>title</code> attribute set to &quot;Copied!&quot; for a moment. The module is 10 lines.</p>
+<h2 id="shortcut">Shortcut<a class="anchor" href="#shortcut" aria-hidden="true">#</a></h2>
+<p>Shortcut turns a keystroke into a click on an element. The shortcut is the attribute name:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"search"</span> <span class="hljs-attr">ui-shortcut-slash</span>=<span class="hljs-string">"() =&gt; this.focus()"</span> <span class="hljs-attr">ui-shortcut-cc-k</span>=<span class="hljs-string">"() =&gt; this.focus()"</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">ui-shortcut-c</span>=<span class="hljs-string">"() =&gt; this.click()"</span>&gt;</span>Create<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p>One router sits on <code>body onkeydown</code>. It builds a name from the event: <code>c</code>, <code>slash</code>, <code>cc-k</code>. The <code>cc</code> part means Ctrl or Cmd, so one attribute covers both platforms. The router finds the element with that attribute and runs its callback. When focus is in an input and no modifier is held, the router does nothing, so typing text does not trigger shortcuts.</p>
+<p>Adding a shortcut is adding an attribute to an element. There is no key map, no registration, and the shortcut lives on the element it serves. The module is 25 lines.</p>
+<h2 id="reuse">Reuse<a class="anchor" href="#reuse" aria-hidden="true">#</a></h2>
+<p>The page is a small set of mechanisms used many times.</p>
+<ul>
+<li><strong>Hx</strong>: title, description, comments, replies, reactions, Details fields, subtask status and assignee, linked work, watchers, notifications, search results, app switcher, sidebar flyouts, Development, Automation. 26 fragment and partial files carry hx attributes.</li>
+<li><strong>Dropdown</strong>: the <code>ui-dropdown-space</code> attribute appears 76 times across the page and its fragments: app switcher, notifications, account, help, settings, watchers, work type, epic, every status and assignee menu, sidebar flyouts, search.</li>
+<li><strong>Sortable</strong>: 4 lists: app switcher, sidebar navigation, subtask rows, pinned fields.</li>
+<li><strong>Compute</strong>: 3: subtask progress, reaction counts, watcher count.</li>
+<li><strong>Notify</strong>: sidebar collapse, notification count, work type change, watcher state, toast.</li>
+<li><strong>Switch</strong>: search tabs, activity tabs.</li>
+<li><strong>Filter</strong>: the recent items list in search.</li>
+<li><strong>Fragment pairs</strong>: title, field, labels, description, comment.</li>
+<li><strong>Modal</strong>: the Create page and the Delete confirmation.</li>
+</ul>
+<h2 id="scope">Scope<a class="anchor" href="#scope" aria-hidden="true">#</a></h2>
+<p>The demo is not a Jira replacement. It has no analytics, no plugin system, no permissions, and no backend. Jira Cloud carries those, and they account for part of its weight. What the demo covers is the page itself: every interaction on the issue view, built without React.</p>
+<p>Two visible things were left out. The rich text editor: the description edits in a plain <code>&lt;textarea&gt;</code> and comments in a plain input, where Jira has a WYSIWYG editor. And the pages behind the links: boards, backlog, project settings exist here as plain links.</p>
+<h2 id="numbers">Numbers<a class="anchor" href="#numbers" aria-hidden="true">#</a></h2>
+<p>The same issue view. Jira Cloud measured live. The demo measured as it ships: one HTML, one CSS, one JS file.</p>
+<p>| metric | Jira Cloud | demo |
+|---|---|---|
+| network requests | 239 | 3 |
+| transfer (compressed) | 15.6 MB | 42 KB |
+| JavaScript files | 148 | 1 |
+| JavaScript (compressed) | 15.5 MB | 22 KB |
+| JavaScript (unpacked) | 77.3 MB | 71 KB |
+| JS heap | ~205 MB | ~4 MB |
+| component instances | 9,810 | 0 |
+| globals added to <code>window</code> | ~297 | 1 |</p>
+<p>Both columns draw the same screen. The difference is the runtime around it. Of the 9,810 component instances, 54% are infrastructure: contexts, error boundaries, analytics, observability. The demo has no component runtime, so that layer does not exist.</p>
+<h2 id="closing">Closing<a class="anchor" href="#closing" aria-hidden="true">#</a></h2>
+<p>The page has one global variable. State lives in DOM attributes, and CSS reads it there. Development runs the source files directly, with no build step. The JavaScript written for this page is three modules: Pin, Copy, Shortcut. The rest is toolkits reused as they are.</p>
+<p>There is no business model anywhere in the code. No Task module, no User model, no JSON objects behind the page. Every module is a generic interface component, and most of them do not know what they are holding. Pin moves elements between slots. It does not know they are issue fields. Hx swaps fragments. It does not know one of them is a comment. Sortable orders children. It does not know they are subtasks. The page is the data.</p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>

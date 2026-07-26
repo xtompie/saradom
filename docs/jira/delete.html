@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Delete</title>
+<style>
+html,body{height:100%}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#3a4048;background:transparent;display:flex;align-items:center;justify-content:center}
+.card{width:420px;max-width:92vw;background:#fff;border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,.35);padding:20px 24px}
+h1{margin:0 0 10px;font-size:18px;color:#1f2328}
+p{margin:0 0 8px}
+.muted{color:#59636e;font-size:13px}
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+button{padding:6px 14px;border:1px solid #d1d9e0;border-radius:6px;background:#fff;font:inherit;font-weight:500;color:#1f2328;cursor:pointer}
+.danger{background:#c9372c;border-color:#c9372c;color:#fff}
+</style>
+<script src="js/App.js"></script>
+<script src="js/Ui/Modal.js"></script>
+</head>
+<body onkeydown="App.Ui.Modal.Esc(event)">
+  <div class="card">
+    <h1>Delete work item?</h1>
+    <p>You're about to permanently delete this work item, its comments and attachments, and all of its data.</p>
+    <p class="muted">If you're not sure, close this dialog instead.</p>
+    <div class="foot">
+      <button type="button" onclick="App.Ui.Modal.Cancel()">Cancel</button>
+      <button type="button" class="danger" onclick="App.Ui.Modal.Result(true)">Delete</button>
+    </div>
+  </div>
+</body>
+</html>

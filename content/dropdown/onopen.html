@@ -1,0 +1,8 @@
+<div dropdown-space
+     dropdown-onopen="() => this.one('[report-generated]').textContent = 'Generated at ' + new Date().toLocaleTimeString()">
+    <button dropdown-trigger onclick="Dropdown.Toggle(this)">Report</button>
+    <div dropdown-menu popover="manual">
+        <p report-generated>…</p>
+        <a href="#">Download</a>
+    </div>
+</div>

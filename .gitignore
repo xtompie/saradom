@@ -1,5 +1,5 @@
 /vendor/
 /.playwright-mcp/
 /.local/
-jira/
+/jira/
 .DS_Store

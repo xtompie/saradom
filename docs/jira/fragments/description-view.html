@@ -1,0 +1,4 @@
+<div class="prose">
+  <p>When a user's session token expires, the login page returns <code>HTTP 500</code> instead of redirecting to sign-in.</p>
+  <p><b>Repro:</b> log in, wait for the token to expire, then submit any action. <b>Expected:</b> redirect to the <code>/login</code> page. <b>Actual:</b> 500 page, stack trace leaks.</p>
+</div>

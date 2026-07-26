@@ -1,0 +1,1 @@
+<span class="edit-view field-val {{set}}" data-state="{{state}}" hx-post="fragments/field-edit.html" hx-fill hx-target="this" hx-swap="outerHTML" hx-vals-body="() => ({ value: this.textContent.trim(), type: '{{type}}', set: '{{set}}', state: '{{state}}' })" onclick="App.Ui.Hx(this, event)">{{value}}</span>

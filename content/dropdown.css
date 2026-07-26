@@ -1,0 +1,19 @@
+.demo button[dropdown-trigger],.demo input[dropdown-trigger]{
+  background:var(--code-bg);border:1px solid var(--line);border-radius:var(--r-sm);
+  color:var(--ink);font:inherit;padding:.5rem .85rem;cursor:pointer;outline:none;transition:border-color .12s ease;
+}
+.demo input[dropdown-trigger]{cursor:text;width:12rem}
+.demo button[dropdown-trigger]:hover{border-color:var(--sub)}
+.demo input[dropdown-trigger]:focus{border-color:var(--accent)}
+
+.demo [dropdown-menu]{
+  margin:.3rem 0;min-width:11rem;padding:.35rem;background:var(--soft);border:1px solid var(--line);
+  border-radius:var(--r-sm);box-shadow:0 14px 36px rgba(0,0,0,.5);
+}
+.demo [dropdown-menu] a{display:block;padding:.45rem .65rem;border-radius:var(--r-sm);
+  color:var(--ink);text-decoration:none}
+.demo [dropdown-menu] a:hover{background:var(--line)}
+.demo [dropdown-menu] p{margin:.2rem .65rem .45rem;font-size:.8rem;color:var(--muted)}
+.demo [dropdown-menu] button{display:block;width:100%;background:var(--code-bg);border:1px solid var(--line);
+  border-radius:var(--r-sm);color:var(--ink);font:inherit;font-size:.85rem;padding:.4rem .65rem;cursor:pointer}
+.demo [dropdown-menu] button:hover{border-color:var(--sub)}

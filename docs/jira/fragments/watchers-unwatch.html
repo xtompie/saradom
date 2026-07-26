@@ -1,0 +1,1 @@
+<button class="menu-item" hx-get="" hx-post="fragments/watchers-watch.html" hx-target="closest [watch-self]" hx-swap="innerHTML" onclick="App.Ui.Hx(this)"><svg class="ic"><use href="#i-eye"/></svg> Watch <kbd class="kbd">W</kbd></button><s-init run="() => { const me = this.up('[watch-space]').one('[watch-me]'); if (me) me.remove(); this.nall('watch-watching', false); }"></s-init>

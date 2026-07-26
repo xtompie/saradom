@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    /* The _modal layout the backend would turn on: transparent body, centered card.
+       The dark curtain comes from the parent's dialog background, not from here. */
+    html, body { height: 100%; }
+    body { font-family: system-ui, sans-serif; margin: 0; background: transparent; color: #111;
+           display: flex; align-items: center; justify-content: center; }
+    .card { width: 280px; padding: 1.5rem; background: #fff; border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+    h3 { margin: 0 0 1rem; }
+    button { display: block; width: 100%; margin: .5rem 0; padding: .7rem 1rem; font-size: 1rem; text-align: left; cursor: pointer; border: 1px solid #ccc; border-radius: .5rem; background: #fafafa; }
+    button:hover { background: #f0f0f0; }
+    .cancel { color: #888; text-align: center; border: none; background: none; }
+  </style>
+  <script>
+    // The contract: this page talks to `Modal`, never to `parent` directly.
+    // In the modal iframe that is the parent's Modal; opened standalone the buttons do nothing.
+    window.Modal = window.parent === window
+        ? { Result: () => {}, Cancel: () => {}, Esc: () => {} }
+        : window.parent.Modal;
+  </script>
+</head>
+<body onkeydown="Modal.Esc(event)">
+  <div class="card">
+    <h3>Pick an item</h3>
+    <button onclick="Modal.Result({ id: 1, name: 'Item 1' })">Item 1</button>
+    <button onclick="Modal.Result({ id: 2, name: 'Item 2' })">Item 2</button>
+    <button onclick="Modal.Result({ id: 3, name: 'Item 3' })">Item 3</button>
+    <button class="cancel" onclick="Modal.Cancel()">Cancel</button>
+  </div>
+</body>
+</html>

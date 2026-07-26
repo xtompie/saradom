@@ -181,35 +181,3 @@ decides on its own whether the sport package stays enabled. `Configurator` never
 The whole block can repeat on one page. A page that compares two builds holds two
 `configurator-space` blocks, each with its own engine and its own package.
 
-## Modals
-
-```html
-<!-- parent page -->
-<script>
-const Modal = (function () {
-    let callback;
-    const Open = (url, cb) => {
-        callback = cb;
-        document.body.insertAdjacentHTML(
-            'beforeend',
-            `<modal><iframe src="${url}" style="width:100%;height:100%;border:0"></iframe></modal>`
-        );
-    };
-    const Close = (data) => {
-        callback(data);
-        document.querySelector('modal').remove();
-    };
-    return { Open, Close };
-})();
-</script>
-
-<button onclick="Modal.Open('/items', (i) => this.textContent = i.name)">Choose</button>
-```
-
-```html
-<!-- list page -->
-<button onclick="window.parent.Modal.Close({ id: 1, name: 'Item 1' })">Item 1</button>
-<button onclick="window.parent.Modal.Close({ id: 2, name: 'Item 2' })">Item 2</button>
-```
-
-With one more piece, this becomes a generic picker. `Open` adds `_pick=1` to the URL it loads, and the backend renders that page inside a modal layout whenever it sees the flag. Any list the app already has, with a checkbox on each row and a Choose submit, then works as a picker. The list and its filter are the ones that already exist. Only the flag and the Choose step are new, and they are set up once, in one place.

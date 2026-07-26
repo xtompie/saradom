@@ -1,17 +1,19 @@
 ---
 slug: filter
 title: "Filter"
-type: example
-tags: [example, dom-state]
+type: page
+tags: [filter, dom-state]
 related: [dom-state, switch]
-track: examples
-order: 15
+track: tools
+order: 35
 status: draft
 ---
 
 # Filter
 
 Filter a list of items by typing. Items that do not match the query are hidden.
+
+<!-- source: Filter/Filter.js -->
 
 <div class="filter-demo">
 <!-- embed: content/filter.html -->
@@ -20,8 +22,6 @@ Filter a list of items by typing. Items that do not match the query are hidden.
 <!-- embed: Filter/Filter.js -->
 
 <!-- code: content/filter.html -->
-
-<!-- code: Filter/Filter.js -->
 
 The input is marked with `filter-query`. The handler goes up to the space and reads that element, so it never assumes it was called from the input itself. The trigger can be on the input, on a button next to it, or anywhere inside the space.
 

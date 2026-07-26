@@ -22,7 +22,7 @@
                 animation: Number(this.getAttribute('animation')) || 150,
                 handle: this.getAttribute('handle') || undefined,
                 onEnd: (event) => {
-                    const key = this.getAttribute('sort-store');
+                    const key = this.getAttribute('store');
                     if (key) {
                         const order = Array.from(this.querySelectorAll('[sort-item]')).map((el) => el.getAttribute('sort-item'));
                         localStorage.setItem(key, JSON.stringify(order));
@@ -33,7 +33,7 @@
             });
         }
         restore() {
-            const key = this.getAttribute('sort-store');
+            const key = this.getAttribute('store');
             if (!key) {
                 return;
             }

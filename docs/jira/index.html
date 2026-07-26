@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[SCRUM-1] Login page throws 500 on expired session token</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="jira.css">
+<script src="jira.js"></script>
+</head>
+<body onkeydown="App.Ui.Shortcut.Route(this, event); App.Ui.Dropdown.Esc(event)" onpointerdown="App.Ui.Dropdown.Down(event)" onfocusout="App.Ui.Dropdown.Out(event)">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12" y2="17.01"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><line x1="12" y1="17" x2="12" y2="22"/><path d="M9 3h6l-1 7 3 3H7l3-3-1-7z"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><line x1="4" y1="7" x2="16" y2="7"/><line x1="4" y1="12" x2="13" y2="12"/><line x1="4" y1="17" x2="10" y2="17"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></symbol>
+  <symbol id="i-task" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><polyline points="8 12 11 15 16 9"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
+  <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 3 14.9 8.9 21 9.7 16.5 14 17.6 20.5 12 17.4 6.4 20.5 7.5 14 3 9.7 9.1 8.9"/></symbol>
+  <symbol id="i-plans" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="4" x2="8" y2="20"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><polygon points="3 4 21 4 14 12 14 19 10 21 10 12"/></symbol>
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5a3 3 0 0 1 0 5.8"/><path d="M21 20a6 6 0 0 0-5-5.9"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a5.5 5.5 0 0 1 11 0"/></symbol>
+  <symbol id="i-prio" viewBox="0 0 24 24"><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/></symbol>
+<symbol id="i-attach" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol></svg>
+<header class="topbar">
+  <div class="topbar-group">
+    <button class="icon-btn" title="Collapse sidebar [" onclick="this.nall('sidebar-toggle')"><svg class="ic"><use href="#i-panel"/></svg></button>
+    <div ui-dropdown-space ui-dropdown-onopen="() => App.Ui.Hx(this.one('[ui-dropdown-menu]'))">
+      <button class="icon-btn" title="Switch apps" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-grid"/></svg></button>
+      <div ui-dropdown-menu popover="manual" class="menu menu-start menu-apps" hx-get="fragments/app-switcher.html" hx-target="this" hx-swap="innerHTML"><p class="menu-empty">Loading…</p></div>
+    </div>
+    <a class="brand" href="#"><span class="brand-mark">J</span> Jira</a>
+  </div>
+  <div class="topbar-center">
+    <div class="search-wrap" ui-dropdown-space search-mode="recent" ui-dropdown-onopen="() => { if(!this.one('input').value){ this.attr('search-mode','recent'); App.Ui.Hx(this.one('[search-recent-trigger]')); } }">
+      <label class="search" ui-dropdown-trigger>
+        <svg class="ic"><use href="#i-search"/></svg>
+        <input type="search" placeholder="Search" autocomplete="off"
+          ui-shortcut-slash="() => this.focus()" ui-shortcut-cc-k="() => this.focus()"
+          hx-post="fragments/search-results.html" hx-fill hx-target="closest .search-wrap [search-results]" hx-swap="innerHTML"
+          hx-vals-body="() => ({ filter: this.closest('.search-wrap').one('[sp-reload]').attr('sp-active') || 'Recently viewed' })"
+          oninput="var w=this.up('[ui-dropdown-space]'); w.attr('search-mode', this.value ? 'query' : 'recent'); if(this.value){ App.Ui.Hx(this,event); } else { w.one('[search-results]').replaceChildren(); }"
+          onfocus="App.Ui.Dropdown.Open(this); this.placeholder='Search Jira'"
+          onblur="this.placeholder='Search'">
+      </label>
+      <a hidden search-recent-trigger hx-get="fragments/search-recent.html" hx-target="closest .search-wrap [search-recent]" hx-swap="innerHTML"></a>
+      <div class="search-panel" ui-dropdown-menu popover="manual" ui-switch-space ui-switch-state="jira">
+        <div class="sp-tabs">
+          <label class="sp-tab"><input type="radio" name="sp-tab" checked onchange="App.Ui.Switch.To(this, '[ui-switch-space]', 'jira')"><span>Jira</span></label>
+          <label class="sp-tab"><input type="radio" name="sp-tab" onchange="App.Ui.Switch.To(this, '[ui-switch-space]', 'home')"><span>Home</span></label>
+        </div>
+        <div ui-switch-tag="jira">
+          <div class="sp-cols">
+            <div class="sp-main">
+              <div class="sp-recent" search-recent></div>
+              <div class="sp-results" search-results></div>
+              <div class="sp-goto"><span class="sp-goto-label">Go to all:</span><a href="#">Boards</a><a href="#">Projects</a><a href="#">Filters</a><a href="#">Plans</a><a href="#">People</a></div>
+            </div>
+            <div class="sp-side" sp-filters>
+              <a hidden sp-reload sp-active="" hx-post="fragments/search-results.html" hx-fill hx-target="closest .search-wrap [search-results]" hx-swap="innerHTML" hx-vals-body="() => { const f = this.up('[sp-filters]').all('[sp-label]').filter(c => c.tagName === 'SELECT' ? c.value : c.checked).map(c => c.tagName === 'SELECT' ? c.value : c.attr('sp-label')).join(', '); this.attr('sp-active', f); return { filter: f || 'Recently viewed' } }"></a>
+              <div class="sp-fhead">Last updated</div>
+              <div class="sp-pills">
+                <label class="sp-pill"><input type="radio" name="sp-updated" checked onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span>Any time</span></label>
+                <label class="sp-pill"><input type="radio" name="sp-updated" sp-label="Today" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span>Today</span></label>
+                <label class="sp-pill"><input type="radio" name="sp-updated" sp-label="Yesterday" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span>Yesterday</span></label>
+                <label class="sp-pill"><input type="radio" name="sp-updated" sp-label="Past 7 days" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span>Past 7 days</span></label>
+                <label class="sp-pill"><input type="radio" name="sp-updated" sp-label="Past 30 days" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span>Past 30 days</span></label>
+                <label class="sp-pill"><input type="radio" name="sp-updated" sp-label="Past year" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span>Past year</span></label>
+              </div>
+              <div class="sp-fhead">Filter by project</div>
+              <label class="sp-check"><input type="checkbox" sp-label="My Team" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span class="proj sp-proj">M</span><span class="sp-check-label">My Team</span></label>
+              <button type="button" class="sp-more">Show more</button>
+              <div class="sp-fhead">Filter by assignee</div>
+              <label class="sp-check"><input type="checkbox" sp-label="Thomas Anderson" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span class="avatar xs">TA</span><span class="sp-check-label">Thomas Anderson</span></label>
+              <button type="button" class="sp-more">Show more</button>
+              <div class="sp-fhead">Filter by reporter</div>
+              <label class="sp-check"><input type="checkbox" sp-label="Reported by me" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span class="sp-check-label">Reported by me</span></label>
+              <div class="sp-fhead">Filter by status</div>
+              <label class="sp-check"><input type="checkbox" sp-label="Open" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span class="sp-check-label">Open</span></label>
+              <label class="sp-check"><input type="checkbox" sp-label="Done" onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))"><span class="sp-check-label">Done</span></label>
+              <div class="sp-fhead">Filter by label</div>
+              <select class="sp-select" sp-label onchange="App.Ui.Hx(this.up('[sp-filters]').one('[sp-reload]'))">
+                <option value="">Select label</option>
+                <option value="backend">backend</option>
+                <option value="security">security</option>
+                <option value="regression">regression</option>
+              </select>
+              <button type="button" class="sp-feedback">Give feedback</button>
+            </div>
+          </div>
+          <a class="sp-foot" href="#"><svg class="ic"><use href="#i-search"/></svg><span class="sp-title">View all work items</span><kbd class="sp-kbd">&crarr;</kbd></a>
+        </div>
+        <div ui-switch-tag="home" class="sp-empty" style="display:none">
+          <svg class="ic sp-empty-ic"><use href="#i-search"/></svg>
+          <p class="sp-empty-t">We couldn't find anything matching your search.</p>
+          <p class="sp-empty-s">Try again with a different term.</p>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="App.Ui.Modal.Open('create.html', (r) => r && this.nall('ui-toast', r.key + ' created'))" ui-shortcut-c="() => this.click()"><svg class="ic"><use href="#i-plus"/></svg> Create</button>
+  </div>
+  <div class="topbar-group">
+    <button class="btn btn-sm see-plans">See plans</button>
+    <div ui-dropdown-space ui-dropdown-onopen="() => { const m = this.one('[ui-dropdown-menu]'); m.attr('hx-get', Number(this.one('[notif-total]').attr('notif-total')) ? 'fragments/notifications-unread.html' : 'fragments/notifications-read.html'); App.Ui.Hx(m); }">
+      <button class="icon-btn" title="Notifications" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-bell"/></svg><span class="badge" notif-total="3" notif-count="(n) => { const c = Number(n); this.textContent = c; this.attr('notif-total', c); this.hide(!c); }">3</span></button>
+      <div ui-dropdown-menu popover="manual" class="menu menu-end" hx-get="fragments/notifications-unread.html" hx-target="this" hx-swap="innerHTML"><p class="menu-empty">Loading…</p></div>
+    </div>
+    <div ui-dropdown-space>
+      <button class="icon-btn" title="Help" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-help"/></svg></button>
+      <div ui-dropdown-menu popover="manual" class="menu menu-end">
+        <button class="menu-item">Help center</button>
+        <button class="menu-item">Keyboard shortcuts</button>
+        <button class="menu-item">What's new</button>
+        <div class="menu-sep"></div>
+        <button class="menu-item">Contact support</button>
+      </div>
+    </div>
+    <div ui-dropdown-space>
+      <button class="icon-btn" title="Settings" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-gear"/></svg></button>
+      <div ui-dropdown-menu popover="manual" class="menu menu-end menu-settings">
+        <button class="menu-item"><svg class="ic"><use href="#i-person"/></svg> Personal settings</button>
+        <div class="menu-sep"></div>
+        <div class="menu-head">Jira Settings</div>
+        <button class="menu-item"><svg class="ic"><use href="#i-gear"/></svg> System</button>
+        <button class="menu-item"><svg class="ic"><use href="#i-grid"/></svg> Products</button>
+        <button class="menu-item"><svg class="ic"><use href="#i-board"/></svg> Projects</button>
+        <button class="menu-item"><svg class="ic"><use href="#i-task"/></svg> Issues</button>
+        <button class="menu-item"><svg class="ic"><use href="#i-zap"/></svg> Apps</button>
+        <div class="menu-sep"></div>
+        <div class="menu-head">Administration</div>
+        <button class="menu-item"><svg class="ic"><use href="#i-users"/></svg> User management</button>
+        <button class="menu-item"><svg class="ic"><use href="#i-briefcase"/></svg> Billing</button>
+      </div>
+    </div>
+    <div ui-dropdown-space>
+      <button class="avatar" title="Account" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)">SR</button>
+      <div ui-dropdown-menu popover="manual" class="menu menu-end" theme-toggle="() => { const h = document.documentElement; h.flag('theme-dark', !h.flag('theme-dark')); }">
+        <div class="menu-profile"><div class="avatar sm">SR</div><div><b>Sam Rivera</b><div class="muted small">sam@example.com</div></div></div>
+        <div class="menu-sep"></div>
+        <button class="menu-item">Profile</button>
+        <button class="menu-item">Account settings</button>
+        <button class="menu-item" onclick="this.nall('theme-toggle')"><svg class="ic"><use href="#i-star"/></svg> Theme</button>
+        <div class="menu-sep"></div>
+        <button class="menu-item">Log out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div sidebar-toggle="() => this.flag('sidebar-off', !this.flag('sidebar-off'))">
+  <nav sidebar-nav sidebar-customise="() => { const on = !this.flag('sidebar-editing'); this.flag('sidebar-editing', on); this.one('[customise-label]').textContent = on ? 'Done' : 'Customise sidebar'; }">
+    <s-sortable class="nav-list" list-target="nav-item" handle="[nav-grip]" store="sidebar-nav">
+      <a class="nav-item" href="#"><svg class="ic"><use href="#i-home"/></svg> For you</a>
+      <span sort-item="recent" ui-dropdown-space ui-dropdown-onopen="() => App.Ui.Hx(this.one('[ui-dropdown-menu]'))">
+        <button class="nav-item as-btn" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><span nav-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic"><use href="#i-clock"/></svg> Recent<span nav-chev><svg class="ic xs"><use href="#i-chevron"/></svg></span></button>
+        <div ui-dropdown-menu popover="manual" class="menu menu-recent" hx-get="fragments/recent.html" hx-target="this" hx-swap="innerHTML"><p class="menu-empty">Loading…</p></div>
+      </span>
+      <span sort-item="starred" ui-dropdown-space ui-dropdown-onopen="() => App.Ui.Hx(this.one('[ui-dropdown-menu]'))">
+        <button class="nav-item as-btn" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><span nav-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic"><use href="#i-star"/></svg> Starred<span nav-chev><svg class="ic xs"><use href="#i-chevron"/></svg></span></button>
+        <div ui-dropdown-menu popover="manual" class="menu menu-flyout" hx-get="fragments/starred.html" hx-target="this" hx-swap="innerHTML"><p class="menu-empty">Loading…</p></div>
+      </span>
+      <button class="nav-item as-btn" sort-item="apps"><span nav-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic"><use href="#i-grid"/></svg> Apps</button>
+      <button class="nav-item as-btn" sort-item="plans"><span nav-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic"><use href="#i-plans"/></svg> Plans</button>
+      <button class="nav-item as-btn" sort-item="filters"><span nav-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic"><use href="#i-filter"/></svg> Filters</button>
+      <button class="nav-item as-btn" sort-item="dashboards"><span nav-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic"><use href="#i-dashboard"/></svg> Dashboards</button>
+      <span sort-item="spaces" ui-dropdown-space ui-dropdown-onopen="() => App.Ui.Hx(this.one('[ui-dropdown-menu]'))">
+        <button class="nav-item as-btn" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><span nav-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic"><use href="#i-briefcase"/></svg> Spaces<span nav-chev><svg class="ic xs"><use href="#i-chevron"/></svg></span></button>
+        <div ui-dropdown-menu popover="manual" class="menu menu-flyout" hx-get="fragments/spaces.html" hx-target="this" hx-swap="innerHTML"><p class="menu-empty">Loading…</p></div>
+      </span>
+      <s-init run="(el) => el.restore()"></s-init>
+    </s-sortable>
+
+    <div class="nav-foot">
+      <a class="nav-item" href="#" target="_blank"><svg class="ic"><use href="#i-users"/></svg> Teams <svg class="ic xs ext"><use href="#i-external"/></svg></a>
+      <a class="nav-item" href="#" target="_blank"><svg class="ic"><use href="#i-target"/></svg> Goals <svg class="ic xs ext"><use href="#i-external"/></svg></a>
+      <a class="nav-item" href="#" target="_blank"><svg class="ic"><use href="#i-briefcase"/></svg> Projects <svg class="ic xs ext"><use href="#i-external"/></svg></a>
+      <button class="nav-item as-btn" onclick="this.nall('sidebar-customise')"><svg class="ic"><use href="#i-gear"/></svg> <span customise-label>Customise sidebar</span></button>
+    </div>
+  </nav>
+
+  <main class="main" resizer-space>
+    <div class="content">
+      <nav class="breadcrumb">
+        <a href="#">Spaces</a><span class="sep">/</span>
+        <a href="#" class="crumb-space"><span class="proj crumb-proj">M</span> My Team</a><span class="sep">/</span>
+        <span ui-dropdown-space><button class="crumb-btn crumb-epic" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic xs"><use href="#i-edit"/></svg> <span epic-label>Add epic</span></button><div ui-dropdown-menu popover="manual" class="menu menu-start menu-epic"><p class="menu-empty">No epic has been created in this space. <a href="#" class="menu-link" onclick="this.up('[popover]').hidePopover()">Create your first epic</a>.</p></div></span><span class="sep">/</span>
+        <span ui-copy-space><span ui-dropdown-space><button class="crumb-btn crumb-type" ui-dropdown-trigger title="Task - Change work type" type-set="(o) => { this.one('[type-icon]').setAttribute('href', o.one('use').getAttribute('href')); this.title = o.one('[type-name]').textContent + ' - Change work type' }" onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic xs"><use href="#i-task" type-icon/></svg></button><div ui-dropdown-menu popover="manual" class="menu menu-start" type-set="(o) => this.all('[type-opt]').each(x => x.attr('aria-checked', x === o))"><div class="menu-head">Change work type</div><button class="menu-item" role="menuitemradio" type-opt aria-checked="true" onclick="this.nall('type-set', this); this.up('[popover]').hidePopover()"><svg class="ic"><use href="#i-task"/></svg> <span type-name>Task</span></button><button class="menu-item" role="menuitemradio" type-opt onclick="this.nall('type-set', this); this.up('[popover]').hidePopover()"><svg class="ic"><use href="#i-prio"/></svg> <span type-name>Bug</span></button><button class="menu-item" role="menuitemradio" type-opt onclick="this.nall('type-set', this); this.up('[popover]').hidePopover()"><svg class="ic"><use href="#i-board"/></svg> <span type-name>Story</span></button></div></span><a href="#" class="crumb-key" ui-copy="https://jira.example.com/browse/SCRUM-1">SCRUM-1</a>
+        <button class="icon-btn xs crumb-copy" onclick="App.Ui.Copy.Value(this)" title="Copy link"><svg class="ic"><use href="#i-copy"/></svg></button></span>
+      </nav>
+
+      <div class="issue-head">
+        <h1 class="issue-title"><span class="edit-view" data-state="" hx-post="fragments/title-edit.html" hx-fill hx-target="this" hx-swap="outerHTML" hx-vals-body="() => ({ value: this.textContent.trim() })" onclick="App.Ui.Hx(this, event)">Login page throws 500 on expired session token</span></h1>
+        <div class="row gap issue-actions">
+          <div ui-dropdown-space>
+            <button class="icon-btn bd" title="Add" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-plus"/></svg></button>
+            <div ui-dropdown-menu popover="manual" class="menu menu-start">
+              <button class="menu-item"><svg class="ic"><use href="#i-attach"/></svg> Attachment</button>
+              <button class="menu-item" onclick="this.up('[popover]').hidePopover(); const s = document.one('[sub-add]'); s.click(); s.scrollIntoView({block: 'center'})"><svg class="ic"><use href="#i-task"/></svg> Subtask</button>
+              <button class="menu-item"><svg class="ic"><use href="#i-link"/></svg> Linked work item</button>
+              <button class="menu-item"><svg class="ic"><use href="#i-external"/></svg> Web link</button>
+            </div>
+          </div>
+          <div ui-dropdown-space>
+            <button class="icon-btn bd" title="More actions" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-dots"/></svg></button>
+            <div ui-dropdown-menu popover="manual" class="menu menu-start">
+              <button class="menu-item">Move</button>
+              <button class="menu-item">Clone</button>
+              <button class="menu-item">Archive</button>
+              <div class="menu-sep"></div>
+              <button class="menu-item danger" onclick="this.up('[popover]').hidePopover(); App.Ui.Modal.Open('delete.html', (r) => r && this.nall('ui-toast', 'Work item deleted'))">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <details class="sec" open>
+        <summary class="sec-head"><svg class="ic caret"><use href="#i-chevron"/></svg><h2>Description</h2></summary>
+        <button class="btn btn-sm sec-action" hx-get="fragments/description-edit.html" hx-target="closest .sec .prose" hx-swap="outerHTML" onclick="App.Ui.Hx(this,event)">Edit</button>
+        <div class="prose">
+          <p>When a user's session token expires, the login page returns <code>HTTP 500</code> instead of redirecting to sign-in.</p>
+          <p><b>Repro:</b> log in, wait for the token to expire, then submit any action. <b>Expected:</b> redirect to the <code>/login</code> page. <b>Actual:</b> 500 page, stack trace leaks.</p>
+        </div>
+      </details>
+
+      <details class="sec" open>
+        <summary class="sec-head"><svg class="ic caret"><use href="#i-chevron"/></svg><h2>Subtasks</h2></summary>
+        <s-compute run="() => { const rows = this.all('[subtask]'); const done = rows.filter(r => r.one('[subtask-status]').textContent.trim() === 'Done').length; this.one('[subtask-count]').textContent = Math.round(done / rows.length * 100 || 0) + '% Done'; this.one('[subtask-bar]').style.width = (rows.length ? Math.round(done / rows.length * 100) : 0) + '%'; }">
+          <div class="sub-progress"><div class="progress"><i subtask-bar style="width:33%"></i></div><span class="counter" subtask-count>33% Done</span></div>
+          <div class="subs">
+            <div class="subs-head"><span class="subs-h subs-h-work">Work</span><span class="subs-h">Priority</span><span class="subs-h">Assignee</span><span class="subs-h">Status</span><span></span></div>
+            <s-sortable class="subs-body" list-target="sub" handle="[sub-grip]">
+            <div class="sub" subtask><span class="sub-grip" sub-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic xs sub-type"><use href="#i-task"/></svg><a class="sub-key" href="#">SCRUM-2</a><span class="sub-title">Reproduce on staging</span><span class="sub-prio"><svg class="ic xs"><use href="#i-prio"/></svg> Medium</span><span class="sub-actions" subtask-actions><span ui-dropdown-space><button type="button" class="sub-assign" subtask-assign ui-dropdown-trigger title="Assignee" onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic xs"><use href="#i-person"/></svg></button><div ui-dropdown-menu popover="manual" class="menu menu-start menu-assign"><div class="menu-head">Assignee</div><button type="button" class="menu-item" hx-post="fragments/subtask-assignee.html" hx-fill hx-vals-body="() => ({name: 'Sam Rivera',initials: 'SR'})" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">SR</span> Sam Rivera</button><button type="button" class="menu-item" hx-post="fragments/subtask-assignee.html" hx-fill hx-vals-body="() => ({name: 'Alex Kim',initials: 'AK'})" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">AK</span> Alex Kim</button><button type="button" class="menu-item" hx-post="fragments/subtask-assignee.html" hx-fill hx-vals-body="() => ({name: 'Priya Shah',initials: 'PS'})" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">PS</span> Priya Shah</button><div class="menu-sep"></div><button type="button" class="menu-item" hx-post="fragments/subtask-unassign.html" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><svg class="ic"><use href="#i-person"/></svg> Unassign</button></div></span></span><span ui-dropdown-space><button type="button" class="sub-status is-done" subtask-status ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)">Done</button><div ui-dropdown-menu popover="manual" class="menu menu-status"><button type="button" class="menu-item" hx-post="fragments/subtask-status.html" hx-vals-body="() => ({status: 'To Do',cls: 'is-todo'})" hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="sub-status is-todo">To Do</span></button><button type="button" class="menu-item" hx-post="fragments/subtask-status.html" hx-vals-body="() => ({status: 'In Progress',cls: 'is-progress'})" hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="sub-status is-progress">In Progress</span></button><button type="button" class="menu-item" hx-post="fragments/subtask-status.html" hx-vals-body="() => ({status: 'Done',cls: 'is-done'})" hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="sub-status is-done">Done</span></button></div></span><button type="button" class="sub-del" title="Delete subtask" hx-post="fragments/subtask-delete.html" hx-target="closest [subtask]" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">&times;</button></div>
+            <div class="sub" subtask><span class="sub-grip" sub-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic xs sub-type"><use href="#i-task"/></svg><a class="sub-key" href="#">SCRUM-3</a><span class="sub-title">Add regression test</span><span class="sub-prio"><svg class="ic xs"><use href="#i-prio"/></svg> Medium</span><span class="sub-actions" subtask-actions><span ui-dropdown-space><button type="button" class="sub-assign" subtask-assign ui-dropdown-trigger title="Assignee" onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic xs"><use href="#i-person"/></svg></button><div ui-dropdown-menu popover="manual" class="menu menu-start menu-assign"><div class="menu-head">Assignee</div><button type="button" class="menu-item" hx-post="fragments/subtask-assignee.html" hx-fill hx-vals-body="() => ({name: 'Sam Rivera',initials: 'SR'})" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">SR</span> Sam Rivera</button><button type="button" class="menu-item" hx-post="fragments/subtask-assignee.html" hx-fill hx-vals-body="() => ({name: 'Alex Kim',initials: 'AK'})" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">AK</span> Alex Kim</button><button type="button" class="menu-item" hx-post="fragments/subtask-assignee.html" hx-fill hx-vals-body="() => ({name: 'Priya Shah',initials: 'PS'})" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">PS</span> Priya Shah</button><div class="menu-sep"></div><button type="button" class="menu-item" hx-post="fragments/subtask-unassign.html" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><svg class="ic"><use href="#i-person"/></svg> Unassign</button></div></span></span><span ui-dropdown-space><button type="button" class="sub-status is-progress" subtask-status ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)">In Progress</button><div ui-dropdown-menu popover="manual" class="menu menu-status"><button type="button" class="menu-item" hx-post="fragments/subtask-status.html" hx-vals-body="() => ({status: 'To Do',cls: 'is-todo'})" hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="sub-status is-todo">To Do</span></button><button type="button" class="menu-item" hx-post="fragments/subtask-status.html" hx-vals-body="() => ({status: 'In Progress',cls: 'is-progress'})" hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="sub-status is-progress">In Progress</span></button><button type="button" class="menu-item" hx-post="fragments/subtask-status.html" hx-vals-body="() => ({status: 'Done',cls: 'is-done'})" hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="sub-status is-done">Done</span></button></div></span><button type="button" class="sub-del" title="Delete subtask" hx-post="fragments/subtask-delete.html" hx-target="closest [subtask]" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">&times;</button></div>
+            <div class="sub" subtask><span class="sub-grip" sub-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><svg class="ic xs sub-type"><use href="#i-task"/></svg><a class="sub-key" href="#">SCRUM-7</a><span class="sub-title">Guard /login redirect on 401</span><span class="sub-prio"><svg class="ic xs"><use href="#i-prio"/></svg> Medium</span><span class="sub-actions" subtask-actions><span ui-dropdown-space><button type="button" class="sub-assign" subtask-assign ui-dropdown-trigger title="Assignee" onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic xs"><use href="#i-person"/></svg></button><div ui-dropdown-menu popover="manual" class="menu menu-start menu-assign"><div class="menu-head">Assignee</div><button type="button" class="menu-item" hx-post="fragments/subtask-assignee.html" hx-fill hx-vals-body="() => ({name: 'Sam Rivera',initials: 'SR'})" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">SR</span> Sam Rivera</button><button type="button" class="menu-item" hx-post="fragments/subtask-assignee.html" hx-fill hx-vals-body="() => ({name: 'Alex Kim',initials: 'AK'})" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">AK</span> Alex Kim</button><button type="button" class="menu-item" hx-post="fragments/subtask-assignee.html" hx-fill hx-vals-body="() => ({name: 'Priya Shah',initials: 'PS'})" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">PS</span> Priya Shah</button><div class="menu-sep"></div><button type="button" class="menu-item" hx-post="fragments/subtask-unassign.html" hx-target="closest [ui-dropdown-space] [subtask-assign]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><svg class="ic"><use href="#i-person"/></svg> Unassign</button></div></span></span><span ui-dropdown-space><button type="button" class="sub-status is-todo" subtask-status ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)">To Do</button><div ui-dropdown-menu popover="manual" class="menu menu-status"><button type="button" class="menu-item" hx-post="fragments/subtask-status.html" hx-vals-body="() => ({status: 'To Do',cls: 'is-todo'})" hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="sub-status is-todo">To Do</span></button><button type="button" class="menu-item" hx-post="fragments/subtask-status.html" hx-vals-body="() => ({status: 'In Progress',cls: 'is-progress'})" hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="sub-status is-progress">In Progress</span></button><button type="button" class="menu-item" hx-post="fragments/subtask-status.html" hx-vals-body="() => ({status: 'Done',cls: 'is-done'})" hx-target="closest [ui-dropdown-space] [subtask-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="sub-status is-done">Done</span></button></div></span><button type="button" class="sub-del" title="Delete subtask" hx-post="fragments/subtask-delete.html" hx-target="closest [subtask]" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">&times;</button></div>
+            </s-sortable>
+          </div>
+          <button type="button" class="sub-add" sub-add onclick="const f=this.closest('.sec').querySelector('.row-add'); f.hidden=false; this.hidden=true; f.querySelector('input').focus()"><svg class="ic xs"><use href="#i-plus"/></svg> Create subtask</button>
+          <form class="row-add" hidden hx-post="fragments/subtask-new.html" hx-fill hx-target="[list-target='sub']" hx-swap="append" onsubmit="App.Ui.Hx(this, event); this.reset(); this.hidden=true; this.closest('.sec').querySelector('[sub-add]').hidden=false">
+            <input class="input" type="text" name="text" placeholder="What needs to be done?" autocomplete="off">
+          </form>
+        </s-compute>
+      </details>
+
+      <details class="sec" open>
+        <summary class="sec-head"><svg class="ic caret"><use href="#i-chevron"/></svg><h2>Linked work items</h2></summary>
+        <button class="btn btn-sm sec-action" onclick="const f=this.closest('.sec').querySelector('.row-add'); f.hidden=false; f.querySelector('input').focus()"><svg class="ic"><use href="#i-plus"/></svg> Add</button>
+        <div class="link-list" list-target="link">
+          <div class="linked" linked linked-rel="is-blocked-by"><select class="linked-select" onchange="this.up('[linked]').attr('linked-rel', this.value)"><option value="blocks">blocks</option><option value="is-blocked-by" selected>is blocked by</option><option value="relates-to">relates to</option><option value="duplicates">duplicates</option></select><svg class="ic xs linked-icon"><use href="#i-task"/></svg><a class="linked-key" href="#">SCRUM-4</a><span class="linked-title">Session service returns 500 on token expiry</span><svg class="ic xs linked-pri" style="color:#c9372c"><use href="#i-prio"/></svg><span class="linked-status is-progress">In Progress</span><span class="linked-actions" linked-actions><button type="button" class="icon-btn xs linked-del" title="Remove link" hx-post="fragments/link-remove.html" hx-target="closest [linked]" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">&times;</button></span></div>
+        </div>
+        <form class="row-add" hidden hx-post="fragments/link-new.html" hx-fill hx-target="[list-target='link']" hx-swap="append" onsubmit="App.Ui.Hx(this, event)">
+          <input class="input" type="text" name="text" placeholder="Search work items to link…" autocomplete="off">
+        </form>
+      </details>
+
+      <details class="sec" open>
+        <summary class="sec-head"><svg class="ic caret"><use href="#i-chevron"/></svg><h2>Activity</h2></summary>
+        <div ui-switch-space ui-switch-state="comment" activity-order="old">
+          <div class="between activity-bar">
+            <div class="segmented">
+              <label class="seg"><input type="radio" name="show" onchange="App.Ui.Switch.To(this, '[ui-switch-space]', 'comment history worklog')"><span>All</span></label>
+              <label class="seg"><input type="radio" name="show" checked onchange="App.Ui.Switch.To(this, '[ui-switch-space]', 'comment')"><span>Comments</span></label>
+              <label class="seg"><input type="radio" name="show" onchange="App.Ui.Switch.To(this, '[ui-switch-space]', 'history')"><span>History</span></label>
+              <label class="seg"><input type="radio" name="show" onchange="App.Ui.Switch.To(this, '[ui-switch-space]', 'worklog')"><span>Work log</span></label>
+            </div>
+            <button class="icon-btn bd" title="Oldest first" onclick="const s=this.up('[ui-switch-space]'); s.attrt('activity-order','new','old'); const n=s.attr('activity-order')==='new'; const t=n?'Newest first':'Oldest first'; this.one('[order-label]').textContent=t; this.title=t"><svg class="ic"><use href="#i-sort"/></svg><span order-label>Oldest first</span></button>
+          </div>
+
+          <div ui-switch-tag="comment">
+            <form class="comment-add" quick-onfill="(text) => this.one('[comment-input]').value = text" hx-post="fragments/comment-new.html" hx-target="[list-target='comment']" hx-swap="append" onsubmit="App.Ui.Hx(this, event)">
+              <div class="avatar sm">SR</div>
+              <div class="grow comment-box">
+                <input class="input" name="text" comment-input ui-shortcut-m="() => this.focus()" type="text" placeholder="Add a comment…" autocomplete="off">
+                <div class="comment-expand">
+                  <div class="row gap quick">
+                    <button type="button" class="chip" onclick="this.nup('quick-onfill', this.textContent.trim())">Who is working on this…?</button>
+                    <button type="button" class="chip" onclick="this.nup('quick-onfill', this.textContent.trim())">Status update…</button>
+                    <button type="button" class="chip" onclick="this.nup('quick-onfill', this.textContent.trim())">Thanks…</button>
+                  </div>
+                  <div class="comment-foot">
+                    <button class="btn btn-primary btn-sm" type="submit">Comment</button>
+                    <button class="btn btn-sm" type="button" onclick="this.closest('form').reset(); this.closest('.comment-box').querySelector('[comment-input]').blur()">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+            <s-compute run="() => this.all('[react]').each(r => { const c = r.one('[react-count]'); if (c) c.textContent = Number(r.attr('react-base')) + (r.one('[react-like]').checked ? 1 : 0); })">
+              <div list-target="comment">
+                <div class="comment" comment>
+                  <div class="avatar sm">SR</div>
+                  <div class="comment-body">
+                    <div class="comment-meta"><b>Sam Rivera</b> <span class="muted">· 2h ago</span></div>
+                    <p>Seen it on prod too — the token TTL is 15 min.</p>
+                    <div class="comment-actions" comment-actions>
+                      <label class="c-act react" react react-base="2" title="React">
+                        <input type="checkbox" hidden react-like hx-post="fragments/comment-liked.html" hx-target="this" hx-swap="outerHTML" onchange="App.Ui.Hx(this, event)">
+                        <span class="c-emoji">👍</span><span react-count>2</span>
+                      </label>
+                      <button type="button" class="c-act" hx-get="fragments/comment-reply.html" hx-target="closest .comment" hx-swap="append" onclick="App.Ui.Hx(this, event)">Reply</button>
+                      <button type="button" class="c-act" hx-get="fragments/comment-edit.html" hx-target="closest .comment" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">Edit</button>
+                      <button type="button" class="c-act" hx-post="fragments/comment-delete.html" hx-target="closest .comment" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </s-compute>
+          </div>
+
+          <div ui-switch-tag="history" class="feed" style="display:none">
+            <div class="feed-item"><div class="avatar sm">SR</div><div><b>Sam Rivera</b> changed the status <b>To Do → In Progress</b> <span class="muted">· 1h ago</span></div></div>
+            <div class="feed-item"><div class="avatar sm">PS</div><div><b>Priya Shah</b> set <b>Priority</b> to <b>Medium</b> <span class="muted">· 2h ago</span></div></div>
+            <div class="feed-item"><div class="avatar sm">SR</div><div><b>Sam Rivera</b> created the work item <span class="muted">· 3h ago</span></div></div>
+          </div>
+
+          <div ui-switch-tag="worklog" class="feed" style="display:none">
+            <div class="feed-item"><div class="avatar sm">AK</div><div><b>Alex Kim</b> logged <b>2h</b> — reproduced on staging <span class="muted">· 1h ago</span></div></div>
+            <p class="muted small feed-total">Total time logged: 2h</p>
+          </div>
+        </div>
+      </details>
+    </div>
+    <aside class="panel">
+      <button class="panel-toggle" panel-toggle title="Toggle details panel" onclick="const m = this.up('[resizer-space]'); m.flag('panel-off', !m.flag('panel-off'))"><svg class="ic xs"><use href="#i-chevron"/></svg></button>
+      <s-resizer store="issue-panel" var="--panel-w" min="280" max="560"></s-resizer>
+      <div class="row gap actions">
+        <div ui-dropdown-space>
+          <button class="icon-btn bd" title="No restrictions" ui-dropdown-trigger restrict-set="(v) => { const m = {none:['No restrictions','#i-lock',false],edit:['Editing restricted','#i-lock',true],full:['Viewing &amp; editing restricted','#i-lock',true]}[v]; this.attr('title', m[0]); this.one('use').setAttribute('href', m[1]); this.flag('restrict-on', m[2]); }" onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-lock"/></svg></button>
+          <div ui-dropdown-menu popover="manual" class="menu menu-end" restrict-set="(v) => this.all('[restrict-opt]').each(o => o.attr('aria-checked', o.attr('restrict-opt') === v))">
+            <div class="menu-head">Restrict access</div>
+            <button class="menu-item" role="menuitemradio" restrict-opt="none" aria-checked="true" onclick="this.nall('restrict-set', 'none')"><svg class="ic"><use href="#i-users"/></svg> No restrictions</button>
+            <button class="menu-item" role="menuitemradio" restrict-opt="edit" onclick="this.nall('restrict-set', 'edit')"><svg class="ic"><use href="#i-lock"/></svg> Editing restricted</button>
+            <button class="menu-item" role="menuitemradio" restrict-opt="full" onclick="this.nall('restrict-set', 'full')"><svg class="ic"><use href="#i-lock"/></svg> Viewing &amp; editing restricted</button>
+          </div>
+        </div>
+        <div ui-dropdown-space ui-dropdown-onopen="() => App.Ui.Hx(this.one('[ui-dropdown-menu]'))">
+          <button class="icon-btn bd" watch-on watch-total="2" watch-count="(n) => { const c = Number(n); this.one('.count').textContent = c; this.attr('watch-total', c); }" watch-watching="(on) => this.flag('watch-on', on)" title="Watch options" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-eye"/></svg> <span class="count">2</span></button>
+          <div ui-dropdown-menu popover="manual" class="menu menu-end" hx-get="fragments/watchers.html" hx-target="this" hx-swap="innerHTML"><p class="menu-empty">Loading…</p></div>
+        </div>
+        <div ui-dropdown-space ui-dropdown-onopen="() => this.one('[ui-dropdown-menu]').flag('shared', false)">
+          <button class="icon-btn bd" title="Share" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-share"/></svg></button>
+          <div ui-dropdown-menu popover="manual" class="menu menu-end">
+            <div class="menu-head">Share this work item</div>
+            <label class="menu-field">To<input class="input" type="text" placeholder="Names, teams or emails"></label>
+            <label class="menu-field">Note<textarea class="input" rows="2" placeholder="Optional message"></textarea></label>
+            <div class="menu-foot"><span class="share-done">Shared &#10003;</span><button class="btn btn-primary btn-sm" onclick="const m = this.up('[popover]'); m.flag('shared', true); m._t = setTimeout(() => m.hidePopover(), 900)">Share</button></div>
+          </div>
+        </div>
+        <div ui-dropdown-space>
+          <button class="icon-btn bd" title="Actions" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-dots"/></svg></button>
+          <div ui-dropdown-menu popover="manual" class="menu menu-end">
+            <button class="menu-item">Move</button>
+            <button class="menu-item">Clone</button>
+            <button class="menu-item" onclick="this.nall('flag-toggle'); this.up('[popover]').hidePopover()">Add flag</button>
+            <button class="menu-item">Print</button>
+            <div class="menu-sep"></div>
+            <button class="menu-item danger" onclick="this.up('[popover]').hidePopover(); App.Ui.Modal.Open('delete.html', (r) => r && this.nall('ui-toast', 'Work item deleted'))">Delete</button>
+          </div>
+        </div>
+      </div>
+      <div class="flag-chip" flag-toggle="() => this.flag('hidden', !this.flag('hidden'))" hidden>⚑ Flagged</div>
+
+      <div class="row gap status-row">
+        <div ui-dropdown-space><button type="button" class="status" field-status data-state="in-progress" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)">In Progress <svg class="ic"><use href="#i-chevron"/></svg></button><div ui-dropdown-menu popover="manual" class="menu menu-start menu-status"><button type="button" class="menu-item" hx-post="fragments/field-status.html" hx-fill hx-vals-body="() => ({ value: 'To Do', state: 'to-do' })" hx-target="closest [ui-dropdown-space] [field-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="status" data-state="to-do">To Do</span></button><button type="button" class="menu-item" hx-post="fragments/field-status.html" hx-fill hx-vals-body="() => ({ value: 'In Progress', state: 'in-progress' })" hx-target="closest [ui-dropdown-space] [field-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="status" data-state="in-progress">In Progress</span></button><button type="button" class="menu-item" hx-post="fragments/field-status.html" hx-fill hx-vals-body="() => ({ value: 'Done', state: 'done' })" hx-target="closest [ui-dropdown-space] [field-status]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="status" data-state="done">Done</span></button></div></div>
+        <div ui-dropdown-space>
+          <button class="icon-btn bd" title="Automation" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-zap"/></svg></button>
+          <div ui-dropdown-menu popover="manual" class="menu menu-end">
+            <div class="menu-head">Automation rules</div>
+            <button class="menu-item"><svg class="ic"><use href="#i-zap"/></svg> Move to In Progress on branch</button>
+            <button class="menu-item"><svg class="ic"><use href="#i-zap"/></svg> Assign to me on transition</button>
+            <button class="menu-item"><svg class="ic"><use href="#i-zap"/></svg> Notify watchers when Done</button>
+            <div class="menu-sep"></div>
+            <button class="menu-item"><svg class="ic"><use href="#i-plus"/></svg> Create rule</button>
+          </div>
+        </div>
+        <div ui-dropdown-space>
+          <button class="btn" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic fill"><use href="#i-sparkle"/></svg> Improve</button>
+          <div ui-dropdown-menu popover="manual" class="menu menu-end">
+            <div class="menu-head">AI suggestions</div>
+            <button class="menu-item"><svg class="ic fill"><use href="#i-sparkle"/></svg> Summarise this issue</button>
+            <button class="menu-item"><svg class="ic fill"><use href="#i-sparkle"/></svg> Suggest a fix</button>
+            <button class="menu-item"><svg class="ic fill"><use href="#i-sparkle"/></svg> Draft a reply</button>
+            <button class="menu-item"><svg class="ic fill"><use href="#i-sparkle"/></svg> Break into subtasks</button>
+          </div>
+        </div>
+      </div>
+
+      <div ui-pin-space ui-pin-store="detail-properties">
+      <s-sortable class="pinned" ui-pin-target store="detail-properties" handle="[field-grip]"></s-sortable>
+
+      <details class="pdetails" open>
+      <summary class="sec-head"><svg class="ic caret"><use href="#i-chevron"/></svg><h2>Details</h2></summary>
+      <div ui-dropdown-space>
+      <button class="icon-btn xs sec-action" title="Configure fields" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-gear"/></svg></button>
+      <div ui-dropdown-menu popover="manual" class="menu menu-end">
+        <div class="menu-head">Show fields</div>
+        <label class="menu-item"><input type="checkbox" value="assignee" checked onchange="this.nall('fields-toggle', this)"> Assignee</label>
+        <label class="menu-item"><input type="checkbox" value="priority" checked onchange="this.nall('fields-toggle', this)"> Priority</label>
+        <label class="menu-item"><input type="checkbox" value="parent" checked onchange="this.nall('fields-toggle', this)"> Parent</label>
+        <label class="menu-item"><input type="checkbox" value="due" checked onchange="this.nall('fields-toggle', this)"> Due date</label>
+        <label class="menu-item"><input type="checkbox" value="labels" checked onchange="this.nall('fields-toggle', this)"> Labels</label>
+        <label class="menu-item"><input type="checkbox" value="team" checked onchange="this.nall('fields-toggle', this)"> Team</label>
+        <label class="menu-item"><input type="checkbox" value="start" checked onchange="this.nall('fields-toggle', this)"> Start date</label>
+        <label class="menu-item"><input type="checkbox" value="sprint" checked onchange="this.nall('fields-toggle', this)"> Sprint</label>
+        <label class="menu-item"><input type="checkbox" value="points" checked onchange="this.nall('fields-toggle', this)"> Story points</label>
+        <label class="menu-item"><input type="checkbox" value="reporter" checked onchange="this.nall('fields-toggle', this)"> Reporter</label>
+      </div>
+      </div>
+      <div class="fields" fields-toggle="(cb) => { const f = this.one('[field-name=' + cb.value + ']'); if (f) f.hidden = !cb.checked; }">
+        <div ui-pin-slot="assignee"><div class="field" field-name="assignee" ui-pin-name="assignee" sort-item="assignee"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Assignee</span><span class="field-body"><span ui-dropdown-space><button type="button" class="field-pick" field-assignee ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic xs favi"><use href="#i-person"/></svg><span class="field-val">Unassigned</span></button><div ui-dropdown-menu popover="manual" class="menu menu-start menu-assign"><div class="menu-head">Assignee</div><button type="button" class="menu-item" hx-post="fragments/field-assignee.html" hx-fill hx-vals-body="() => ({ value: 'Sam Rivera', initials: 'SR' })" hx-target="closest [ui-dropdown-space] [field-assignee]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">SR</span> Sam Rivera</button><button type="button" class="menu-item" hx-post="fragments/field-assignee.html" hx-fill hx-vals-body="() => ({ value: 'Alex Kim', initials: 'AK' })" hx-target="closest [ui-dropdown-space] [field-assignee]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">AK</span> Alex Kim</button><button type="button" class="menu-item" hx-post="fragments/field-assignee.html" hx-fill hx-vals-body="() => ({ value: 'Priya Shah', initials: 'PS' })" hx-target="closest [ui-dropdown-space] [field-assignee]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">PS</span> Priya Shah</button><div class="menu-sep"></div><button type="button" class="menu-item" hx-post="fragments/field-unassign.html" hx-target="closest [ui-dropdown-space] [field-assignee]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><svg class="ic"><use href="#i-person"/></svg> Unassign</button></div></span> <button class="linkish sm" hx-post="fragments/field-assignee.html" hx-fill hx-vals-body="() => ({ value: 'Sam Rivera', initials: 'SR' })" hx-target="closest .field-body [field-assignee]" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">Assign to me</button></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+        <div ui-pin-slot="priority"><div class="field" field-name="priority" ui-pin-name="priority" sort-item="priority"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Priority</span><span class="field-body"><span ui-dropdown-space><button type="button" class="field-pick" field-priority data-state="medium" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic xs prio"><use href="#i-prio"/></svg><span class="field-val set">Medium</span></button><div ui-dropdown-menu popover="manual" class="menu menu-start menu-prio"><button type="button" class="menu-item" hx-post="fragments/field-priority.html" hx-fill hx-vals-body="() => ({ value: 'Highest', state: 'highest' })" hx-target="closest [ui-dropdown-space] [field-priority]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><svg class="ic xs prio" data-state="highest"><use href="#i-prio"/></svg> Highest</button><button type="button" class="menu-item" hx-post="fragments/field-priority.html" hx-fill hx-vals-body="() => ({ value: 'High', state: 'high' })" hx-target="closest [ui-dropdown-space] [field-priority]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><svg class="ic xs prio" data-state="high"><use href="#i-prio"/></svg> High</button><button type="button" class="menu-item" hx-post="fragments/field-priority.html" hx-fill hx-vals-body="() => ({ value: 'Medium', state: 'medium' })" hx-target="closest [ui-dropdown-space] [field-priority]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><svg class="ic xs prio" data-state="medium"><use href="#i-prio"/></svg> Medium</button><button type="button" class="menu-item" hx-post="fragments/field-priority.html" hx-fill hx-vals-body="() => ({ value: 'Low', state: 'low' })" hx-target="closest [ui-dropdown-space] [field-priority]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><svg class="ic xs prio" data-state="low"><use href="#i-prio"/></svg> Low</button><button type="button" class="menu-item" hx-post="fragments/field-priority.html" hx-fill hx-vals-body="() => ({ value: 'Lowest', state: 'lowest' })" hx-target="closest [ui-dropdown-space] [field-priority]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><svg class="ic xs prio" data-state="lowest"><use href="#i-prio"/></svg> Lowest</button></div></span></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+        <div ui-pin-slot="parent"><div class="field" field-name="parent" ui-pin-name="parent" sort-item="parent"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Parent</span><span class="field-body"><span class="edit-view field-val" data-state="" hx-post="fragments/field-edit.html" hx-fill hx-target="this" hx-swap="outerHTML" hx-vals-body="() => ({ value: this.textContent.trim(), type: 'text', set: '', state: '' })" onclick="App.Ui.Hx(this, event)">None</span></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+        <div ui-pin-slot="due"><div class="field" field-name="due" ui-pin-name="due" sort-item="due"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Due date</span><span class="field-body"><span class="edit-view field-val" data-state="" hx-post="fragments/field-edit.html" hx-fill hx-target="this" hx-swap="outerHTML" hx-vals-body="() => ({ value: this.textContent.trim(), type: 'date', set: '', state: '' })" onclick="App.Ui.Hx(this, event)">None</span></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+        <div ui-pin-slot="labels"><div class="field" field-name="labels" ui-pin-name="labels" sort-item="labels"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Labels</span><span class="field-body"><span class="edit-view field-val" field-labels="None" hx-post="fragments/field-labels-edit.html" hx-fill hx-target="this" hx-swap="outerHTML" hx-vals-body="() => ({ value: this.attr('field-labels') })" onclick="App.Ui.Hx(this, event)">None</span></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+        <div ui-pin-slot="team"><div class="field" field-name="team" ui-pin-name="team" sort-item="team"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Team</span><span class="field-body"><span class="edit-view field-val" data-state="" hx-post="fragments/field-edit.html" hx-fill hx-target="this" hx-swap="outerHTML" hx-vals-body="() => ({ value: this.textContent.trim(), type: 'text', set: '', state: '' })" onclick="App.Ui.Hx(this, event)">None</span></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+        <div ui-pin-slot="start"><div class="field" field-name="start" ui-pin-name="start" sort-item="start"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Start date</span><span class="field-body"><span class="edit-view field-val" data-state="" hx-post="fragments/field-edit.html" hx-fill hx-target="this" hx-swap="outerHTML" hx-vals-body="() => ({ value: this.textContent.trim(), type: 'date', set: '', state: '' })" onclick="App.Ui.Hx(this, event)">None</span></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+        <div ui-pin-slot="sprint"><div class="field" field-name="sprint" ui-pin-name="sprint" sort-item="sprint"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Sprint</span><span class="field-body"><span class="edit-view field-val" data-state="" hx-post="fragments/field-edit.html" hx-fill hx-target="this" hx-swap="outerHTML" hx-vals-body="() => ({ value: this.textContent.trim(), type: 'text', set: '', state: '' })" onclick="App.Ui.Hx(this, event)">None</span></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+        <div ui-pin-slot="points"><div class="field" field-name="points" ui-pin-name="points" sort-item="points"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Story points</span><span class="field-body"><span class="edit-view field-val" data-state="" hx-post="fragments/field-edit.html" hx-fill hx-target="this" hx-swap="outerHTML" hx-vals-body="() => ({ value: this.textContent.trim(), type: 'number', set: '', state: '' })" onclick="App.Ui.Hx(this, event)">None</span></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+        <div ui-pin-slot="reporter"><div class="field" field-name="reporter" ui-pin-name="reporter" sort-item="reporter"><span class="field-grip" field-grip><svg class="ic xs"><use href="#i-grip"/></svg></span><span class="field-key">Reporter</span><span class="field-body"><span ui-dropdown-space><button type="button" class="field-pick" field-reporter ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><span class="avatar xs">SR</span><span class="field-val set">Sam Rivera</span></button><div ui-dropdown-menu popover="manual" class="menu menu-start menu-assign"><div class="menu-head">Reporter</div><button type="button" class="menu-item" hx-post="fragments/field-reporter.html" hx-fill hx-vals-body="() => ({ value: 'Sam Rivera', initials: 'SR' })" hx-target="closest [ui-dropdown-space] [field-reporter]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">SR</span> Sam Rivera</button><button type="button" class="menu-item" hx-post="fragments/field-reporter.html" hx-fill hx-vals-body="() => ({ value: 'Alex Kim', initials: 'AK' })" hx-target="closest [ui-dropdown-space] [field-reporter]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">AK</span> Alex Kim</button><button type="button" class="menu-item" hx-post="fragments/field-reporter.html" hx-fill hx-vals-body="() => ({ value: 'Priya Shah', initials: 'PS' })" hx-target="closest [ui-dropdown-space] [field-reporter]" hx-swap="outerHTML" onclick="this.up('[popover]').hidePopover(); App.Ui.Hx(this, event)"><span class="avatar xs">PS</span> Priya Shah</button></div></span></span><button class="pin" title="Pin to top" onclick="App.Ui.Pin.Toggle(this)"><svg class="ic xs"><use href="#i-pin"/></svg></button></div></div>
+      </div>
+      </details>
+      <script>App.Ui.Pin.Init(document.currentScript)</script>
+      </div>
+
+      <details class="pdetails pd-bd" hx-get="fragments/development.html" hx-target="find .pcard-body" hx-swap="innerHTML" ontoggle="this.open && App.Ui.Hx(this)">
+        <summary class="sec-head"><svg class="ic caret"><use href="#i-chevron"/></svg><h2>Development</h2></summary>
+        <div class="pcard-body"><p class="muted small">Loading…</p></div>
+      </details>
+      <details class="pdetails pd-bd" hx-get="fragments/automation.html" hx-target="find .pcard-body" hx-swap="innerHTML" ontoggle="this.open && App.Ui.Hx(this)">
+        <summary class="sec-head"><svg class="ic caret"><use href="#i-chevron"/></svg><h2>Automation</h2></summary>
+        <div class="pcard-body"><p class="muted small">Loading…</p></div>
+      </details>
+
+      <div class="meta">
+        <div>Created <button class="linkish">3 hours ago</button></div>
+        <div>Updated <button class="linkish">1 hour ago</button></div>
+        <a href="#">Configure</a>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<style>
+body[ui-modal-open]{overflow:hidden;}
+dialog[ui-modal-state]{padding:0;border:none;width:100vw;height:100vh;max-width:100vw;max-height:100vh;background:rgba(0,0,0,.6);}
+dialog[ui-modal-state]::backdrop{background:transparent;}
+dialog[ui-modal-state] [ui-modal-frame],
+dialog[ui-modal-state] [ui-modal-loading]{width:100%;height:100%;}
+dialog[ui-modal-state] iframe{width:100%;height:100%;border:0;background:transparent;}
+[ui-modal-loading]{display:flex;align-items:center;justify-content:center;color:#fff;gap:1rem;}
+[ui-modal-state="loading"] [ui-modal-frame]{display:none;}
+[ui-modal-state="iframe"] [ui-modal-loading]{display:none;}
+</style>
+
+<template ui-modal-tpl>
+  <dialog ui-modal-state="loading">
+    <div ui-modal-loading>
+      <span>Loading…</span>
+      <button onclick="App.Ui.App.Ui.Modal.Cancel()">Cancel</button>
+    </div>
+    <div ui-modal-frame>
+      <iframe ui-modal-iframe></iframe>
+    </div>
+  </dialog>
+</template>
+
+
+<output class="toast" ui-toast="(t) => { this.textContent = t; this.flag('ui-toast-on', true); clearTimeout(this._t); this._t = setTimeout(() => this.flag('ui-toast-on', false), 3000); }"></output>
+
+</body>
+</html>

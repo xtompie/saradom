@@ -1,0 +1,10 @@
+<div class="comment" comment>
+  <div class="avatar sm">SR</div>
+  <form class="comment-body comment-edit" hx-post="fragments/comment-edited.html" hx-fill hx-target="closest .comment" hx-swap="outerHTML" onsubmit="App.Ui.Hx(this, event)">
+    <textarea class="input comment-edit-area" name="text" rows="3">Seen it on prod too — the token TTL is 15 min.</textarea>
+    <div class="row gap comment-edit-foot">
+      <button class="btn btn-primary btn-sm" type="submit">Save</button>
+      <button class="btn btn-sm" type="button" hx-get="fragments/comment-view.html" hx-target="closest .comment" hx-swap="outerHTML" onclick="App.Ui.Hx(this, event)">Cancel</button>
+    </div>
+  </form>
+</div>

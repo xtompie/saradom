@@ -1,11 +1,11 @@
 ---
 slug: switch
 title: "Switch"
-type: example
-tags: [example, dom-state]
+type: page
+tags: [switch, dom-state]
 related: [dom-state, event-attributes, notify, modularization]
-track: examples
-order: 5
+track: tools
+order: 60
 status: draft
 ---
 
@@ -13,9 +13,12 @@ status: draft
 
 Switch drives each element's state from a shared set of tags — one call flips every tagged element on or off, hiding and showing by default, or running whatever effect the element defines. Elements carry their tag inside a shared `switch-space`, and the active set is written to the DOM as `switch-state`, readable there with no JavaScript variable holding it.
 
-Switch is the more generic successor of [Visible](visible.html): the tag attribute is configurable, and the effect is not limited to show/hide.
-
 <!-- source: Switch/Switch.js -->
+
+<!-- embed: content/switch.css -->
+<!-- embed: Switch/Switch.js -->
+
+<!-- demo: content/switch-tabs.html -->
 
 ## Signature
 
@@ -41,12 +44,6 @@ Config on each target:
 - `switch-tag` holds the target's tag(s), space-separated.
 - `switch-onchange` is the effect, `(on) => ...` with `this` the element. Left out, the target is shown when on and hidden when off.
 
-## Tabs
-
-One panel shows at a time. Each button selects its tag.
-
-<!-- demo: content/switch-tabs.html -->
-
 ## Accordion
 
 Each header toggles its panel. Opening one closes the rest.
@@ -71,6 +68,3 @@ Each target sets its own effect in `switch-onchange`. It runs with the computed 
   <p switch-tag="b" switch-onchange="(on) => this.style.opacity = on ? 1 : .35">Panel B</p>
 </div>
 ```
-
-<!-- embed: content/switch.css -->
-<!-- embed: Switch/Switch.js -->

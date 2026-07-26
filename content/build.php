@@ -22,7 +22,6 @@ $OUT  = "$ROOT/docs";
 $NAV  = require "$ROOT/content/nav.php";
 $MD   = make_md();
 
-rmrf($OUT);
 @mkdir($OUT, 0777, true);
 
 foreach (glob("$ROOT/content/*.md") as $file) {
@@ -105,7 +104,7 @@ function includes(string $html, string $root): string
     $html = preg_replace_callback('/<!--\s*include-js:\s*(\S+)\s*-->/',   fn($m) => wrap_file($m[1], $root, 'script'), $html);
     $html = preg_replace_callback('/<!--\s*include-css:\s*(\S+)\s*-->/',  fn($m) => wrap_file($m[1], $root, 'style'), $html);
     $html = preg_replace_callback('/<!--\s*include:\s*(\S+)\s*-->/',      fn($m) => include_code($m[1], $root), $html);
-    $html = preg_replace_callback('/<!--\s*source:\s*(\S+)\s*-->/',       fn($m) => source_link($m[1], $root), $html);
+    $html = preg_replace_callback('/<!--\s*source:\s*(.+?)\s*-->/',       fn($m) => source_link($m[1], $root), $html);
     return $html;
 }
 
@@ -162,12 +161,17 @@ function uses_block(array $paths): string
     return $links ? '<p class="code-src">Uses: ' . implode(', ', $links) . '</p>' : '';
 }
 
-function source_link(string $path, string $root): string
+// One "Source:" line, linking each listed file. Several files render comma-separated.
+function source_link(string $paths, string $root): string
 {
-    $path = ltrim($path, '/');
-    if (!is_file("$root/$path")) return '<p class="code-src">source not found: ' . htmlspecialchars($path) . '</p>';
-    $name = basename($path);
-    return '<p class="code-src">Source: <a href="' . htmlspecialchars(REPO . $path) . '" target="_blank" rel="noopener">' . htmlspecialchars($name) . '</a></p>';
+    $links = [];
+    foreach (preg_split('/\s+/', trim($paths)) as $path) {
+        $p = ltrim($path, '/');
+        if ($p === '') continue;
+        if (!is_file("$root/$p")) return '<p class="code-src">source not found: ' . htmlspecialchars($p) . '</p>';
+        $links[] = '<a href="' . htmlspecialchars(REPO . $p) . '" target="_blank" rel="noopener">' . htmlspecialchars(basename($p)) . '</a>';
+    }
+    return $links ? '<p class="code-src">Source: ' . implode(', ', $links) . '</p>' : '';
 }
 
 // Highlight language from a file extension.

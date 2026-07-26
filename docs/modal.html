@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<title>Modal · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:title" content="Modal">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="compute.html">Compute</a><a href="dropdown.html">Dropdown</a><a href="filter.html">Filter</a><a href="hx.html">Hx</a><a class="active" href="modal.html">Modal</a><a href="notify.html">Notify</a><a href="switch.html">Switch</a><a href="util.html">Util</a><a href="val.html">Val</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="modal">Modal<a class="anchor" href="#modal" aria-hidden="true">#</a></h1>
+<p>Modal opens an existing app page in a fullscreen native <code>&lt;dialog&gt;</code> and returns one value to
+a callback. The page inside is loaded by URL in an <code>&lt;iframe&gt;</code>, so it is an ordinary page,
+not a rebuilt view.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Modal/Modal.js" target="_blank" rel="noopener">Modal.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Modal/Modal.html" target="_blank" rel="noopener">Modal.html</a></p>
+<script>
+// window.Modal (not `const`): the page inside the iframe reaches it as window.parent.Modal.
+window.Modal = (() => {
+    const LOADING_DELAY_MS = 500;
+
+    const clone = () => document.querySelector('[modal-tpl]').content.firstElementChild.cloneNode(true);
+
+    const show = (modal) => {
+        if (modal.open) return;
+        document.body.setAttribute('modal-open', '');
+        modal.showModal();
+    };
+
+    const Open = (url, callback) => {
+        const modal = clone();
+        const iframe = modal.querySelector('[modal-iframe]');
+        modal._callback = callback || null;
+        modal._result = null;
+
+        modal.onclose = () => {
+            modal.remove();
+            document.body.removeAttribute('modal-open');
+            // The callback runs on every close: the value from Result, or null from
+            // Cancel, Escape and a backdrop click. The parent decides what null means.
+            if (modal._callback) modal._callback(modal._result);
+        };
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.close();
+        };
+
+        // In the DOM but not shown yet: a fast load flips to ready in one tick,
+        // a slow load shows the loading state first.
+        document.body.appendChild(modal);
+
+        let timer = setTimeout(() => {
+            timer = null;
+            show(modal);
+        }, LOADING_DELAY_MS);
+
+        iframe.onload = () => {
+            iframe.onload = null;
+            if (timer !== null) { clearTimeout(timer); timer = null; }
+            modal.setAttribute('modal-state', 'iframe');
+            show(modal);
+        };
+
+        iframe.src = url;
+    };
+
+    const active = () => document.querySelector('[modal-state]');
+
+    const Result = (data) => {
+        const modal = active();
+        if (modal) { modal._result = data; modal.close(); return; }
+        if (window.parent !== window) window.parent.Modal.Result(data);
+    };
+
+    const Cancel = () => {
+        const modal = active();
+        if (modal) { modal._result = null; modal.close(); return; }
+        if (window.parent !== window) window.parent.Modal.Cancel();
+    };
+
+    // Inside an iframe there is no dialog to catch Escape. The page in the iframe routes
+    // it up with <body onkeydown="Modal.Esc(event)">.
+    const Esc = (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); Cancel(); }
+    };
+
+    return { Open, Result, Cancel, Esc };
+})();
+</script>
+<div class="demo"><style>
+body[modal-open] { overflow: hidden; }
+dialog[modal-state] { padding: 0; border: none; width: 100vw; height: 100vh; max-width: 100vw; max-height: 100vh; background: rgba(0,0,0,.6); }
+dialog[modal-state]::backdrop { background: transparent; }
+dialog[modal-state] [modal-frame], dialog[modal-state] [modal-loading] { width: 100%; height: 100%; }
+dialog[modal-state] iframe { width: 100%; height: 100%; border: 0; background: transparent; }
+[modal-loading] { display: flex; align-items: center; justify-content: center; color: #fff; gap: 1rem; }
+[modal-state="loading"] [modal-frame] { display: none; }
+[modal-state="iframe"] [modal-loading] { display: none; }
+</style>
+
+<template modal-tpl>
+  <dialog modal-state="loading">
+    <div modal-loading><span>Loading…</span><button onclick="Modal.Cancel()">Cancel</button></div>
+    <div modal-frame><iframe modal-iframe></iframe></div>
+  </dialog>
+</template>
+
+<button onclick="Modal.Open('modal-demo-list.html', (item) => { this.textContent = item ? 'Picked: ' + item.name : 'Cancelled'; })">Choose an item</button>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Modal.Open('/items', (item) =&gt;
+    item &amp;&amp; (this.textContent = item.name)
+)"</span>&gt;</span>Choose<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+<p>Clicking opens <code>/items</code> in the modal. The callback runs on close. It gets the chosen item,
+or <code>null</code> when the modal is cancelled. Here a cancel does nothing, but the parent can act on
+<code>null</code> if it needs to, such as clearing a state.</p>
+<p>The page loaded in the iframe returns a value with <code>Result</code>, or closes with <code>Cancel</code>. <code>Esc</code>
+on the body routes Escape to <code>Cancel</code>. It looks like this:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">onkeydown</span>=<span class="hljs-string">"Modal.Esc(event)"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Modal.Result({ id: 1, name: 'Item 1' })"</span>&gt;</span>Item 1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Modal.Result({ id: 2, name: 'Item 2' })"</span>&gt;</span>Item 2<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Modal.Cancel()"</span>&gt;</span>Cancel<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span></code></pre>
+<h2 id="functions">Functions<a class="anchor" href="#functions" aria-hidden="true">#</a></h2>
+<p><code>Modal.Open(url, callback)</code> opens the dialog. It loads <code>url</code> in the iframe. <code>callback</code> runs
+when the modal closes, with the returned value or <code>null</code> on cancel.</p>
+<p><code>Modal.Result(data)</code> is called from the page inside the iframe. It closes the modal and runs
+the callback with <code>data</code>.</p>
+<p><code>Modal.Cancel()</code> is called from the page inside the iframe. It closes the modal and runs the
+callback with <code>null</code>.</p>
+<p><code>Modal.Esc(event)</code> is called from the page inside the iframe, on <code>onkeydown</code>. Escape closes
+the modal the same as <code>Cancel</code>.</p>
+<h2 id="any-page-as-a-modal">Any page as a modal<a class="anchor" href="#any-page-as-a-modal" aria-hidden="true">#</a></h2>
+<p>This is the point of the pattern, and it is optional. Add <code>_modal=1</code> to any URL. The page
+reads the flag and renders itself as a modal: no site chrome, transparent body, content in
+the center. The same URL without the flag is a normal full page. With one flag every view
+the app already has can open as a modal. No modal version of a screen is built.</p>
+<h2 id="reusing-a-list">Reusing a list<a class="anchor" href="#reusing-a-list" aria-hidden="true">#</a></h2>
+<p>An existing list opens as a picker, and it keeps working inside the modal. Its filter,
+search, and paging reload the iframe the same as on a full page. To pick a row, the row
+posts its own id back to the same list. The controller takes the id, loads that one row's
+detail or renders an HTML fragment, and returns it with <code>Modal.Result</code>. The list carries
+ids, not the full detail of every row, and that detail is built only for the row chosen.</p>
+<h2 id="loading">Loading<a class="anchor" href="#loading" aria-hidden="true">#</a></h2>
+<p>The dialog opens once the page is ready. A fast load shows the modal already full. A slow
+load shows a loading state with a Cancel button first, then flips to the page. An iframe
+reports no failed load, so a page that never answers stays on loading, and Cancel is the way
+out.</p>
+<h2 id="support">Support<a class="anchor" href="#support" aria-hidden="true">#</a></h2>
+<p>Modal uses the native <code>&lt;dialog&gt;</code> element and <code>showModal</code>. It works in Chrome 37+, Firefox
+98+, and Safari 15.4+. It does not use CSS anchor positioning, so it has no Chromium-only
+limit.
+</content></p>
+<p class="doc-next"><a href="notify.html">Next: Notify →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>
