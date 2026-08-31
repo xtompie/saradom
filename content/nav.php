@@ -18,9 +18,13 @@ return [
         ['Compute', 'compute.html'], // derived values that refresh themselves on DOM change
         ['Dropdown', 'dropdown.html'], // popover + CSS anchor per instance; closing via body routers
         ['Filter', 'filter.html'], // filter a list by typing; non-matching rows hide
+        ['FormSubmit', 'formsubmit.html'], // click → hidden inputs + classic submit; server renders all
         ['Hx', 'hx.html'],       // htmx-style attributes wired to one function
+        ['Init', 'init.html'],   // one line of code that runs in place, during parsing
         ['Modal', 'modal.html'], // open an app page in a fullscreen dialog, return one value
         ['Notify', 'notify.html'], // up/down signals over the DOM, listeners as attributes
+        ['Resizer', 'resizer.html'], // drag handle that resizes a panel via one CSS variable
+        ['Sortable', 'sortable.html'], // drag-and-drop lists: SortableJS wrapped in a custom element
         ['Switch', 'switch.html'], // tags flip tagged elements on/off: show/hide or a custom effect
         ['Util', 'util.html'],   // helper methods on built-in objects
         ['Val', 'val.html'],     // two-way binding between an object and the DOM

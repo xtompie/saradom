@@ -29,6 +29,7 @@ Clicking the button sends an HTTP GET to `/hello`. With no `hx-target`, the resp
 - `hx-select` picks part of the response, by selector.
 - `hx-indicator` names an element shown while the request runs.
 - `hx-disable` stops the element from triggering a request.
+- `hx-vals-body` and `hx-vals-query` add computed values to the request.
 
 ## Event binding
 
@@ -37,6 +38,21 @@ Clicking the button sends an HTTP GET to `/hello`. With no `hx-target`, the resp
 ## Native semantics
 
 A plain `<a href>` sends a GET to that URL, with no `hx-*` attribute needed. A plain `<form>` sends a POST to its `action`, with its fields serialized. If `action` is missing, it posts to the current URL.
+
+## Values
+
+A request can carry values that are not form fields. `hx-vals-body` holds a function returning an object; it is evaluated at request time with `this` = the element the attribute sits on, and the object becomes the urlencoded body of a POST, PUT, PATCH, or DELETE:
+
+```html
+<button hx-post="/status" onclick="hx(this, event)"
+        hx-vals-body="() => ({ value: 'Done', state: 'done' })">Done</button>
+```
+
+`hx-vals-query` is the same function shape, but the pairs are merged into the URL's query string, for any method including GET. A pair with a key the URL already has replaces it.
+
+The encoding follows PHP's `http_build_query`: nested objects flatten to `key[sub]=value`, `true`/`false` become `1`/`0`, and `null` or `undefined` entries are dropped. So a controller reads the body the same way it reads a submitted form. The same encoder ships standalone as `HttpBuildQuery/HttpBuildQuery.js` — one pure function, for code outside Hx that wants to build a query string the same way.
+
+Like every `hx-*` attribute, both can sit on an ancestor and be inherited by the elements inside it.
 
 ## Selectors
 

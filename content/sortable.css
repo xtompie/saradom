@@ -1,0 +1,8 @@
+.sortable-list { display:flex; flex-direction:column; gap:.35rem; max-width:24rem; margin:0 auto; }
+.sortable-list > div {
+  padding:.45rem .65rem; background:var(--soft); border:1px solid var(--line);
+  border-radius:var(--r-sm); color:var(--ink); cursor:grab;
+}
+.sortable-list > .sortable-ghost { opacity:.35; }
+.sortable-columns { display:flex; gap:.7rem; max-width:24rem; margin:0 auto; }
+.sortable-columns .sortable-list { flex:1; margin:0; }

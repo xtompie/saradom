@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<title>Sortable · Saradom</title>
+<meta name="description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:title" content="Sortable">
+<meta property="og:description" content="Build modular, scalable frontends in plain HTML and JavaScript. There is no framework and no build step.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Saradom">
+<meta property="og:url" content="https://xtompie.github.io/saradom/">
+<meta property="og:image" content="https://xtompie.github.io/saradom/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://xtompie.github.io/saradom/og.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f0883e'/><text x='16' y='22' font-family='ui-monospace,monospace' font-size='17' font-weight='700' fill='%23140c04' text-anchor='middle'>S</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
+<div class="nav-scrim" onclick="Nav.Close(this)"></div>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="compute.html">Compute</a><a href="dropdown.html">Dropdown</a><a href="filter.html">Filter</a><a href="formsubmit.html">FormSubmit</a><a href="hx.html">Hx</a><a href="init.html">Init</a><a href="modal.html">Modal</a><a href="notify.html">Notify</a><a href="resizer.html">Resizer</a><a class="active" href="sortable.html">Sortable</a><a href="switch.html">Switch</a><a href="util.html">Util</a><a href="val.html">Val</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<main class="content"><h1 id="sortable">Sortable<a class="anchor" href="#sortable" aria-hidden="true">#</a></h1>
+<p><code>&lt;s-sortable&gt;</code> makes its children draggable. It is a custom element wrapping
+<a href="https://sortablejs.github.io/Sortable/">SortableJS</a>, so a list drags as soon as the element
+connects — no init call, no <code>DOMContentLoaded</code> handler. It moves the same DOM nodes the rest
+of the page reads: after a drop the new order is already in the DOM, and anything that reads
+the list sees it.</p>
+<p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a></p>
+<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Init/SInit.js" target="_blank" rel="noopener">SInit.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script>
+(() => {
+    const Group = (el) => {
+        const name = el.getAttribute('group');
+        if (!name) {
+            return undefined;
+        }
+        const sel = el.getAttribute('boundary');
+        return {
+            name,
+            put: sel
+                ? (to, from) => to.el.closest(sel) === from.el.closest(sel)
+                : true,
+        };
+    };
+    class SortableElement extends HTMLElement {
+        connectedCallback() {
+            if (this._sortable || typeof Sortable === 'undefined') {
+                return;
+            }
+            this._sortable = new Sortable(this, {
+                group: Group(this),
+                animation: Number(this.getAttribute('animation')) || 150,
+                handle: this.getAttribute('handle') || undefined,
+                onEnd: (event) => {
+                    const key = this.getAttribute('store');
+                    if (key) {
+                        const order = Array.from(this.querySelectorAll('[sort-item]')).map((el) => el.getAttribute('sort-item'));
+                        localStorage.setItem(key, JSON.stringify(order));
+                    }
+                    const code = this.getAttribute('onsort');
+                    if (code) new Function('event', code).call(this, event);
+                },
+            });
+        }
+        restore() {
+            const key = this.getAttribute('store');
+            if (!key) {
+                return;
+            }
+            JSON.parse(localStorage.getItem(key) || '[]').forEach((name) => {
+                const item = this.querySelector('[sort-item="' + name + '"]');
+                if (item) {
+                    this.appendChild(item);
+                }
+            });
+        }
+        disconnectedCallback() {
+            if (this._sortable) {
+                this._sortable.destroy();
+                this._sortable = null;
+            }
+        }
+    }
+    customElements.define('s-sortable', SortableElement);
+})();
+</script>
+<script>
+(() => {
+    class InitElement extends HTMLElement {
+        connectedCallback() {
+            if (this._ran) {
+                return;
+            }
+            this._ran = true;
+            const parent = this.parentElement;
+            const code = this.getAttribute('run');
+            if (parent && code) {
+                (function () { return eval(code); }).call(parent)(parent);
+            }
+        }
+    }
+    customElements.define('s-init', InitElement);
+})();
+</script>
+<style>
+.sortable-list { display:flex; flex-direction:column; gap:.35rem; max-width:24rem; margin:0 auto; }
+.sortable-list > div {
+  padding:.45rem .65rem; background:var(--soft); border:1px solid var(--line);
+  border-radius:var(--r-sm); color:var(--ink); cursor:grab;
+}
+.sortable-list > .sortable-ghost { opacity:.35; }
+.sortable-columns { display:flex; gap:.7rem; max-width:24rem; margin:0 auto; }
+.sortable-columns .sortable-list { flex:1; margin:0; }
+</style>
+<div class="demo">
+<s-sortable class="sortable-list">
+    <div>Gather the requirements</div>
+    <div>Design the schema</div>
+    <div>Build the endpoint</div>
+    <div>Ship it</div>
+</s-sortable>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-list"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Gather the requirements<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Design the schema<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Build the endpoint<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Ship it<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span></code></pre>
+<p>The tag is the whole setup. Every direct child is draggable. Reordering animates by default;
+<code>animation</code> on the tag sets the duration in milliseconds.</p>
+<p>A drag can be limited to one part of each item: <code>handle</code> names a selector, and only that part
+starts the drag. The rest of the item stays clickable, selectable, a link.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">handle</span>=<span class="hljs-string">"[grip]"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/jira"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">grip</span>&gt;</span>⠿<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> Jira<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/confluence"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">grip</span>&gt;</span>⠿<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> Confluence<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span></code></pre>
+<h2 id="between-lists">Between lists<a class="anchor" href="#between-lists" aria-hidden="true">#</a></h2>
+<p>Lists that share a <code>group</code> name exchange items. Drag from one list, drop into the other —
+SortableJS moves the node, and the node lands in the other list's DOM.</p>
+<div class="demo">
+<div class="sortable-columns">
+    <s-sortable class="sortable-list" group="chores">
+        <div>Water the plants</div>
+        <div>Fix the faucet</div>
+        <div>Paint the fence</div>
+    </s-sortable>
+    <s-sortable class="sortable-list" group="chores">
+        <div>Walk the dog</div>
+        <div>Buy groceries</div>
+    </s-sortable>
+</div>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-columns"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-list"</span> <span class="hljs-attr">group</span>=<span class="hljs-string">"chores"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Water the plants<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Fix the faucet<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Paint the fence<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-list"</span> <span class="hljs-attr">group</span>=<span class="hljs-string">"chores"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Walk the dog<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Buy groceries<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+<p>When several independent widgets with the same group sit on one page — two kanban boards, say
+— <code>boundary</code> keeps them apart. It names a selector; an item moves only between lists under
+the same closest <code>boundary</code> ancestor. The <a href="kanban.html">Kanban example</a> uses
+<code>boundary=&quot;[kanban-space]&quot;</code> for exactly this.</p>
+<h2 id="remembering-the-order">Remembering the order<a class="anchor" href="#remembering-the-order" aria-hidden="true">#</a></h2>
+<p><code>store</code> persists the order across visits. The tag names a <code>localStorage</code> key, and each child
+carries its name in <code>sort-item</code>. When a drag ends, the element collects the <code>sort-item</code>
+names in DOM order and saves the array under the key.</p>
+<p><code>restore()</code> reorders the children from the saved array. An <a href="init.html"><code>&lt;s-init&gt;</code></a> as the
+last child calls it during parsing, before the page renders further — the order comes back
+with no flicker and no load handler:</p>
+<div class="demo">
+<s-sortable class="sortable-list" store="saradom-sortable-demo">
+    <div sort-item="alpha">Alpha</div>
+    <div sort-item="beta">Beta</div>
+    <div sort-item="gamma">Gamma</div>
+    <div sort-item="delta">Delta</div>
+    <s-init run="(el) => el.restore()"></s-init>
+</s-sortable>
+</div>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-list"</span> <span class="hljs-attr">store</span>=<span class="hljs-string">"saradom-sortable-demo"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"alpha"</span>&gt;</span>Alpha<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"beta"</span>&gt;</span>Beta<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"gamma"</span>&gt;</span>Gamma<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"delta"</span>&gt;</span>Delta<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">s-init</span> <span class="hljs-attr">run</span>=<span class="hljs-string">"(el) =&gt; el.restore()"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">s-init</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span></code></pre>
+<p>Reorder the list, reload the page: the order holds. The list may also arrive later, inside an
+<a href="hx.html">Hx</a> fragment — custom elements upgrade on insertion, so both the dragging and the
+restore work in a fragment without any wiring.</p>
+<p>On the element's own tag the attributes are bare: <code>group</code>, <code>handle</code>, <code>store</code>. On other
+elements they carry the module prefix: <code>sort-item</code>. The tag itself is the scope.</p>
+<h2 id="reacting-to-a-drop">Reacting to a drop<a class="anchor" href="#reacting-to-a-drop" aria-hidden="true">#</a></h2>
+<p><code>onsort</code> runs after a drop, like a native event attribute: <code>this</code> is the element, <code>event</code> is
+the SortableJS end event, with <code>oldIndex</code> and <code>newIndex</code> on it. The order is already in the
+DOM by then, so the handler reads the list, not the event, when it wants the result — or
+hands the work to another toolkit:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">onsort</span>=<span class="hljs-string">"hx(this)"</span> <span class="hljs-attr">hx-post</span>=<span class="hljs-string">"/reorder"</span>
+            <span class="hljs-attr">hx-vals-body</span>=<span class="hljs-string">"() =&gt; ({ order: this.all('[sort-item]').map((el) =&gt; el.attr('sort-item')) })"</span>&gt;</span></code></pre>
+<p>Sortable never heard of Hx. One attribute connects a drop to a POST with the new order.</p>
+<h2 id="mechanism">Mechanism<a class="anchor" href="#mechanism" aria-hidden="true">#</a></h2>
+<p><code>connectedCallback</code> creates the SortableJS instance on the element; <code>disconnectedCallback</code>
+destroys it. An element removed and re-inserted — a fragment swap, a modal — wires itself
+again on its own. When the global <code>Sortable</code> is missing, the element does nothing, so the
+page degrades to a static list instead of throwing.</p>
+<h2 id="support">Support<a class="anchor" href="#support" aria-hidden="true">#</a></h2>
+<p>The element needs SortableJS loaded first — one <code>&lt;script&gt;</code> tag before the lists, or before
+<code>SSortable.js</code> itself. Everything else is standard custom elements, in every evergreen
+browser.</p>
+<p class="doc-next"><a href="switch.html">Next: Switch →</a></p>
+</main>
+<script>
+// Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),
+// event in an HTML attribute, action in context (this), module as an IIFE.
+const Nav = (() => {
+  const Toggle = (ctx) => ctx.setAttribute('aria-expanded', document.body.toggleAttribute('nav-open'));
+  const Close  = () => { document.body.removeAttribute('nav-open'); document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false'); };
+  return { Toggle, Close };
+})();
+</script>
+</body>
+</html>
