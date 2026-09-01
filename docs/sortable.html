@@ -26,7 +26,6 @@ connects — no init call, no <code>DOMContentLoaded</code> handler. It moves th
 of the page reads: after a drop the new order is already in the DOM, and anything that reads
 the list sees it.</p>
 <p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a></p>
-<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>
 (() => {
@@ -104,24 +103,24 @@ the list sees it.</p>
 })();
 </script>
 <style>
-.sortable-list { display:flex; flex-direction:column; gap:.35rem; max-width:24rem; margin:0 auto; }
-.sortable-list > div {
+.demo s-sortable { display:flex; flex-direction:column; gap:.35rem; max-width:24rem; margin:0 auto; }
+.demo s-sortable > div {
   padding:.45rem .65rem; background:var(--soft); border:1px solid var(--line);
   border-radius:var(--r-sm); color:var(--ink); cursor:grab;
 }
-.sortable-list > .sortable-ghost { opacity:.35; }
-.sortable-columns { display:flex; gap:.7rem; max-width:24rem; margin:0 auto; }
-.sortable-columns .sortable-list { flex:1; margin:0; }
+.demo s-sortable > .sortable-ghost { opacity:.35; }
+.demo > div { display:flex; gap:.7rem; max-width:24rem; margin:0 auto; }
+.demo > div s-sortable { flex:1; margin:0; }
 </style>
 <div class="demo">
-<s-sortable class="sortable-list">
+<s-sortable>
     <div>Gather the requirements</div>
     <div>Design the schema</div>
     <div>Build the endpoint</div>
     <div>Ship it</div>
 </s-sortable>
 </div>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-list"</span>&gt;</span>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Gather the requirements<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Design the schema<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Build the endpoint<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
@@ -139,25 +138,25 @@ clickable.</p>
 <p>Lists that share a <code>group</code> name exchange items. Drag from one list, drop into the other —
 SortableJS moves the node, and the node lands in the other list's DOM.</p>
 <div class="demo">
-<div class="sortable-columns">
-    <s-sortable class="sortable-list" group="chores">
+<div>
+    <s-sortable group="chores">
         <div>Water the plants</div>
         <div>Fix the faucet</div>
         <div>Paint the fence</div>
     </s-sortable>
-    <s-sortable class="sortable-list" group="chores">
+    <s-sortable group="chores">
         <div>Walk the dog</div>
         <div>Buy groceries</div>
     </s-sortable>
 </div>
 </div>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-columns"</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-list"</span> <span class="hljs-attr">group</span>=<span class="hljs-string">"chores"</span>&gt;</span>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">group</span>=<span class="hljs-string">"chores"</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Water the plants<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Fix the faucet<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Paint the fence<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-list"</span> <span class="hljs-attr">group</span>=<span class="hljs-string">"chores"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">group</span>=<span class="hljs-string">"chores"</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Walk the dog<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Buy groceries<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span>
@@ -172,14 +171,14 @@ carries its name in <code>sort-item</code>. When a drag ends, the element saves 
 in DOM order under the key. On connect it puts the saved order back by itself — also while
 the page is still parsing, so there is no flicker and no load handler:</p>
 <div class="demo">
-<s-sortable class="sortable-list" store="saradom-sortable-demo">
+<s-sortable store="saradom-sortable-demo">
     <div sort-item="alpha">Alpha</div>
     <div sort-item="beta">Beta</div>
     <div sort-item="gamma">Gamma</div>
     <div sort-item="delta">Delta</div>
 </s-sortable>
 </div>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-list"</span> <span class="hljs-attr">store</span>=<span class="hljs-string">"saradom-sortable-demo"</span>&gt;</span>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">store</span>=<span class="hljs-string">"saradom-sortable-demo"</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"alpha"</span>&gt;</span>Alpha<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"beta"</span>&gt;</span>Beta<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"gamma"</span>&gt;</span>Gamma<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>

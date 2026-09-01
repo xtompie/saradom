@@ -18,7 +18,6 @@ of the page reads: after a drop the new order is already in the DOM, and anythin
 the list sees it.
 
 <!-- source: Sortable/SSortable.js -->
-<!-- uses: Sortable/SSortable.js https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js -->
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <!-- embed: Sortable/SSortable.js -->
