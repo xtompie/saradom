@@ -1,4 +1,4 @@
-const FormSubmit = (() => {
+const Formsend = (() => {
     const form = (ctx) => (ctx.matches('form') ? ctx : ctx.closest('form'));
 
     const scalar = (f, name, value) => {
@@ -42,7 +42,7 @@ const FormSubmit = (() => {
         f.submit();
     };
 
-    const Submit = (ctx) => form(ctx).submit();
+    const Send = (ctx) => form(ctx).submit();
 
-    return { Set, Add, Submit };
+    return { Set, Add, Send };
 })();

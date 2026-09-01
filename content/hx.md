@@ -52,8 +52,6 @@ A request can carry values that are not form fields. `hx-vals-body` holds a func
 
 The encoding follows PHP's `http_build_query`: nested objects flatten to `key[sub]=value`, `true`/`false` become `1`/`0`, and `null` or `undefined` entries are dropped. So a controller reads the body the same way it reads a submitted form. The same encoder ships standalone as `HttpBuildQuery/HttpBuildQuery.js` — one pure function, for code outside Hx that wants to build a query string the same way.
 
-Like every `hx-*` attribute, both can sit on an ancestor and be inherited by the elements inside it.
-
 ## Selectors
 
 `hx-target` and `hx-indicator` take a selector.

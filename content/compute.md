@@ -20,8 +20,6 @@ Compute watches the elements under a root and re-runs a callback when one is add
 
 <!-- demo: content/compute/boxes-v2.html -->
 
-An earlier form, [Compute V1](compute-v1.html), is method-based. It needs `compute()` to start and `uncompute()` to stop. The element form needs neither. It starts when it connects. It stops when it leaves the DOM.
-
 ## Batching
 
 Changes are grouped. Fifty boxes added in one step cause one run, not fifty. The run happens right after the change, in a [microtask](https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide).

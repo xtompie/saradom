@@ -3,7 +3,7 @@ slug: init
 title: "Init"
 type: page
 tags: [init, custom-elements, ux-performance]
-related: [sortable, ux-performance]
+related: [ux-performance, hx]
 track: tools
 order: 42
 status: draft
@@ -11,39 +11,34 @@ status: draft
 
 # Init
 
-`<s-init>` runs one line of code at the place it sits in the page, at the moment the parser
-reaches it. It is the in-place init primitive: no `DOMContentLoaded`, no `defer`, no script
-that queries the page later. The code runs during parsing, before the browser renders
-further, so whatever it sets up is in place on first paint.
+`<s-init>` runs one line of code at the place it sits, the moment the parser reaches it. No
+`DOMContentLoaded`, no deferred script that queries the page later — the code runs during
+parsing, so what it sets up is in place before first paint.
 
 <!-- source: Init/SInit.js -->
 
 ```html
-<s-sortable store="app-switcher">
-  <a sort-item="jira" href="#">Jira</a>
-  <a sort-item="confluence" href="#">Confluence</a>
-  <s-init run="(el) => el.restore()"></s-init>
-</s-sortable>
+<form>
+  <input name="q">
+  <s-init run="(el) => el.querySelector('input').focus()"></s-init>
+</form>
 ```
 
-`run` holds the code. It is evaluated with `this` = the parent element, and the parent is
-also passed as the argument. Here it calls [Sortable](sortable.html)'s `restore()` on the
-list, and the saved order is applied before the list is ever painted — no flicker.
+`run` is evaluated with `this` = the parent element, and the parent is also passed as the
+argument. Here the search field has focus the moment it appears.
 
 ## Last child
 
 A custom element upgrades before its children are parsed, so an `<s-init>` that acts on its
 siblings goes **after** them. As the last child it runs when everything before it exists,
-and still before the page renders on. That ordering is the whole API.
+and still before the page renders on.
 
 ## In fragments
 
-Custom elements upgrade on insertion too. An `<s-init>` inside an [Hx](hx.html) fragment
-runs when the fragment lands in the DOM. A server response can carry one line of behavior
-this way — for example, re-counting unread notifications after a "mark as read" swap — and
-the page needs no listener wired in advance.
+A `<script>` inserted with an [Hx](hx.html) fragment does not execute. A custom element
+upgrades on insertion, so `<s-init>` does run — a server response can carry one line of
+behavior.
 
 ## Once
 
-The element runs its code once and marks itself done. Moving the node later — a drag, a
-re-append — does not run it again.
+The element runs its code once. Moving the node later does not run it again.

@@ -38,7 +38,7 @@ In a `data-*` attribute (`dataset`):
 <div data-status="done">
 ```
 
-On the element as a `_`-prefixed JS property, like a timer handle:
+As a `_`-prefixed JS property set directly on the DOM element — the node object itself holds the value, so it travels with the node — like a timer handle:
 
 ```javascript
 el._timer = setTimeout(fn, 2000);

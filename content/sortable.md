@@ -18,20 +18,19 @@ of the page reads: after a drop the new order is already in the DOM, and anythin
 the list sees it.
 
 <!-- source: Sortable/SSortable.js -->
-<!-- uses: Sortable/SSortable.js Init/SInit.js https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js -->
+<!-- uses: Sortable/SSortable.js https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js -->
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <!-- embed: Sortable/SSortable.js -->
-<!-- embed: Init/SInit.js -->
 <!-- embed: content/sortable.css -->
 
 <!-- demo: content/sortable/list.html -->
 
-The tag is the whole setup. Every direct child is draggable. Reordering animates by default;
-`animation` on the tag sets the duration in milliseconds.
+Every direct child is draggable. Reordering animates; `animation` sets the duration in
+milliseconds.
 
-A drag can be limited to one part of each item: `handle` names a selector, and only that part
-starts the drag. The rest of the item stays clickable, selectable, a link.
+`handle` names a selector — only that part starts the drag, the rest of the item stays
+clickable.
 
 ```html
 <s-sortable handle="[grip]">
@@ -55,18 +54,15 @@ the same closest `boundary` ancestor. The [Kanban example](kanban.html) uses
 ## Remembering the order
 
 `store` persists the order across visits. The tag names a `localStorage` key, and each child
-carries its name in `sort-item`. When a drag ends, the element collects the `sort-item`
-names in DOM order and saves the array under the key.
-
-`restore()` reorders the children from the saved array. An [`<s-init>`](init.html) as the
-last child calls it during parsing, before the page renders further — the order comes back
-with no flicker and no load handler:
+carries its name in `sort-item`. When a drag ends, the element saves the `sort-item` names
+in DOM order under the key. On connect it puts the saved order back by itself — also while
+the page is still parsing, so there is no flicker and no load handler:
 
 <!-- demo: content/sortable/store.html -->
 
 Reorder the list, reload the page: the order holds. The list may also arrive later, inside an
-[Hx](hx.html) fragment — custom elements upgrade on insertion, so both the dragging and the
-restore work in a fragment without any wiring.
+[Hx](hx.html) fragment — custom elements upgrade on insertion, so dragging and restoring work
+in a fragment without any wiring.
 
 On the element's own tag the attributes are bare: `group`, `handle`, `store`. On other
 elements they carry the module prefix: `sort-item`. The tag itself is the scope.
@@ -74,16 +70,13 @@ elements they carry the module prefix: `sort-item`. The tag itself is the scope.
 ## Reacting to a drop
 
 `onsort` runs after a drop, like a native event attribute: `this` is the element, `event` is
-the SortableJS end event, with `oldIndex` and `newIndex` on it. The order is already in the
-DOM by then, so the handler reads the list, not the event, when it wants the result — or
-hands the work to another toolkit:
+the SortableJS end event, with `oldIndex` and `newIndex` on it. The new order is already in
+the DOM by then, so the handler reads the list — for example to POST it with [Hx](hx.html):
 
 ```html
 <s-sortable onsort="hx(this)" hx-post="/reorder"
             hx-vals-body="() => ({ order: this.all('[sort-item]').map((el) => el.attr('sort-item')) })">
 ```
-
-Sortable never heard of Hx. One attribute connects a drop to a POST with the new order.
 
 ## Mechanism
 

@@ -18,7 +18,7 @@
 <body>
 <header class="nav-bar"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><button type="button" class="nav-toggle" onclick="Nav.Toggle(this)" aria-label="Menu" aria-expanded="false"><span class="nav-burger"></span></button></header>
 <div class="nav-scrim" onclick="Nav.Close(this)"></div>
-<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="compute.html">Compute</a><a href="dropdown.html">Dropdown</a><a href="filter.html">Filter</a><a href="formsubmit.html">FormSubmit</a><a href="hx.html">Hx</a><a href="init.html">Init</a><a href="modal.html">Modal</a><a href="notify.html">Notify</a><a href="resizer.html">Resizer</a><a class="active" href="sortable.html">Sortable</a><a href="switch.html">Switch</a><a href="util.html">Util</a><a href="val.html">Val</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
+<aside class="nav"><a class="brand" href="index.html"><span class="mark">Saradom</span></a><div class="nav-group"><a href="introduction.html">Introduction</a></div><div class="nav-group"><div class="nav-title">Foundations</div><a href="dom-state.html">DOM State</a><a href="event-attributes.html">Event attributes</a><a href="action-in-context.html">Action in context</a><a href="modularization.html">Modularization</a><a href="ux-performance.html">UX Performance</a></div><div class="nav-group"><div class="nav-title">Toolkits</div><a href="compute.html">Compute</a><a href="dropdown.html">Dropdown</a><a href="filter.html">Filter</a><a href="formsend.html">Formsend</a><a href="hx.html">Hx</a><a href="init.html">Init</a><a href="modal.html">Modal</a><a href="notify.html">Notify</a><a class="active" href="sortable.html">Sortable</a><a href="switch.html">Switch</a><a href="util.html">Util</a><a href="val.html">Val</a><a href="vld.html">Vld</a></div><div class="nav-group"><div class="nav-title">Examples</div><a href="todo.html">Todo list</a><a href="produce.html">Produce</a><a href="tic-tac-toe.html">Tic-tac-toe</a><a href="kanban.html">Kanban</a></div><div class="nav-group"><div class="nav-title">Topics</div><a href="the-simple-way.html">The simple way</a><a href="saradom-vs-others.html">Saradom vs Others</a></div><div class="nav-foot"><a href="https://github.com/xtompie/saradom" target="_blank" rel="noopener">GitHub</a></div></aside>
 <main class="content"><h1 id="sortable">Sortable<a class="anchor" href="#sortable" aria-hidden="true">#</a></h1>
 <p><code>&lt;s-sortable&gt;</code> makes its children draggable. It is a custom element wrapping
 <a href="https://sortablejs.github.io/Sortable/">SortableJS</a>, so a list drags as soon as the element
@@ -26,7 +26,7 @@ connects — no init call, no <code>DOMContentLoaded</code> handler. It moves th
 of the page reads: after a drop the new order is already in the DOM, and anything that reads
 the list sees it.</p>
 <p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a></p>
-<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a>, <a href="https://github.com/xtompie/saradom/blob/main/Init/SInit.js" target="_blank" rel="noopener">SInit.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
+<p class="code-src">Uses: <a href="https://github.com/xtompie/saradom/blob/main/Sortable/SSortable.js" target="_blank" rel="noopener">SSortable.js</a>, <a href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" target="_blank" rel="noopener">Sortable.min.js</a></p>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>
 (() => {
@@ -62,20 +62,38 @@ the list sees it.</p>
                     if (code) new Function('event', code).call(this, event);
                 },
             });
+            this.restore();
+            if (this.getAttribute('store') && document.readyState === 'loading') {
+                // During initial parsing the children are still streaming in:
+                // keep restoring as they arrive, stop when the document is done.
+                this._observer = new MutationObserver(() => this.restore());
+                this._observer.observe(this, { childList: true });
+                document.addEventListener('DOMContentLoaded', () => {
+                    if (this._observer) {
+                        this._observer.disconnect();
+                        this._observer = null;
+                    }
+                }, { once: true });
+            }
         }
         restore() {
             const key = this.getAttribute('store');
             if (!key) {
                 return;
             }
-            JSON.parse(localStorage.getItem(key) || '[]').forEach((name) => {
-                const item = this.querySelector('[sort-item="' + name + '"]');
-                if (item) {
-                    this.appendChild(item);
-                }
-            });
+            const order = JSON.parse(localStorage.getItem(key) || '[]');
+            const items = order.map((name) => this.querySelector('[sort-item="' + name + '"]')).filter(Boolean);
+            const current = Array.from(this.querySelectorAll('[sort-item]')).filter((el) => items.includes(el));
+            if (items.every((el, i) => el === current[i])) {
+                return;
+            }
+            items.forEach((el) => this.appendChild(el));
         }
         disconnectedCallback() {
+            if (this._observer) {
+                this._observer.disconnect();
+                this._observer = null;
+            }
             if (this._sortable) {
                 this._sortable.destroy();
                 this._sortable = null;
@@ -83,24 +101,6 @@ the list sees it.</p>
         }
     }
     customElements.define('s-sortable', SortableElement);
-})();
-</script>
-<script>
-(() => {
-    class InitElement extends HTMLElement {
-        connectedCallback() {
-            if (this._ran) {
-                return;
-            }
-            this._ran = true;
-            const parent = this.parentElement;
-            const code = this.getAttribute('run');
-            if (parent && code) {
-                (function () { return eval(code); }).call(parent)(parent);
-            }
-        }
-    }
-    customElements.define('s-init', InitElement);
 })();
 </script>
 <style>
@@ -127,10 +127,10 @@ the list sees it.</p>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Build the endpoint<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Ship it<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span></code></pre>
-<p>The tag is the whole setup. Every direct child is draggable. Reordering animates by default;
-<code>animation</code> on the tag sets the duration in milliseconds.</p>
-<p>A drag can be limited to one part of each item: <code>handle</code> names a selector, and only that part
-starts the drag. The rest of the item stays clickable, selectable, a link.</p>
+<p>Every direct child is draggable. Reordering animates; <code>animation</code> sets the duration in
+milliseconds.</p>
+<p><code>handle</code> names a selector — only that part starts the drag, the rest of the item stays
+clickable.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">handle</span>=<span class="hljs-string">"[grip]"</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/jira"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">grip</span>&gt;</span>⠿<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> Jira<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/confluence"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">grip</span>&gt;</span>⠿<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> Confluence<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
@@ -168,18 +168,15 @@ the same closest <code>boundary</code> ancestor. The <a href="kanban.html">Kanba
 <code>boundary=&quot;[kanban-space]&quot;</code> for exactly this.</p>
 <h2 id="remembering-the-order">Remembering the order<a class="anchor" href="#remembering-the-order" aria-hidden="true">#</a></h2>
 <p><code>store</code> persists the order across visits. The tag names a <code>localStorage</code> key, and each child
-carries its name in <code>sort-item</code>. When a drag ends, the element collects the <code>sort-item</code>
-names in DOM order and saves the array under the key.</p>
-<p><code>restore()</code> reorders the children from the saved array. An <a href="init.html"><code>&lt;s-init&gt;</code></a> as the
-last child calls it during parsing, before the page renders further — the order comes back
-with no flicker and no load handler:</p>
+carries its name in <code>sort-item</code>. When a drag ends, the element saves the <code>sort-item</code> names
+in DOM order under the key. On connect it puts the saved order back by itself — also while
+the page is still parsing, so there is no flicker and no load handler:</p>
 <div class="demo">
 <s-sortable class="sortable-list" store="saradom-sortable-demo">
     <div sort-item="alpha">Alpha</div>
     <div sort-item="beta">Beta</div>
     <div sort-item="gamma">Gamma</div>
     <div sort-item="delta">Delta</div>
-    <s-init run="(el) => el.restore()"></s-init>
 </s-sortable>
 </div>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sortable-list"</span> <span class="hljs-attr">store</span>=<span class="hljs-string">"saradom-sortable-demo"</span>&gt;</span>
@@ -187,21 +184,18 @@ with no flicker and no load handler:</p>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"beta"</span>&gt;</span>Beta<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"gamma"</span>&gt;</span>Gamma<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sort-item</span>=<span class="hljs-string">"delta"</span>&gt;</span>Delta<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">s-init</span> <span class="hljs-attr">run</span>=<span class="hljs-string">"(el) =&gt; el.restore()"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">s-init</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">s-sortable</span>&gt;</span></code></pre>
 <p>Reorder the list, reload the page: the order holds. The list may also arrive later, inside an
-<a href="hx.html">Hx</a> fragment — custom elements upgrade on insertion, so both the dragging and the
-restore work in a fragment without any wiring.</p>
+<a href="hx.html">Hx</a> fragment — custom elements upgrade on insertion, so dragging and restoring work
+in a fragment without any wiring.</p>
 <p>On the element's own tag the attributes are bare: <code>group</code>, <code>handle</code>, <code>store</code>. On other
 elements they carry the module prefix: <code>sort-item</code>. The tag itself is the scope.</p>
 <h2 id="reacting-to-a-drop">Reacting to a drop<a class="anchor" href="#reacting-to-a-drop" aria-hidden="true">#</a></h2>
 <p><code>onsort</code> runs after a drop, like a native event attribute: <code>this</code> is the element, <code>event</code> is
-the SortableJS end event, with <code>oldIndex</code> and <code>newIndex</code> on it. The order is already in the
-DOM by then, so the handler reads the list, not the event, when it wants the result — or
-hands the work to another toolkit:</p>
+the SortableJS end event, with <code>oldIndex</code> and <code>newIndex</code> on it. The new order is already in
+the DOM by then, so the handler reads the list — for example to POST it with <a href="hx.html">Hx</a>:</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">s-sortable</span> <span class="hljs-attr">onsort</span>=<span class="hljs-string">"hx(this)"</span> <span class="hljs-attr">hx-post</span>=<span class="hljs-string">"/reorder"</span>
             <span class="hljs-attr">hx-vals-body</span>=<span class="hljs-string">"() =&gt; ({ order: this.all('[sort-item]').map((el) =&gt; el.attr('sort-item')) })"</span>&gt;</span></code></pre>
-<p>Sortable never heard of Hx. One attribute connects a drop to a POST with the new order.</p>
 <h2 id="mechanism">Mechanism<a class="anchor" href="#mechanism" aria-hidden="true">#</a></h2>
 <p><code>connectedCallback</code> creates the SortableJS instance on the element; <code>disconnectedCallback</code>
 destroys it. An element removed and re-inserted — a fragment swap, a modal — wires itself

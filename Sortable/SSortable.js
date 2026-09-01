@@ -31,20 +31,38 @@
                     if (code) new Function('event', code).call(this, event);
                 },
             });
+            this.restore();
+            if (this.getAttribute('store') && document.readyState === 'loading') {
+                // During initial parsing the children are still streaming in:
+                // keep restoring as they arrive, stop when the document is done.
+                this._observer = new MutationObserver(() => this.restore());
+                this._observer.observe(this, { childList: true });
+                document.addEventListener('DOMContentLoaded', () => {
+                    if (this._observer) {
+                        this._observer.disconnect();
+                        this._observer = null;
+                    }
+                }, { once: true });
+            }
         }
         restore() {
             const key = this.getAttribute('store');
             if (!key) {
                 return;
             }
-            JSON.parse(localStorage.getItem(key) || '[]').forEach((name) => {
-                const item = this.querySelector('[sort-item="' + name + '"]');
-                if (item) {
-                    this.appendChild(item);
-                }
-            });
+            const order = JSON.parse(localStorage.getItem(key) || '[]');
+            const items = order.map((name) => this.querySelector('[sort-item="' + name + '"]')).filter(Boolean);
+            const current = Array.from(this.querySelectorAll('[sort-item]')).filter((el) => items.includes(el));
+            if (items.every((el, i) => el === current[i])) {
+                return;
+            }
+            items.forEach((el) => this.appendChild(el));
         }
         disconnectedCallback() {
+            if (this._observer) {
+                this._observer.disconnect();
+                this._observer = null;
+            }
             if (this._sortable) {
                 this._sortable.destroy();
                 this._sortable = null;
