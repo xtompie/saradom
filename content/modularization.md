@@ -47,13 +47,15 @@ The same module can be placed many times on one page. Each instance keeps its ow
 
 ## Naming
 
-A big app has many modules. They are all under one object, `App`.
+The app takes one global name, `App`. Every module lives under it. Nothing else is global.
 
-The name shows where each one is. The catalog is `App.Catalog`. A product in it is `App.Catalog.Product`. It can go deeper, like `App.Catalog.Product.Add`. A bigger app adds more names next to these, like `App.Ordering` and `App.Billing`.
+A module's name is a path under `App`, with dots: `App.Catalog.Product`. The last part is the module. The parts before it say where it lives, like folders. `App.Catalog.Product` is one module. `App.Catalog` is a place, not a module that owns it.
 
-There is no fixed way to group them.
+The markup uses the same name as its prefix, without `App`: `catalog-product-space`, `catalog-product-item`, `onclick="App.Catalog.Product.Add(this)"`.
 
-This works like folders. A deeper level is one more dot, like one more folder.
+Which names exist under `App` is the app's own decision. By area: `App.Catalog`, `App.Ordering`, `App.Billing`. By team: each team takes one prefix and everything under it. That is Conway's law: the system takes the shape of the organization that builds it. By layer: `App.Ui` for generic widgets, the domain names next to it. Which split fits depends on the app. The pattern asks for one thing: one module, one name.
+
+A new module takes a free name. There is no registry to update and no import to add. Deleting the script removes the module.
 
 ## Signature
 

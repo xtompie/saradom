@@ -42,10 +42,11 @@
 <h2 id="instances">Instances<a class="anchor" href="#instances" aria-hidden="true">#</a></h2>
 <p>The same module can be placed many times on one page. Each instance keeps its own state. Two <code>accordion-space</code> blocks do not share it. One is open while the other stays closed. There is no instance list and no id to track. A module is written once and placed as often as the page needs.</p>
 <h2 id="naming">Naming<a class="anchor" href="#naming" aria-hidden="true">#</a></h2>
-<p>A big app has many modules. They are all under one object, <code>App</code>.</p>
-<p>The name shows where each one is. The catalog is <code>App.Catalog</code>. A product in it is <code>App.Catalog.Product</code>. It can go deeper, like <code>App.Catalog.Product.Add</code>. A bigger app adds more names next to these, like <code>App.Ordering</code> and <code>App.Billing</code>.</p>
-<p>There is no fixed way to group them.</p>
-<p>This works like folders. A deeper level is one more dot, like one more folder.</p>
+<p>The app takes one global name, <code>App</code>. Every module lives under it. Nothing else is global.</p>
+<p>A module's name is a path under <code>App</code>, with dots: <code>App.Catalog.Product</code>. The last part is the module. The parts before it say where it lives, like folders. <code>App.Catalog.Product</code> is one module. <code>App.Catalog</code> is a place, not a module that owns it.</p>
+<p>The markup uses the same name as its prefix, without <code>App</code>: <code>catalog-product-space</code>, <code>catalog-product-item</code>, <code>onclick=&quot;App.Catalog.Product.Add(this)&quot;</code>.</p>
+<p>Which names exist under <code>App</code> is the app's own decision. By area: <code>App.Catalog</code>, <code>App.Ordering</code>, <code>App.Billing</code>. By team: each team takes one prefix and everything under it. That is Conway's law: the system takes the shape of the organization that builds it. By layer: <code>App.Ui</code> for generic widgets, the domain names next to it. Which split fits depends on the app. The pattern asks for one thing: one module, one name.</p>
+<p>A new module takes a free name. There is no registry to update and no import to add. Deleting the script removes the module.</p>
 <h2 id="signature">Signature<a class="anchor" href="#signature" aria-hidden="true">#</a></h2>
 <p>A module signature is the contract between the JavaScript and the HTML, without a type system. It lists the namespaced attributes, the values they hold, and the functions that run on them. It also shows nesting, where one part is inside another. That matters when a function depends on the hierarchy.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt; <span class="hljs-attr">todo-space</span>&gt;</span>
