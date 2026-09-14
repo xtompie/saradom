@@ -1,0 +1,20 @@
+[ui-switch-space][activity-order="new"] [list-target="comment"],
+[ui-switch-space][activity-order="new"] .feed{display:flex;flex-direction:column-reverse}
+
+[comment]{position:relative}
+
+.comment-actions{display:flex;gap:4px;align-items:center;margin-top:6px;min-height:24px;opacity:0;transition:opacity .12s ease}
+[comment]:hover .comment-actions,
+.comment-actions:focus-within{opacity:1}
+
+.c-act{display:inline-flex;align-items:center;gap:4px;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:6px;padding:2px 8px;font:inherit;font-size:12px;font-weight:500;line-height:1.6;cursor:pointer}
+.c-act:hover{background:var(--canvas);border-color:var(--border);color:var(--ink)}
+.react{user-select:none}
+.react:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.c-emoji{font-size:13px;line-height:1}
+
+.comment-edit-area{width:100%;box-sizing:border-box;resize:vertical;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--ink)}
+.comment-edit-area:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.comment-edit-foot{margin-top:8px}
+.comment-reply-form{display:flex;gap:8px;margin:10px 0 0 34px}
+.comment.reply{margin:10px 0 0 34px}

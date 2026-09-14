@@ -1,0 +1,12 @@
+<div class="notif-panel" notif-space>
+<div class="notif-header">
+<div class="menu-head">Notifications</div>
+<button class="linkish sm notif-read-all" hx-get="" hx-post="fragments/notifications-read.html" hx-target="closest [notif-space]" hx-swap="outerHTML" onclick="App.Ui.Hx(this)">Mark all as read</button>
+</div>
+<div class="notif-summary"><b notif-count="(n) => this.textContent = n">3</b> unread</div>
+<div class="notif-list" notif-list>
+<button class="notif" notif hx-get="" name="read" value="1" hx-post="fragments/notif-read.html" hx-target="closest [notif] [notif-state]" hx-swap="outerHTML" onclick="App.Ui.Hx(this)"><span class="notif-dot" notif-state notif-unread></span><div class="avatar sm">AK</div><span class="notif-text"><b>Alex Kim</b> mentioned you on SCRUM-1</span><span class="notif-mark">Mark read</span></button>
+<button class="notif" notif hx-get="" name="read" value="1" hx-post="fragments/notif-read.html" hx-target="closest [notif] [notif-state]" hx-swap="outerHTML" onclick="App.Ui.Hx(this)"><span class="notif-dot" notif-state notif-unread></span><div class="avatar sm">PS</div><span class="notif-text"><b>Priya Shah</b> assigned SCRUM-2 to you</span><span class="notif-mark">Mark read</span></button>
+<button class="notif" notif hx-get="" name="read" value="1" hx-post="fragments/notif-read.html" hx-target="closest [notif] [notif-state]" hx-swap="outerHTML" onclick="App.Ui.Hx(this)"><span class="notif-dot" notif-state notif-unread></span><div class="avatar sm">SR</div><span class="notif-text">Your comment received a reply</span><span class="notif-mark">Mark read</span></button>
+</div>
+</div>

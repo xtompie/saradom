@@ -1,0 +1,16 @@
+[nav-grip]{position:absolute;left:-6px;top:0;bottom:0;display:grid;place-items:center;width:14px;opacity:0;color:var(--muted);cursor:grab;transition:opacity .12s ease}
+[nav-grip]:active{cursor:grabbing}
+[nav-grip] .ic{fill:currentColor;stroke:none}
+.nav-item:hover [nav-grip]{opacity:.65}
+
+[nav-chev]{margin-left:auto;display:grid;place-items:center;opacity:0;color:var(--muted);transition:opacity .12s ease}
+[nav-chev] .ic{transform:rotate(-90deg)}
+.nav-item:hover [nav-chev]{opacity:.7}
+
+[sidebar-editing] [nav-grip]{opacity:.65}
+
+[popover].menu-flyout,[popover].menu-recent{position-area:right span-bottom;margin:0 0 0 6px}
+.menu-flyout{min-width:220px}
+.nav-list>[ui-dropdown-space]{display:block}
+
+.menu-item .ic.star-on{color:#e2b203;fill:#e2b203;stroke:#e2b203}

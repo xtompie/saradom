@@ -1,0 +1,16 @@
+
+.share-done{display:none;margin-right:auto;align-self:center;color:var(--green);font-weight:600;font-size:12px}
+.menu[shared] .share-done{display:inline-flex;align-items:center}
+
+html[theme-dark]{
+  --bg:#1c2128;
+  --canvas:#22272e;
+  --surface:#22272e;
+  --border:#373e47;
+  --border-muted:#2d333b;
+  --ink:#e6edf3;
+  --ink-2:#cdd9e5;
+  --muted:#8b949e;
+  --accent-soft:#1c3a5f;
+}
+html[theme-dark] body{background:var(--bg);color:var(--ink-2)}

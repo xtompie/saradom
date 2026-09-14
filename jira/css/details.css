@@ -1,0 +1,54 @@
+/* Details panel — vertical field layout (label above value), "new Jira" style.
+   Loaded after blueprint.css, overrides the two-column grid. */
+
+/* container: clearer vertical rhythm, still dense/enterprise */
+.pdetails > .fields{
+  gap: 14px;
+  padding-top: 6px;
+}
+
+/* each field: label stacked over value */
+.field{
+  display: block;
+  position: relative;
+  min-width: 0;
+  padding-right: 22px;   /* reserve room for the pin, top-right */
+}
+
+/* label on top: small, muted, uppercase micro-caps like Jira */
+.field-key{
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 3px;
+}
+
+/* value below: normal reading size, primary ink */
+.field-body{
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  min-width: 0;
+  font-size: 14px;
+}
+.field-val{
+  font-size: 14px;
+}
+
+/* pin: absolute top-right so it never shifts the stacked layout.
+   Visibility (hover / pinned) stays governed by blueprint.css. */
+.field .pin{
+  position: absolute;
+  top: -1px;
+  right: -2px;
+}
+
+/* pinned strip: same vertical fields, keep them readable inside the card */
+[ui-pin-target] .field{
+  padding-right: 22px;
+}

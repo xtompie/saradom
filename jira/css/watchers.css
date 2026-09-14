@@ -1,0 +1,10 @@
+[watch-space]{min-width:264px}
+.watch-self{display:flex;flex-direction:column;gap:2px}
+.watch-list{display:flex;flex-direction:column}
+.watcher{justify-content:flex-start}
+.watch-remove{margin-left:auto}
+.watch-add{display:flex;gap:6px;padding:6px 8px 2px}
+.watch-add input{flex:1;min-width:0;border:1px solid var(--border);border-radius:6px;padding:6px 9px;font:inherit;font-size:13px;background:#fff;color:var(--ink)}
+.watch-add input:focus{outline:2px solid var(--blue,#0c66e4);outline-offset:-1px}
+.watch-add .btn-add{display:flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--canvas);border-radius:6px;padding:0 12px;font:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+.watch-add .btn-add:hover{background:var(--border-muted)}

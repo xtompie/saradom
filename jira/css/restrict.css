@@ -1,0 +1,11 @@
+.menu-item[restrict-opt][aria-checked="true"]{color:var(--accent);font-weight:600}
+.menu-item[restrict-opt][aria-checked="true"] .ic{color:var(--accent)}
+.menu-item[restrict-opt][aria-checked="true"]::after{content:"✓";margin:0 0 14px;color:var(--accent);font-weight:700}
+
+.actions .icon-btn[restrict-on]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+
+.flag-chip{display:inline-flex;align-items:center;gap:5px;margin:0 0 14px;padding:3px 9px;border-radius:var(--radius);background:#fff7d6;color:#974f0c;border:1px solid #f5d97a;font-size:12px;font-weight:600}
+.flag-chip[hidden]{display:none}
+
+.btn-danger{display:inline-flex;align-items:center;gap:6px;border:1px solid #c9372c;background:#c9372c;color:#fff;border-radius:var(--radius);padding:5px 12px;font:inherit;font-weight:500;cursor:pointer;line-height:1}
+.btn-danger:hover{background:#ae2e24;border-color:#ae2e24}

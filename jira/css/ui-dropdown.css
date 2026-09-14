@@ -1,0 +1,8 @@
+[ui-dropdown-space]{display:contents;anchor-scope:--dd}
+[ui-dropdown-trigger]{anchor-name:--dd}
+[ui-dropdown-menu]{position:fixed;inset:auto;position-anchor:--dd;position-area:bottom span-right;position-try-fallbacks:flip-block,flip-inline,flip-block flip-inline}
+[ui-dropdown-menu="bottom-end"]{position-area:bottom span-left}
+[ui-dropdown-menu="top"]{position-area:top span-right}
+[ui-dropdown-menu="top-end"]{position-area:top span-left}
+[ui-dropdown-menu="right"]{position-area:right span-bottom}
+[ui-dropdown-menu="left"]{position-area:left span-bottom}
