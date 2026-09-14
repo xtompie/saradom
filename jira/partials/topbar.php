@@ -73,7 +73,7 @@
         </div>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="App.Ui.Modal.Open('create.html', (r) => r && this.nall('ui-toast', r.key + ' created'))" ui-shortcut-c="() => this.click()"><svg class="ic"><use href="#i-plus"/></svg> Create</button>
+    <button class="btn btn-primary" onclick="App.Ui.Modal.Open('create.html', (r) => r && App.Ui.Toast.Show(r.key + ' created'))" ui-shortcut-c="() => this.click()"><svg class="ic"><use href="#i-plus"/></svg> Create</button>
   </div>
   <div class="topbar-group">
     <button class="btn btn-sm see-plans">See plans</button>

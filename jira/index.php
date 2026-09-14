@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>[SCRUM-1] Login page throws 500 on expired session token</title>
 <link rel="icon" href="data:,">
-<?php $css ??= fn($src) => print("<link rel=\"stylesheet\" href=\"$src\">
-"); include __DIR__ . '/css.php'; ?>
-<?php $js ??= fn($src) => print("<script src=\"$src\"></script>
-"); include __DIR__ . '/js.php'; ?>
+<?php include __DIR__ . '/css.php'; ?>
+<?php include __DIR__ . '/js.php'; ?>
 </head>
 <body onkeydown="App.Ui.Shortcut.Route(this, event); App.Ui.Dropdown.Esc(event)" onpointerdown="App.Ui.Dropdown.Down(event)" onfocusout="App.Ui.Dropdown.Out(event)">
 
@@ -27,7 +25,7 @@
 </div>
 
 <?php include __DIR__ . '/partials/modal.php'; ?>
-<output class="toast" ui-toast="(t) => { this.textContent = t; this.flag('ui-toast-on', true); clearTimeout(this._t); this._t = setTimeout(() => this.flag('ui-toast-on', false), 3000); }"></output>
+<output class="toast" ui-toast></output>
 
 </body>
 </html>

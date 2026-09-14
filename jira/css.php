@@ -1,6 +1,9 @@
 <?php
 // The app's stylesheet registry, in load order. One line, one file.
-// Dev ($css prints a <link> tag) and build ($css appends to jira.css) both run this.
+// Run straight from the sources it prints a <link> per file. The build sets
+// $css first, so there it appends each file into one jira.css instead.
+
+$css ??= fn($src) => printf('<link rel="stylesheet" href="%s">' . "\n", $src);
 
 $css('css/ui-dropdown.css');
 $css('blueprint.css');

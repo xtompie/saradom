@@ -1,6 +1,6 @@
 
 .share-done{display:none;margin-right:auto;align-self:center;color:var(--green);font-weight:600;font-size:12px}
-.menu[shared] .share-done{display:inline-flex;align-items:center}
+.menu[share-done] .share-done{display:inline-flex;align-items:center}
 
 html[theme-dark]{
   --bg:#1c2128;

@@ -15,13 +15,13 @@
           <button class="icon-btn bd" watch-on watch-total="2" watch-count="(n) => { const c = Number(n); this.one('[watch-badge]').textContent = c; this.attr('watch-total', c); }" watch-watching="(on) => this.flag('watch-on', on)" title="Watch options" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-eye"/></svg> <span class="count" watch-badge>2</span></button>
           <div ui-dropdown-menu popover="manual" class="menu menu-end" hx-get="fragments/watchers.html" hx-target="this" hx-swap="innerHTML"><p class="menu-empty">Loading…</p></div>
         </div>
-        <div ui-dropdown-space ui-dropdown-onopen="() => this.one('[ui-dropdown-menu]').flag('shared', false)">
+        <div ui-dropdown-space ui-dropdown-onopen="() => this.one('[ui-dropdown-menu]').flag('share-done', false)">
           <button class="icon-btn bd" title="Share" ui-dropdown-trigger onclick="App.Ui.Dropdown.Toggle(this)"><svg class="ic"><use href="#i-share"/></svg></button>
           <div ui-dropdown-menu popover="manual" class="menu menu-end">
             <div class="menu-head">Share this work item</div>
             <label class="menu-field">To<input class="input" type="text" placeholder="Names, teams or emails"></label>
             <label class="menu-field">Note<textarea class="input" rows="2" placeholder="Optional message"></textarea></label>
-            <div class="menu-foot"><span class="share-done">Shared &#10003;</span><button class="btn btn-primary btn-sm" onclick="const m = this.up('[popover]'); m.flag('shared', true); m._t = setTimeout(() => m.hidePopover(), 900)">Share</button></div>
+            <div class="menu-foot"><span class="share-done">Shared &#10003;</span><button class="btn btn-primary btn-sm" onclick="const m = this.up('[popover]'); m.flag('share-done', true); m._share = setTimeout(() => m.hidePopover(), 900)">Share</button></div>
           </div>
         </div>
         <div ui-dropdown-space>
@@ -32,7 +32,7 @@
             <button class="menu-item" onclick="this.nall('flag-toggle'); this.up('[popover]').hidePopover()">Add flag</button>
             <button class="menu-item">Print</button>
             <div class="menu-sep"></div>
-            <button class="menu-item danger" onclick="this.up('[popover]').hidePopover(); App.Ui.Modal.Open('delete.html', (r) => r && this.nall('ui-toast', 'Work item deleted'))">Delete</button>
+            <button class="menu-item danger" onclick="this.up('[popover]').hidePopover(); App.Ui.Modal.Open('delete.html', (r) => r && App.Ui.Toast.Show('Work item deleted'))">Delete</button>
           </div>
         </div>
       </div>
