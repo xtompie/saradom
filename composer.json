@@ -4,7 +4,7 @@
         "serve": [
             "Composer\\Config::disableProcessTimeout",
             "php build/build.php",
-            "php -S 127.0.0.1:8000"
+            "sh -c 'php -S 127.0.0.1:${1:-8000}' --"
         ]
     },
     "require": {
