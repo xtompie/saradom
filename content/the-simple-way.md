@@ -1,11 +1,5 @@
 ---
-slug: the-simple-way
 title: "The simple way"
-type: topic
-tags: [scaling, frameworks]
-track: topics
-order: 20
-status: draft
 ---
 
 # The simple way
@@ -117,9 +111,11 @@ Option 1. A plain form, submitted normally.
 
 Option 2. Form data is sent, and the HTML response is swapped in, the way htmx does it.
 
-Option 3. Val reads the fields, sends JSON, and renders the returned errors under the field.
+Option 3. An action writes its values into the form as hidden inputs and submits it natively. The server renders the whole next page. That is Formsend.
 
-Option 4. Vld validates the fields in the browser, before any of the above. The errors show in the page at once, with no request. It layers on top of options 1 to 3. The network only sees a submit once the shape is already right.
+Option 4. A script reads the fields with Val, sends JSON with `fetch`, and writes the returned errors back into the page with Val.
+
+Option 5. Vld validates the fields in the browser, before any of the above. The errors show in the page at once, with no request. It layers on top of options 1 to 4. The network only sees a submit once the shape is already right.
 
 ## Toasts
 

@@ -1,13 +1,5 @@
 ---
-slug: action-in-context
 title: "Action in context"
-nav_title: "Action in context"
-type: concept
-tags: [foundations, context, shared-state]
-related: [event-attributes, dom-state, sibling-state]
-track: foundations
-order: 30
-status: draft
 ---
 
 # Action in context
@@ -16,22 +8,25 @@ Every event has a current element. That element sets the space where the action 
 
 ```html
 <div counter-space>
-  <span counter-value>0</span>
-  <button onclick="Counter.Increment(this)">+1</button>
+  <output counter-value>0</output>
+  <button onclick="Counter.Inc(this)">+1</button>
 </div>
 
 <script>
-Counter.Increment = (ctx) => {
-  const space = ctx.closest('[counter-space]');
-  const value = space.querySelector('[counter-value]');
-  value.textContent = Number(value.textContent) + 1;
-};
+const Counter = (() => {
+  const Inc = (ctx) => {
+    const space = ctx.closest('[counter-space]');
+    const value = space.querySelector('[counter-value]');
+    value.textContent = Number(value.textContent) + 1;
+  };
+  return { Inc };
+})();
 </script>
 ```
 
 ## Why
 
-One function serves every instance. The same `Counter.Increment` runs for one counter or a hundred. Nothing is created per widget: no instance, no component object. The context is found at click time, from where the event happened. One piece of code covers them all.
+One function serves every instance. The same `Counter.Inc` runs for one counter or a hundred. Nothing is created per widget: no instance, no component object. The context is found at click time, from where the event happened. One piece of code covers them all.
 
 The element is passed in, not captured. The handler receives the triggering element as an argument. There is no `this` to bind and no closure to hold the scope.
 

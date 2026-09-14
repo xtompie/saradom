@@ -76,7 +76,12 @@ const Filter = (() => {
 <p>The input is marked with <code>filter-query</code>. The handler goes up to the space and reads that element, so it never assumes it was called from the input itself. The trigger can be on the input, on a button next to it, or anywhere inside the space.</p>
 <p>Each item carries its search text in the <code>filter-item</code> attribute. The query matches that value, not the visible text. So an item can match words it does not show, like a category. Typing <code>fruit</code> keeps Apple, Banana, and Cherry.</p>
 <h2 id="lanes">Lanes<a class="anchor" href="#lanes" aria-hidden="true">#</a></h2>
-<p><code>Filter</code> can share a space with other mechanisms. A <code>filter-space</code> names a <code>filter-lane</code>, and each item belongs to that lane. The filter touches only its own lane's items. Without <code>filter-lane</code> it filters every <code>[filter-item]</code> in the space, unchanged.</p>
+<p><code>Filter</code> can share a space with other mechanisms. A <code>filter-space</code> names a <code>filter-lane</code>, and each item carries the same <code>filter-lane</code>. The filter touches only its own lane's items. Without <code>filter-lane</code> it filters every <code>[filter-item]</code> in the space, unchanged.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">filter-space</span> <span class="hljs-attr">filter-lane</span>=<span class="hljs-string">"recent"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">filter-query</span> <span class="hljs-attr">oninput</span>=<span class="hljs-string">"Filter.Filter(this)"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">filter-item</span>=<span class="hljs-string">"apple fruit"</span> <span class="hljs-attr">filter-lane</span>=<span class="hljs-string">"recent"</span>&gt;</span>Apple<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">filter-item</span>=<span class="hljs-string">"banana fruit"</span>&gt;</span>Banana<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span> <span class="hljs-comment">&lt;!-- not in the lane, left alone --&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
 <p class="doc-next"><a href="formsend.html">Next: Formsend →</a></p>
 </main>
 <script>

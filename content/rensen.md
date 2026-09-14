@@ -1,12 +1,5 @@
 ---
-slug: rensen
 title: "Rensen"
-type: page
-tags: [reactive, computation]
-related: [val]
-track: tools
-order: 50
-status: draft
 ---
 
 # Rensen
@@ -39,3 +32,5 @@ a(() => 10);
 `R(() => ...)` creates a reactive value. Its function runs once at creation, and again each time a value it reads changes. `c` reads `a` and `b`, so a change to either one recomputes `c`.
 
 This is the signals pattern. Most signal libraries split it into three primitives: a signal, a computed value, and an effect. Rensen uses one function, `R()`, for all three. `a` and `b` are signals, `c` is a computed value, and the `console.log` call is an effect.
+
+Rensen holds state in JavaScript values, which [DOM State](dom-state.html) otherwise rules out. It is for a graph of dependencies that cannot be written as attributes, like a spreadsheet. The result still lands in the DOM, and the graph lives on the element it belongs to, as in [Cells](cells.html).

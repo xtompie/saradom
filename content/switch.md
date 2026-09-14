@@ -1,17 +1,10 @@
 ---
-slug: switch
 title: "Switch"
-type: page
-tags: [switch, dom-state]
-related: [dom-state, event-attributes, notify, modularization]
-track: tools
-order: 60
-status: draft
 ---
 
 # Switch
 
-Switch drives each element's state from a shared set of tags — one call flips every tagged element on or off, hiding and showing by default, or running whatever effect the element defines. Elements carry their tag inside a shared `switch-space`, and the active set is written to the DOM as `switch-state`, readable there with no JavaScript variable holding it.
+Switch turns tagged elements on and off. One call names a set of tags: every element whose tag is in the set goes on, the rest go off. On and off mean show and hide, unless the element defines its own effect. The active set is written to the space as `switch-state`.
 
 <!-- source: Switch/Switch.js -->
 
@@ -57,8 +50,6 @@ The extra input shows only when Other is selected.
 <!-- demo: content/switch-radio.html -->
 
 ## Effect
-
-Each target sets its own effect in `switch-onchange`. It runs with the computed boolean, `this` bound to the element. Left out, the target is shown when on and hidden when off.
 
 ```html
 <div switch-space>

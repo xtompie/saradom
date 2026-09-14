@@ -1,12 +1,5 @@
 ---
-slug: tic-tac-toe
 title: "Tic-tac-toe"
-type: example
-tags: [example, dom-state, time-travel, val]
-related: [dom-state, val, produce]
-track: examples
-order: 30
-status: draft
 ---
 
 # Tic-tac-toe

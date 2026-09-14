@@ -36,12 +36,12 @@ dom.one(<span class="hljs-string">'[todo-add]'</span>);    <span class="hljs-com
 el.all(<span class="hljs-string">'[todo-item]'</span>);    <span class="hljs-comment">// array of matches inside el</span>
 el.one(<span class="hljs-string">'[todo-add]'</span>);     <span class="hljs-comment">// first match inside el</span>
 el.allfd(<span class="hljs-string">'[todo-item]'</span>);  <span class="hljs-comment">// matches inside el, without descending into a match</span>
-el.up(<span class="hljs-string">'[todo-space]'</span>);    <span class="hljs-comment">// el if it matches, else the nearest ancestor that does</span>
+el.up(<span class="hljs-string">'[todo-space]'</span>);    <span class="hljs-comment">// el if it matches, else the nearest ancestor that does; body when none</span>
 el.up();                  <span class="hljs-comment">// the parent</span></code></pre>
 <h2 id="attributes">Attributes<a class="anchor" href="#attributes" aria-hidden="true">#</a></h2>
 <pre><code class="hljs language-javascript">el.attr(<span class="hljs-string">'data-status'</span>);                     <span class="hljs-comment">// read</span>
 el.attr(<span class="hljs-string">'data-status'</span>, <span class="hljs-string">'done'</span>);             <span class="hljs-comment">// set</span>
-el.attr(<span class="hljs-string">'data-status'</span>, <span class="hljs-literal">null</span>);               <span class="hljs-comment">// remove</span>
+el.attr(<span class="hljs-string">'data-status'</span>, <span class="hljs-literal">null</span>);               <span class="hljs-comment">// remove; false removes too</span>
 el.attrt(<span class="hljs-string">'data-status'</span>, <span class="hljs-string">'done'</span>, <span class="hljs-string">'active'</span>);  <span class="hljs-comment">// toggle between two values</span>
 el.flag(<span class="hljs-string">'hidden'</span>);                          <span class="hljs-comment">// read as a boolean</span>
 el.flag(<span class="hljs-string">'hidden'</span>, <span class="hljs-literal">true</span>);                    <span class="hljs-comment">// add the attribute; false removes it</span></code></pre>
@@ -63,7 +63,8 @@ tpl.tpl();   <span class="hljs-comment">// clone a &lt;template&gt;'s first chil
 arr.any();     <span class="hljs-comment">// true when not empty</span>
 arr.none();    <span class="hljs-comment">// true when empty</span></code></pre>
 <h2 id="misc">Misc<a class="anchor" href="#misc" aria-hidden="true">#</a></h2>
-<pre><code class="hljs language-javascript">el.cls();                <span class="hljs-comment">// its classList</span>
+<pre><code class="hljs language-javascript">el.run(<span class="hljs-string">'todo-onchange'</span>); <span class="hljs-comment">// eval the attribute; if it is a function, call it with this = el</span>
+el.cls();                <span class="hljs-comment">// its classList</span>
 event.combo(<span class="hljs-string">'Ctrl+s'</span>);   <span class="hljs-comment">// true when the key combo matches</span>
 <span class="hljs-string">'a long title'</span>.cut(<span class="hljs-number">6</span>);   <span class="hljs-comment">// 'a long...'</span></code></pre>
 <p class="doc-next"><a href="val.html">Next: Val →</a></p>

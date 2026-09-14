@@ -1,11 +1,5 @@
 ---
-slug: saradom-vs-others
 title: "Saradom vs Others"
-type: topic
-tags: [comparison]
-track: topics
-order: 30
-status: draft
 ---
 
 # Saradom vs Others
@@ -121,7 +115,7 @@ In Saradom, a handler written today would have worked almost thirty years ago: a
 
 Contexte, a French SaaS, had a React front end that took two years to build. In 2022 they [rebuilt it](https://www.youtube.com/watch?v=3GObi93tjZI) with server-rendered HTML and htmx (Saradom does the same, through Hx), in about two months, with no loss in the experience.
 
-The code base dropped by 67%, from 21,500 lines to 7,200. JavaScript dependencies dropped by 96%, from 255 to 9. The build went from 40 seconds to 5. First load went from 2 to 6 seconds down to 1 to 2, and the app could finally handle data sets that React had choked on.
+The code base dropped by 67%, from 21,500 lines to 7,200. JavaScript dependencies dropped by 96%, from 255 to 9. The build went from 40 seconds to 5. First load dropped from 2–6 seconds to 1–2, and the app could finally handle data sets that React had choked on.
 
 The team changed too. Under React it was split: two back-end developers, one front-end, and one full-stack. After the switch the whole team was full-stack, each able to own a feature end to end.
 

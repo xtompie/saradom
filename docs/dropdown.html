@@ -316,10 +316,10 @@ document.body.setAttribute('onkeydown', 'Dropdown.Esc(event)');
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
 <p>With <a href="hx.html">Hx</a> the same attribute gives lazy content — a panel that loads itself at the moment it opens:</p>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-space</span> <span class="hljs-attr">dropdown-onopen</span>=<span class="hljs-string">"() =&gt; hx(this.one('[dropdown-menu]'))"</span>&gt;</span>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-space</span> <span class="hljs-attr">dropdown-onopen</span>=<span class="hljs-string">"() =&gt; hx(this)"</span>
+     <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/fragments/notifications.html"</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"find [dropdown-menu]"</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">dropdown-trigger</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Dropdown.Toggle(this)"</span>&gt;</span>Notifications<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-menu</span> <span class="hljs-attr">popover</span>=<span class="hljs-string">"manual"</span>
-         <span class="hljs-attr">hx-get</span>=<span class="hljs-string">"/fragments/notifications.html"</span> <span class="hljs-attr">hx-target</span>=<span class="hljs-string">"this"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">dropdown-menu</span> <span class="hljs-attr">popover</span>=<span class="hljs-string">"manual"</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Loading…<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>

@@ -1,12 +1,5 @@
 ---
-slug: dropdown
 title: "Dropdown"
-type: page
-tags: [popover, anchor-positioning, dom-state]
-related: [event-attributes, hx, notify]
-track: tools
-order: 45
-status: draft
 ---
 
 # Dropdown
@@ -50,10 +43,10 @@ The instance can declare what should happen when it opens. `dropdown-onopen` sit
 With [Hx](hx.html) the same attribute gives lazy content — a panel that loads itself at the moment it opens:
 
 ```html
-<div dropdown-space dropdown-onopen="() => hx(this.one('[dropdown-menu]'))">
+<div dropdown-space dropdown-onopen="() => hx(this)"
+     hx-get="/fragments/notifications.html" hx-target="find [dropdown-menu]">
     <button dropdown-trigger onclick="Dropdown.Toggle(this)">Notifications</button>
-    <div dropdown-menu popover="manual"
-         hx-get="/fragments/notifications.html" hx-target="this">
+    <div dropdown-menu popover="manual">
         <p>Loading…</p>
     </div>
 </div>

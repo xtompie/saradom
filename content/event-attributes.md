@@ -1,13 +1,5 @@
 ---
-slug: event-attributes
 title: "Event attributes"
-nav_title: "Event attributes"
-type: concept
-tags: [foundations, events, locality]
-related: [dom-state, action-in-context, modularization]
-track: foundations
-order: 20
-status: draft
 ---
 
 # Event attributes

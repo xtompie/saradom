@@ -1,12 +1,6 @@
 ---
-slug: home
 title: "Saradom — frontend architecture pattern"
-nav_title: "Introduction"
-type: page
 layout: landing
-track: home
-order: 0
-status: draft
 ---
 
 <header class="hero">

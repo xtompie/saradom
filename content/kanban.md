@@ -1,12 +1,5 @@
 ---
-slug: kanban
 title: "Kanban"
-type: example
-tags: [example, dom-state, drag-and-drop, sortable]
-related: [dom-state, action-in-context, tic-tac-toe]
-track: examples
-order: 40
-status: draft
 ---
 
 # Kanban

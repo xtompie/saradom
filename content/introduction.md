@@ -1,10 +1,5 @@
 ---
-slug: introduction
 title: "Introduction"
-type: page
-track: foundations
-order: 0
-status: draft
 ---
 
 # Introduction

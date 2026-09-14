@@ -1,12 +1,5 @@
 ---
-slug: val
 title: "Val"
-type: page
-tags: [val, dom-state]
-related: [util, compute, notify]
-track: tools
-order: 35
-status: draft
 ---
 
 # Val
@@ -383,7 +376,7 @@ A foreign lane is not a wall — it is transparent. A read passes straight throu
 
 `val`, `set`, and `patch` resolve the lane from the element they are called on. A lane can be passed explicitly as the last argument to reach a different dimension of the same subtree — for example a form whose error messages live in an `error` lane: `form.val(messages, 'error')`.
 
-The kanban board is the worked example. Three models share one tree:
+The kanban board is the worked example. Four models share one tree:
 
 ```html
 <div kanban-space val-lane="value">
@@ -393,21 +386,26 @@ The kanban board is the worked example. Three models share one tree:
     <!-- the interface: anchor, hidden, mode -->
 
     <section kanban-form val-lane="form">
-      <!-- the card being edited: title, color -->
+      <div kanban-errors val-lane="error">
+        <!-- the card being edited: each field carries val-lane="form" -->
+        <input val val-lane="form" val-fx="Input" val-key="title">
+        <!-- the messages: title, color -->
+      </div>
     </section>
   </div>
 </div>
 ```
 
-The board carries `val-lane="value"`, the modal `val-lane="modal"`, and the form `val-lane="form"`. Columns, cards, binders, and form fields carry no lane; they inherit from the nearest root.
+The board carries `val-lane="value"`, the modal `val-lane="modal"`, the form `val-lane="form"`, and the error root `val-lane="error"`. Columns, cards, and binders carry no lane; they inherit from the nearest root. The form fields sit inside the error root, so each carries its own `val-lane="form"` to stay in the form's model.
 
 ```javascript
-space.val(); // the board only; the nested modal is skipped
-modal.val(); // the interface only; the nested form is skipped
-form.val();  // the card being edited
+space.val();  // the board only; the nested modal is skipped
+modal.val();  // the interface only; the nested form is skipped
+form.val();   // the card being edited; the error root is passed through
+errors.val(); // the messages only
 ```
 
-Each read returns only its own model. The modal sits inside the board and the form inside the modal, but their elements belong to other lanes, so a `value` read passes straight through them and picks up nothing that is not the board.
+Each read returns only its own model. The modal sits inside the board, the form inside the modal, the fields inside the error root, but their elements belong to other lanes, so a read of one lane passes straight through the rest and picks up nothing that is not its own.
 
 ## Custom fx
 
@@ -494,7 +492,7 @@ Val adds methods to `HTMLElement`. Each acts on the marked subtree of the elemen
 - `patch(patch)` merges a partial object over the current state and syncs the diff.
 - `vappend(items, tpl)` adds items to the end of a list.
 - `vprepend(items, tpl)` adds items to the start of a list.
-- `varr(data, tpl)` writes an array as list items. Called with no argument it reads the list back as an array. Reader in that form.
+- `varr(data, tpl)` writes an array as list items. Called with no argument it reads the list back as an array.
 - `vrender(data, tpl)` clears the element and renders one object from a template.
 
 ```javascript

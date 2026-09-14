@@ -42,6 +42,7 @@ a(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <
 <span class="hljs-comment">// c: 12</span></code></pre>
 <p><code>R(() =&gt; ...)</code> creates a reactive value. Its function runs once at creation, and again each time a value it reads changes. <code>c</code> reads <code>a</code> and <code>b</code>, so a change to either one recomputes <code>c</code>.</p>
 <p>This is the signals pattern. Most signal libraries split it into three primitives: a signal, a computed value, and an effect. Rensen uses one function, <code>R()</code>, for all three. <code>a</code> and <code>b</code> are signals, <code>c</code> is a computed value, and the <code>console.log</code> call is an effect.</p>
+<p>Rensen holds state in JavaScript values, which <a href="dom-state.html">DOM State</a> otherwise rules out. It is for a graph of dependencies that cannot be written as attributes, like a spreadsheet. The result still lands in the DOM, and the graph lives on the element it belongs to, as in <a href="cells.html">Cells</a>.</p>
 </main>
 <script>
 // Mobile nav drawer — built the Saradom way: state in the DOM (body[nav-open]),

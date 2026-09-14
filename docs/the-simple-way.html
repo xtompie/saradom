@@ -86,8 +86,9 @@ App.Info.Refresh();
 <h2 id="forms">Forms<a class="anchor" href="#forms" aria-hidden="true">#</a></h2>
 <p>Option 1. A plain form, submitted normally.</p>
 <p>Option 2. Form data is sent, and the HTML response is swapped in, the way htmx does it.</p>
-<p>Option 3. Val reads the fields, sends JSON, and renders the returned errors under the field.</p>
-<p>Option 4. Vld validates the fields in the browser, before any of the above. The errors show in the page at once, with no request. It layers on top of options 1 to 3. The network only sees a submit once the shape is already right.</p>
+<p>Option 3. An action writes its values into the form as hidden inputs and submits it natively. The server renders the whole next page. That is Formsend.</p>
+<p>Option 4. A script reads the fields with Val, sends JSON with <code>fetch</code>, and writes the returned errors back into the page with Val.</p>
+<p>Option 5. Vld validates the fields in the browser, before any of the above. The errors show in the page at once, with no request. It layers on top of options 1 to 4. The network only sees a submit once the shape is already right.</p>
 <h2 id="toasts">Toasts<a class="anchor" href="#toasts" aria-hidden="true">#</a></h2>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
 App.Toast = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {

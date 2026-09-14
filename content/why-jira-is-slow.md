@@ -1,20 +1,18 @@
 ---
-slug: why-jira-is-slow
 title: "Why is Jira so slow?"
-type: topic
-tags: [jira, react, performance, case-study]
-track: topics
-order: 40
-status: draft
 ---
 
 # Why is Jira so slow?
 
-The Jira issue page is a [React](https://react.dev/) single page application. Showing one issue takes **about 700 MB of RAM in Chrome** and 15.6 MB of transfer in 239 network requests. The weight is not the issue, it is the way the page is built: of its 9,810 React components, 54% are wrapping, not content: context providers, error boundaries, analytics, render profiling. Measured on a live Jira Cloud instance, July 2026.
+The Jira issue page is a [React](https://react.dev/) single page application. This article builds the same page again, in plain HTML and JavaScript on the Saradom pattern. It is a dense screen from a large system: dozens of fields, panels and controls, inline editing everywhere, fragments arriving from the server. The rebuild has no framework, no build step and no client model, and it loads in 42 KB instead of 15.6 MB.
 
-This demo is the same page with the same interactions, in plain HTML and JavaScript on the Saradom pattern: inline editing, dropdowns, subtasks, comments, search, notifications, drag and drop. Everything ships as one HTML file, one CSS file, one JavaScript file. Demo: [the page](jira/). Source: [jira/ in the repository](https://github.com/xtompie/saradom/tree/main/jira).
+<p class="code-src"><a href="jira/">Jira in Saradom</a></p>
 
-The article walks the page mechanism by mechanism. It is a developer article, not a guide to tuning a Jira instance.
+The rebuild covers the screen and its interactions: inline editing, dropdowns, subtasks, comments, search, notifications, drag and drop. It ships as one HTML file, one CSS file, one JavaScript file. The [source code](https://github.com/xtompie/saradom/tree/main/jira) is in the repository.
+
+Showing one issue in Jira takes **about 200 MB of JavaScript heap** and 15.6 MB of transfer in 239 network requests. The weight is not the issue, it is the way the page is built: of its 9,810 React components, 54% are wrapping, not content: context providers, error boundaries, analytics, render profiling. Measured on a live Jira Cloud instance, July 2026.
+
+From here the article walks the page mechanism by mechanism: the markup, the module that runs it, and why no framework is needed for it. It is a developer article, not a guide to tuning a Jira instance.
 
 ## One global
 
@@ -26,7 +24,9 @@ App.Ui = {};
 window.App = App;
 ```
 
-Each module is one file. It attaches itself: `App.Ui.Hx = (() => { ... })();`. Generic modules use attributes with the `ui-` prefix: `ui-dropdown-space`, `ui-pin-name`, `ui-shortcut-c`. Domain modules use their own name as the prefix: `subtask-`, `notif-`, `field-`.
+Each module is one file. It attaches itself: `App.Ui.Hx = (() => { ... })();`. One rule names everything: the module name is the attribute prefix. `App.Ui.Dropdown` marks `ui-dropdown-space`, `App.Ui.Shortcut` marks `ui-shortcut-c`.
+
+Every module on this page sits under `App.Ui`. The parts of the screen have prefixes too, `subtask-`, `notif-`, `field-`, but no JavaScript stands behind them. They name elements for the CSS and for the generic modules to work on.
 
 SortableJS is the one outside library. It sets `window.Sortable` when it loads. The next script claims it, the way described in [The simple way](the-simple-way.html):
 
@@ -144,11 +144,10 @@ The panel itself is two files, named by state: `notifications-unread.html` and `
   <a class="menu-item app-item" sort-item="confluence" href="#">...</a>
   <a class="menu-item app-item" sort-item="bitbucket" href="#">...</a>
   <a class="menu-item app-item" sort-item="trello" href="#">...</a>
-  <s-init run="(el) => el.restore()"></s-init>
 </s-sortable>
 ```
 
-When a drag ends, the element collects `sort-item` names in DOM order and saves the array to `localStorage` under the `store` key. `restore()` reorders the children from that array. The `s-init` as last child calls it during parsing, before the page renders further, so there is no flicker and no `DOMContentLoaded` handler. The list above arrives inside an Hx fragment. Custom elements upgrade on insertion, so it works without any wiring.
+When a drag ends, the element collects `sort-item` names in DOM order and saves the array to `localStorage` under the `store` key. On connect it puts the saved order back by itself, so there is no flicker and no `DOMContentLoaded` handler. The list above arrives inside an Hx fragment. Custom elements upgrade on insertion, so it works without any wiring.
 
 On the element's own tag the attributes are bare: `handle`, `store`. On other elements they carry the module prefix: `sort-item`. The tag itself is the scope.
 
@@ -161,12 +160,12 @@ The search panel is a large widget with no new mechanism in it. The input opens 
 Create and Delete are separate pages: `create.html`, `delete.html`. Each works as a page on its own. The [Modal](modal.html) toolkit opens one in a fullscreen dialog with an iframe:
 
 ```html
-<button onclick="App.Ui.Modal.Open('create.html', (r) => r && this.nall('ui-toast', r.key + ' created'))">
+<button onclick="App.Ui.Modal.Open('create.html', (r) => r && App.Ui.Toast.Show(r.key + ' created'))">
   Create
 </button>
 ```
 
-The page inside ends itself with `Modal.Result(data)` or `Modal.Cancel()`. The dialog closes and the callback gets the result, or `null`. The two pages do not know each other. Here the callback announces `ui-toast` through Notify, and the toast element shows it for three seconds. The dialog calls `showModal()` only after the iframe has loaded, so a fast page appears in one paint with its content ready.
+The page inside ends itself with `Modal.Result(data)` or `Modal.Cancel()`. The dialog closes and the callback gets the result, or `null`. The two pages do not know each other. Here the callback calls `Toast.Show`, and the message stays on screen for three seconds. The dialog opens when the iframe has loaded, so a fast page appears in one paint with its content ready. A slow page shows a loading state after half a second, with a Cancel button.
 
 ## Editing
 
@@ -264,7 +263,7 @@ The 👍 reaction on a comment is a hidden checkbox exchanged between two state 
 
 ## Pin
 
-Pin is one of the three modules written for this page. The Details panel pins fields to a shelf at the top, and the shelf is sortable. The design is four attributes and one storage key.
+Pin is one of the four modules written for this page. The Details panel pins fields to a shelf at the top, and the shelf is sortable. The design is four attributes and one storage key.
 
 ```html
 <div ui-pin-space ui-pin-store="detail-properties">
@@ -321,7 +320,7 @@ The page is a small set of mechanisms used many times.
 * **Dropdown**: the `ui-dropdown-space` attribute appears 76 times across the page and its fragments: app switcher, notifications, account, help, settings, watchers, work type, epic, every status and assignee menu, sidebar flyouts, search.
 * **Sortable**: 4 lists: app switcher, sidebar navigation, subtask rows, pinned fields.
 * **Compute**: 3: subtask progress, reaction counts, watcher count.
-* **Notify**: sidebar collapse, notification count, work type change, watcher state, toast.
+* **Notify**: sidebar collapse, notification count, work type change, watcher state.
 * **Switch**: search tabs, activity tabs.
 * **Filter**: the recent items list in search.
 * **Fragment pairs**: title, field, labels, description, comment.
@@ -352,6 +351,6 @@ Both columns draw the same screen. The difference is the runtime around it. Of t
 
 ## Closing
 
-The page has one global variable. State lives in DOM attributes, and CSS reads it there. Development runs the source files directly, with no build step. The JavaScript written for this page is three modules: Pin, Copy, Shortcut. The rest is toolkits reused as they are.
+The page has one global variable. State lives in DOM attributes, and CSS reads it there. Development runs the source files directly, with no build step. The JavaScript written for this page is four modules: Pin, Copy, Shortcut, Toast. The rest is toolkits reused as they are.
 
 There is no business model anywhere in the code. No Task module, no User model, no JSON objects behind the page. Every module is a generic interface component, and most of them do not know what they are holding. Pin moves elements between slots. It does not know they are issue fields. Hx swaps fragments. It does not know one of them is a comment. Sortable orders children. It does not know they are subtasks. The page is the data.

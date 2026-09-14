@@ -1,12 +1,5 @@
 ---
-slug: modal
 title: "Modal"
-type: page
-tags: [dialog, iframe, picker]
-related: [the-simple-way]
-track: tools
-order: 55
-status: draft
 ---
 
 # Modal
@@ -59,7 +52,7 @@ the modal the same as `Cancel`.
 
 ## Any page as a modal
 
-This is the point of the pattern, and it is optional. Add `_modal=1` to any URL. The page
+This is what the flag is for. Add `_modal=1` to any URL. The page
 reads the flag and renders itself as a modal: no site chrome, transparent body, content in
 the center. The same URL without the flag is a normal full page. With one flag every view
 the app already has can open as a modal. No modal version of a screen is built.
@@ -69,7 +62,7 @@ the app already has can open as a modal. No modal version of a screen is built.
 An existing list opens as a picker, and it keeps working inside the modal. Its filter,
 search, and paging reload the iframe the same as on a full page. To pick a row, the row
 posts its own id back to the same list. The controller takes the id, loads that one row's
-detail or renders an HTML fragment, and returns it with `Modal.Result`. The list carries
+detail or renders an HTML fragment, and renders a page that calls `Modal.Result` with it. The list carries
 ids, not the full detail of every row, and that detail is built only for the row chosen.
 
 ## Loading
@@ -84,4 +77,3 @@ out.
 Modal uses the native `<dialog>` element and `showModal`. It works in Chrome 37+, Firefox
 98+, and Safari 15.4+. It does not use CSS anchor positioning, so it has no Chromium-only
 limit.
-</content>

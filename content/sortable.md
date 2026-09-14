@@ -1,12 +1,5 @@
 ---
-slug: sortable
 title: "Sortable"
-type: page
-tags: [drag-and-drop, sortablejs, dom-state]
-related: [kanban, why-jira-is-slow]
-track: tools
-order: 58
-status: draft
 ---
 
 # Sortable

@@ -1,12 +1,5 @@
 ---
-slug: dom-state
 title: "DOM State"
-type: concept
-tags: [foundations, state]
-related: [event-attributes]
-track: foundations
-order: 10
-status: draft
 ---
 
 # DOM State

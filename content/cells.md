@@ -1,12 +1,5 @@
 ---
-slug: cells
 title: "Cells"
-type: example
-tags: [example, dom-state, val, rensen]
-related: [val, rensen, dom-state]
-track: examples
-order: 50
-status: draft
 ---
 
 # Cells

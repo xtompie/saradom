@@ -1,12 +1,5 @@
 ---
-slug: todo
 title: "Todo list"
-type: example
-tags: [ramp, val, examples]
-related: [sibling-state, val, util]
-track: examples
-order: 10
-status: draft
 ---
 
 # Todo list

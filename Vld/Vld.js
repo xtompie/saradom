@@ -26,7 +26,7 @@ const Vld = (() => {
             const { fn, args, key, msg } = ResolveRule(def);
             const result = await fn(input, args);
             if (result !== true) {
-                const message = msg ?? (typeof result === 'string' ? result : Vld.msg(key, args));
+                const message = msg ?? (typeof result === 'string' ? result : Vld.Format(key, args));
                 return [{ key, message, path }];
             }
         }
@@ -44,7 +44,7 @@ const Vld = (() => {
     return { Validate };
 })();
 
-Vld.byPath = (errors) => Object.fromEntries(errors.map((e) => [e.path, e.message]));
+Vld.ByPath = (errors) => Object.fromEntries(errors.map((e) => [e.path, e.message]));
 
 Vld.Msg = {
     required: 'This field is required',
@@ -69,7 +69,7 @@ Vld.Msg = {
     confirmed: 'Confirmation does not match',
 };
 
-Vld.msg = (key, args = {}) => (Vld.Msg[key] ?? '').replace(/\{(\w+)\}/g, (_, k) => args[k] ?? '');
+Vld.Format = (key, args = {}) => (Vld.Msg[key] ?? '').replace(/\{(\w+)\}/g, (_, k) => args[k] ?? '');
 
 Vld.Rule = {
     email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),

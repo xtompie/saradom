@@ -1,19 +1,13 @@
 ---
-slug: init
 title: "Init"
-type: page
-tags: [init, custom-elements, ux-performance]
-related: [ux-performance, hx]
-track: tools
-order: 42
-status: draft
 ---
 
 # Init
 
 `<s-init>` runs one line of code at the place it sits, the moment the parser reaches it. No
 `DOMContentLoaded`, no deferred script that queries the page later — the code runs during
-parsing, so what it sets up is in place before first paint.
+parsing, so what it sets up is in place before first paint. It is the in-place init from
+[UX Performance](ux-performance.html), as one tag instead of an inline `<script>`.
 
 <!-- source: Init/SInit.js -->
 

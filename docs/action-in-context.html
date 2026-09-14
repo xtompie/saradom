@@ -22,19 +22,22 @@
 <main class="content"><h1 id="action-in-context">Action in context<a class="anchor" href="#action-in-context" aria-hidden="true">#</a></h1>
 <p>Every event has a current element. That element sets the space where the action runs.</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">counter-space</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">counter-value</span>&gt;</span>0<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Counter.Increment(this)"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">output</span> <span class="hljs-attr">counter-value</span>&gt;</span>0<span class="hljs-tag">&lt;/<span class="hljs-name">output</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"Counter.Inc(this)"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
-Counter.Increment = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
-  <span class="hljs-keyword">const</span> space = ctx.closest(<span class="hljs-string">'[counter-space]'</span>);
-  <span class="hljs-keyword">const</span> value = space.querySelector(<span class="hljs-string">'[counter-value]'</span>);
-  value.textContent = <span class="hljs-built_in">Number</span>(value.textContent) + <span class="hljs-number">1</span>;
-};
+<span class="hljs-keyword">const</span> Counter = <span class="hljs-function">(<span class="hljs-params">(</span>) =&gt;</span> {
+  <span class="hljs-keyword">const</span> Inc = <span class="hljs-function">(<span class="hljs-params">ctx</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> space = ctx.closest(<span class="hljs-string">'[counter-space]'</span>);
+    <span class="hljs-keyword">const</span> value = space.querySelector(<span class="hljs-string">'[counter-value]'</span>);
+    value.textContent = <span class="hljs-built_in">Number</span>(value.textContent) + <span class="hljs-number">1</span>;
+  };
+  <span class="hljs-keyword">return</span> { Inc };
+})();
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
 <h2 id="why">Why<a class="anchor" href="#why" aria-hidden="true">#</a></h2>
-<p>One function serves every instance. The same <code>Counter.Increment</code> runs for one counter or a hundred. Nothing is created per widget: no instance, no component object. The context is found at click time, from where the event happened. One piece of code covers them all.</p>
+<p>One function serves every instance. The same <code>Counter.Inc</code> runs for one counter or a hundred. Nothing is created per widget: no instance, no component object. The context is found at click time, from where the event happened. One piece of code covers them all.</p>
 <p>The element is passed in, not captured. The handler receives the triggering element as an argument. There is no <code>this</code> to bind and no closure to hold the scope.</p>
 <p>Nesting is the scope. From that node the rest is reached by walking the DOM: <code>closest</code> up to the space, then <code>querySelector</code> down to the parts. Identical widgets each keep their own state, scoped by the surrounding markup. There is nothing to wire. The tree that lays out the UI is the same tree that scopes it.</p>
 <p>No registry to keep. State is on the element. There is no map from id to a state object. Nothing has to be kept in sync as elements are added or removed. Removing the element leaves nothing behind, because there was never a second copy to clean up.</p>

@@ -81,7 +81,7 @@
 <pre><code class="hljs language-javascript">{ <span class="hljs-attr">path</span>: <span class="hljs-string">'email'</span>, <span class="hljs-attr">rules</span>: [<span class="hljs-string">'email'</span>] }                                  <span class="hljs-comment">// required — empty → "This field is required"</span>
 { <span class="hljs-attr">path</span>: <span class="hljs-string">'bio'</span>, <span class="hljs-attr">required</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">rules</span>: [{ <span class="hljs-attr">min</span>: <span class="hljs-number">10</span> }] }  <span class="hljs-comment">// not required — empty → passes; "short" → min error</span>
 { <span class="hljs-attr">path</span>: <span class="hljs-string">'name'</span>, <span class="hljs-attr">requiredMsg</span>: <span class="hljs-string">'Please enter a name'</span>, <span class="hljs-attr">rules</span>: [] }      <span class="hljs-comment">// required with a custom message, no other rules</span></code></pre>
-<p><code>requiredMsg</code> overrides the default &quot;This field is required&quot;. There is no <code>required</code> rule to list. It is the boolean above, default <code>true</code>, and <code>required: false</code> opts out.</p>
+<p><code>requiredMsg</code> overrides the default &quot;This field is required&quot;.</p>
 <h2 id="path-and-errorpath">path and errorPath<a class="anchor" href="#path-and-errorpath" aria-hidden="true">#</a></h2>
 <p>A check reads two things off <code>data</code>, independently. <code>path</code> says what the rule receives. <code>errorPath</code> says where the error attaches, when that is not the same field. It defaults to <code>path</code>.</p>
 <p>For most checks they are identical: <code>path: 'email'</code> reads <code>data.email</code>, and an error lands on <code>email</code>.</p>
@@ -122,7 +122,7 @@ Vld.Msg.startsWithLetter = <span class="hljs-string">'Must start with a letter'<
     <span class="hljs-attr">between</span>: <span class="hljs-string">'Od {min} do {max} znaków'</span>,
     <span class="hljs-comment">// ...</span>
 };</code></pre>
-<p>Placeholders are filled by name from the rule's arguments. <code>{value}</code> comes from <code>{ min: 3 }</code>, and <code>{min}</code> and <code>{max}</code> come from <code>{ between: { min: 3, max: 20 } }</code>. <code>Vld.msg(key, args)</code> does that lookup-and-fill, and that is the one place it happens. The rules stay pure predicates. A single message overrides the registry from the check itself: <code>{ rule: 'min', value: 3, msg: 'Too short' }</code> for one field, or <code>requiredMsg</code> for the empty case. <code>key</code> overrides the same way, so a rule reports under any name.</p>
+<p>Placeholders are filled by name from the rule's arguments. <code>{value}</code> comes from <code>{ min: 3 }</code>, and <code>{min}</code> and <code>{max}</code> come from <code>{ between: { min: 3, max: 20 } }</code>. <code>Vld.Format(key, args)</code> does that lookup-and-fill, and that is the one place it happens. The rules stay pure predicates. A single message overrides the registry from the check itself: <code>{ rule: 'min', value: 3, msg: 'Too short' }</code> for one field, or <code>requiredMsg</code> for the empty case. <code>key</code> overrides the same way, so a rule reports under any name.</p>
 <h2 id="forms">Forms<a class="anchor" href="#forms" aria-hidden="true">#</a></h2>
 <p>Four pieces connect <code>Validate</code> to a form. <code>vld-space</code> marks the scope. The handler climbs from the triggering element to its nearest space, so two instances on the same page never share state. <code>vld-form</code> marks the <code>&lt;form&gt;</code> whose named fields supply the data. <code>vld-error=&quot;name&quot;</code> marks where an error for that name renders. <code>Vld.Form.Submit(ctx, event, rules, data)</code> ties them together. It stops the native submit, climbs from <code>ctx</code> to the nearest <code>[vld-space]</code>, validates, then clears and refills every <code>[vld-error]</code> inside it.</p>
 <p><code>data</code> is optional. Left out, <code>Vld.Form.Submit</code> reads it from the form's named fields with <code>FormData</code>. <code>rules</code> are always handed in. Where those rules are kept is up to the caller, not the mechanism. <code>Vld.Form.Submit</code> never names a property or reaches for one. It just validates whatever <code>rules</code> the call passes it. The demo below keeps them on the space with an inline <code>&lt;script&gt;</code> anchored by <code>document.currentScript</code>, and the handler reads them straight back with <code>this._vldRules</code>. That <code>_vldRules</code> name lives entirely in this page's markup. Nothing in Vld knows about it.</p>
@@ -170,7 +170,7 @@ Vld.Msg.startsWithLetter = <span class="hljs-string">'Must start with a letter'<
 <li><code>vld-space</code> marks the scope <code>Vld.Form.Submit</code> climbs to.</li>
 <li><code>vld-form</code> marks the <code>&lt;form&gt;</code> whose named fields supply <code>data</code>. It is on the space itself, or on the single form inside it.</li>
 <li><code>vld-error=&quot;name&quot;</code> marks where the error for that <code>path</code> renders. An empty value (<code>vld-error=&quot;&quot;</code>) catches errors with <code>path: null</code>.</li>
-<li><code>vld-error-tpl</code>, on a <code>&lt;template&gt;</code> inside the space, gives the error markup. Optional: a default is used when it is missing.</li>
+<li><code>vld-error-tpl</code>, on the space, holds a selector. The matched element's inner HTML is the error markup. Without it nothing renders.</li>
 </ul>
 <h2 id="methods">Methods<a class="anchor" href="#methods" aria-hidden="true">#</a></h2>
 <p>The core is headless: <code>Validate</code> and the registries, no DOM. Rendering lives in the <code>Vld.Form</code> addon.</p>
@@ -179,9 +179,10 @@ Vld.Msg.startsWithLetter = <span class="hljs-string">'Must start with a letter'<
 <li><code>Vld.Form.Validate(root, rules, data, tpl, attr)</code> validates and shows the errors under the fields in one call, and returns <code>Promise&lt;boolean&gt;</code>, <code>true</code> when the data passed. A default for a component that holds its own <code>data</code>: <code>if (!(await Vld.Form.Validate(form, rules, data))) return;</code>.</li>
 <li><code>Vld.Form.Submit(ctx, event, rules, data)</code> resolves the space from <code>ctx</code>, defaults <code>data</code> to <code>FormData</code> off the space's <code>[vld-form]</code> when omitted, then does the same validate-and-show. Returns <code>Promise&lt;boolean&gt;</code>.</li>
 <li><code>Vld.Form.Clear(root, attr)</code> empties every <code>[vld-error]</code> inside <code>root</code> without validating. It clears messages on their own, for example when closing or reopening a dialog.</li>
+<li><code>Vld.ByPath(errors)</code> turns the error list into <code>{ path: message }</code>, ready to write into message elements with Val.</li>
 <li><code>Vld.Rule</code> holds the rule registry. Add to it directly to register a new one.</li>
 <li><code>Vld.Msg</code> holds the built-in messages, keyed by rule. Swap the whole object to change language; <code>{name}</code> placeholders are filled from the rule's named arguments.</li>
-<li><code>Vld.msg(key, args)</code> reads <code>Vld.Msg[key]</code> and fills its <code>{name}</code> placeholders from <code>args</code>. Built-in rules use it; custom rules can too.</li>
+<li><code>Vld.Format(key, args)</code> reads <code>Vld.Msg[key]</code> and fills its <code>{name}</code> placeholders from <code>args</code>. Built-in rules use it; custom rules can too.</li>
 </ul>
 <p class="doc-next"><a href="todo.html">Next: Todo list →</a></p>
 </main>

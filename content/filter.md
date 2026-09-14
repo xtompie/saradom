@@ -1,12 +1,5 @@
 ---
-slug: filter
 title: "Filter"
-type: page
-tags: [filter, dom-state]
-related: [dom-state, switch]
-track: tools
-order: 35
-status: draft
 ---
 
 # Filter
@@ -29,4 +22,12 @@ Each item carries its search text in the `filter-item` attribute. The query matc
 
 ## Lanes
 
-`Filter` can share a space with other mechanisms. A `filter-space` names a `filter-lane`, and each item belongs to that lane. The filter touches only its own lane's items. Without `filter-lane` it filters every `[filter-item]` in the space, unchanged.
+`Filter` can share a space with other mechanisms. A `filter-space` names a `filter-lane`, and each item carries the same `filter-lane`. The filter touches only its own lane's items. Without `filter-lane` it filters every `[filter-item]` in the space, unchanged.
+
+```html
+<div filter-space filter-lane="recent">
+  <input filter-query oninput="Filter.Filter(this)">
+  <li filter-item="apple fruit" filter-lane="recent">Apple</li>
+  <li filter-item="banana fruit">Banana</li> <!-- not in the lane, left alone -->
+</div>
+```

@@ -1,12 +1,5 @@
 ---
-slug: formsend
 title: "Formsend"
-type: page
-tags: [form, post, server-rendering]
-related: [hx, modal]
-track: tools
-order: 38
-status: draft
 ---
 
 # Formsend

@@ -1,12 +1,5 @@
 ---
-slug: hx
 title: "Hx"
-type: page
-tags: [htmx, ajax]
-related: [event-attributes, action-in-context]
-track: tools
-order: 40
-status: draft
 ---
 
 # Hx
@@ -37,7 +30,11 @@ Clicking the button sends an HTTP GET to `/hello`. With no `hx-target`, the resp
 
 ## Native semantics
 
-A plain `<a href>` sends a GET to that URL, with no `hx-*` attribute needed. A plain `<form>` sends a POST to its `action`, with its fields serialized. If `action` is missing, it posts to the current URL.
+With `hx(this, event)` on it, a plain `<a href>` sends a GET to that URL, with no `hx-*` attribute needed. A plain `<form>` sends a POST to its `action`, with its fields serialized. If `action` is missing, it posts to the current URL.
+
+```html
+<a href="/page/2" hx-target="[list]" onclick="hx(this, event)">Next</a>
+```
 
 ## Values
 
@@ -56,13 +53,11 @@ The encoding follows PHP's `http_build_query`: nested objects flatten to `key[su
 
 `hx-target` and `hx-indicator` take a selector.
 
-`this` is the triggering element.
+`this` is the triggering element, the default.
 
 ```html
 <button hx-get="/x" hx-target="this" onclick="hx(this, event)">Click</button>
 ```
-
-The response replaces the button's own content, the same as leaving `hx-target` out.
 
 `find <selector>` looks inside the triggering element.
 

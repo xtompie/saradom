@@ -82,7 +82,7 @@
 <p>In Saradom, a handler written today would have worked almost thirty years ago: an attribute, a function, a DOM write. There is no major version to migrate to.</p>
 <h2 id="migration">Migration<a class="anchor" href="#migration" aria-hidden="true">#</a></h2>
 <p>Contexte, a French SaaS, had a React front end that took two years to build. In 2022 they <a href="https://www.youtube.com/watch?v=3GObi93tjZI">rebuilt it</a> with server-rendered HTML and htmx (Saradom does the same, through Hx), in about two months, with no loss in the experience.</p>
-<p>The code base dropped by 67%, from 21,500 lines to 7,200. JavaScript dependencies dropped by 96%, from 255 to 9. The build went from 40 seconds to 5. First load went from 2 to 6 seconds down to 1 to 2, and the app could finally handle data sets that React had choked on.</p>
+<p>The code base dropped by 67%, from 21,500 lines to 7,200. JavaScript dependencies dropped by 96%, from 255 to 9. The build went from 40 seconds to 5. First load dropped from 2–6 seconds to 1–2, and the app could finally handle data sets that React had choked on.</p>
 <p>The team changed too. Under React it was split: two back-end developers, one front-end, and one full-stack. After the switch the whole team was full-stack, each able to own a feature end to end.</p>
 <p>The team's own caveat is worth keeping: Contexte is a content-heavy app, well suited to this style, and not every app will see numbers this large. It was an htmx port, and htmx is the same server-HTML model Saradom builds on. The approach holds up on a real product, at real scale.</p>
 </main>

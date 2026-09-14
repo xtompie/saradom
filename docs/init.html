@@ -22,7 +22,8 @@
 <main class="content"><h1 id="init">Init<a class="anchor" href="#init" aria-hidden="true">#</a></h1>
 <p><code>&lt;s-init&gt;</code> runs one line of code at the place it sits, the moment the parser reaches it. No
 <code>DOMContentLoaded</code>, no deferred script that queries the page later — the code runs during
-parsing, so what it sets up is in place before first paint.</p>
+parsing, so what it sets up is in place before first paint. It is the in-place init from
+<a href="ux-performance.html">UX Performance</a>, as one tag instead of an inline <code>&lt;script&gt;</code>.</p>
 <p class="code-src">Source: <a href="https://github.com/xtompie/saradom/blob/main/Init/SInit.js" target="_blank" rel="noopener">SInit.js</a></p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">form</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"q"</span>&gt;</span>

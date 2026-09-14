@@ -1,13 +1,5 @@
 ---
-slug: ux-performance
 title: "UX Performance"
-nav_title: "UX Performance"
-type: concept
-tags: [foundations, performance, ux]
-related: [dom-state, event-attributes]
-track: foundations
-order: 50
-status: draft
 ---
 
 # UX Performance

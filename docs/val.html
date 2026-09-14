@@ -239,7 +239,7 @@ box.vrender({ <span class="hljs-attr">label</span>: <span class="hljs-string">'s
 <p>An element's lane is the nearest <code>val-lane</code> on it or on an ancestor (<code>el.closest('[val-lane]')</code>).</p>
 <p>A foreign lane is not a wall — it is transparent. A read passes straight through it and still collects any element that belongs to the target lane deeper inside. So <code>X &gt; Y &gt; X</code> reads both <code>X</code> elements; the <code>Y</code> in the middle simply does not exist for an <code>X</code> read, and a read of <code>Y</code> sees only <code>Y</code>.</p>
 <p><code>val</code>, <code>set</code>, and <code>patch</code> resolve the lane from the element they are called on. A lane can be passed explicitly as the last argument to reach a different dimension of the same subtree — for example a form whose error messages live in an <code>error</code> lane: <code>form.val(messages, 'error')</code>.</p>
-<p>The kanban board is the worked example. Three models share one tree:</p>
+<p>The kanban board is the worked example. Four models share one tree:</p>
 <pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-space</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"value"</span>&gt;</span>
   <span class="hljs-comment">&lt;!-- the board: columns and cards --&gt;</span>
 
@@ -247,15 +247,20 @@ box.vrender({ <span class="hljs-attr">label</span>: <span class="hljs-string">'s
     <span class="hljs-comment">&lt;!-- the interface: anchor, hidden, mode --&gt;</span>
 
     <span class="hljs-tag">&lt;<span class="hljs-name">section</span> <span class="hljs-attr">kanban-form</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"form"</span>&gt;</span>
-      <span class="hljs-comment">&lt;!-- the card being edited: title, color --&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">kanban-errors</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"error"</span>&gt;</span>
+        <span class="hljs-comment">&lt;!-- the card being edited: each field carries val-lane="form" --&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">val</span> <span class="hljs-attr">val-lane</span>=<span class="hljs-string">"form"</span> <span class="hljs-attr">val-fx</span>=<span class="hljs-string">"Input"</span> <span class="hljs-attr">val-key</span>=<span class="hljs-string">"title"</span>&gt;</span>
+        <span class="hljs-comment">&lt;!-- the messages: title, color --&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">section</span>&gt;</span>
   <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
-<p>The board carries <code>val-lane=&quot;value&quot;</code>, the modal <code>val-lane=&quot;modal&quot;</code>, and the form <code>val-lane=&quot;form&quot;</code>. Columns, cards, binders, and form fields carry no lane; they inherit from the nearest root.</p>
-<pre><code class="hljs language-javascript">space.val(); <span class="hljs-comment">// the board only; the nested modal is skipped</span>
-modal.val(); <span class="hljs-comment">// the interface only; the nested form is skipped</span>
-form.val();  <span class="hljs-comment">// the card being edited</span></code></pre>
-<p>Each read returns only its own model. The modal sits inside the board and the form inside the modal, but their elements belong to other lanes, so a <code>value</code> read passes straight through them and picks up nothing that is not the board.</p>
+<p>The board carries <code>val-lane=&quot;value&quot;</code>, the modal <code>val-lane=&quot;modal&quot;</code>, the form <code>val-lane=&quot;form&quot;</code>, and the error root <code>val-lane=&quot;error&quot;</code>. Columns, cards, and binders carry no lane; they inherit from the nearest root. The form fields sit inside the error root, so each carries its own <code>val-lane=&quot;form&quot;</code> to stay in the form's model.</p>
+<pre><code class="hljs language-javascript">space.val();  <span class="hljs-comment">// the board only; the nested modal is skipped</span>
+modal.val();  <span class="hljs-comment">// the interface only; the nested form is skipped</span>
+form.val();   <span class="hljs-comment">// the card being edited; the error root is passed through</span>
+errors.val(); <span class="hljs-comment">// the messages only</span></code></pre>
+<p>Each read returns only its own model. The modal sits inside the board, the form inside the modal, the fields inside the error root, but their elements belong to other lanes, so a read of one lane passes straight through the rest and picks up nothing that is not its own.</p>
 <h2 id="custom-fx">Custom fx<a class="anchor" href="#custom-fx" aria-hidden="true">#</a></h2>
 <p>An fx is an object with two functions. <code>Get</code> reads a value from the element. <code>Set</code> writes a value into it. Each reads its own configuration from the element's attributes. New fx are added to <code>Val.Fx</code> by name.</p>
 <pre><code class="hljs language-javascript">Val.Fx.Upper = {
@@ -305,7 +310,7 @@ article.set(<span class="hljs-function">(<span class="hljs-params">d</span>) =&g
 <li><code>patch(patch)</code> merges a partial object over the current state and syncs the diff.</li>
 <li><code>vappend(items, tpl)</code> adds items to the end of a list.</li>
 <li><code>vprepend(items, tpl)</code> adds items to the start of a list.</li>
-<li><code>varr(data, tpl)</code> writes an array as list items. Called with no argument it reads the list back as an array. Reader in that form.</li>
+<li><code>varr(data, tpl)</code> writes an array as list items. Called with no argument it reads the list back as an array.</li>
 <li><code>vrender(data, tpl)</code> clears the element and renders one object from a template.</li>
 </ul>
 <pre><code class="hljs language-javascript"><span class="hljs-keyword">const</span> article = dom.one(<span class="hljs-string">'article'</span>);

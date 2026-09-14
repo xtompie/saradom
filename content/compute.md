@@ -1,12 +1,5 @@
 ---
-slug: compute
 title: "Compute"
-type: page
-tags: [derived, dom-state, action-in-context]
-related: [notify, val, action-in-context]
-track: tools
-order: 55
-status: draft
 ---
 
 # Compute
@@ -39,7 +32,7 @@ Compute fits a value read from a changing set of elements, like items in a cart 
 
 ## Mechanism
 
-Compute puts one [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) on the element. The observer is turned off during a run and turned back on after. Its own writes then do not trigger it. An element in the initial HTML runs first when the page has parsed. An element added later runs when it connects. The element disconnects the observer when it leaves the DOM. Compute does not track a state object. It reacts to the DOM, whatever changed it.
+Compute puts one [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) on the element. The observer is turned off during a run and turned back on after. Its own writes then do not trigger it. An element in the initial HTML runs first when the page has parsed: at connect time its children are not parsed yet, so there is nothing to count. This is a deliberate step away from [UX Performance](ux-performance.html), and it costs nothing, because the initial value is already in the HTML from the backend. An element added later runs when it connects. The element disconnects the observer when it leaves the DOM. Compute does not track a state object. It reacts to the DOM, whatever changed it.
 
 ## Nesting
 

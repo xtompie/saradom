@@ -1,13 +1,5 @@
 ---
-slug: modularization
 title: "Modularization"
-nav_title: "Modularization"
-type: concept
-tags: [foundations, modules, contract, styling, global-state]
-related: [action-in-context, configurable-modules]
-track: foundations
-order: 40
-status: draft
 ---
 
 # Modularization
@@ -47,9 +39,9 @@ The same module can be placed many times on one page. Each instance keeps its ow
 
 ## Naming
 
-The app takes one global name, `App`. Every module lives under it. Nothing else is global.
+A module is one global name. `Accordion` is global, and so is every toolkit. Each stands on its own: take one file, drop it into a page, and it works. There is no `App` to attach it to first.
 
-A module's name is a path under `App`, with dots: `App.Catalog.Product`. The last part is the module. The parts before it say where it lives, like folders. `App.Catalog.Product` is one module. `App.Catalog` is a place, not a module that owns it.
+Many modules mean many globals. When that is a concern, take one: `App`. A module's name is then a path under it, with dots: `App.Catalog.Product`. The last part is the module. The parts before it say where it lives, like folders. `App.Catalog.Product` is one module. `App.Catalog` is a place, not a module that owns it.
 
 The markup uses the same name as its prefix, without `App`: `catalog-product-space`, `catalog-product-item`, `onclick="App.Catalog.Product.Add(this)"`.
 

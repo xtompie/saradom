@@ -1,12 +1,5 @@
 ---
-slug: vld
 title: "Vld"
-type: page
-tags: [validation, forms]
-related: [the-simple-way, val]
-track: tools
-order: 60
-status: draft
 ---
 
 # Vld
@@ -96,7 +89,7 @@ Whether a field may be empty is not a rule. It is a gate that runs before the ch
 { path: 'name', requiredMsg: 'Please enter a name', rules: [] }      // required with a custom message, no other rules
 ```
 
-`requiredMsg` overrides the default "This field is required". There is no `required` rule to list. It is the boolean above, default `true`, and `required: false` opts out.
+`requiredMsg` overrides the default "This field is required".
 
 ## path and errorPath
 
@@ -167,7 +160,7 @@ Vld.Msg = {
 };
 ```
 
-Placeholders are filled by name from the rule's arguments. `{value}` comes from `{ min: 3 }`, and `{min}` and `{max}` come from `{ between: { min: 3, max: 20 } }`. `Vld.msg(key, args)` does that lookup-and-fill, and that is the one place it happens. The rules stay pure predicates. A single message overrides the registry from the check itself: `{ rule: 'min', value: 3, msg: 'Too short' }` for one field, or `requiredMsg` for the empty case. `key` overrides the same way, so a rule reports under any name.
+Placeholders are filled by name from the rule's arguments. `{value}` comes from `{ min: 3 }`, and `{min}` and `{max}` come from `{ between: { min: 3, max: 20 } }`. `Vld.Format(key, args)` does that lookup-and-fill, and that is the one place it happens. The rules stay pure predicates. A single message overrides the registry from the check itself: `{ rule: 'min', value: 3, msg: 'Too short' }` for one field, or `requiredMsg` for the empty case. `key` overrides the same way, so a rule reports under any name.
 
 ## Forms
 
@@ -238,7 +231,7 @@ This is one option among a few for handling a form. Vld covers the shape checks 
 - `vld-space` marks the scope `Vld.Form.Submit` climbs to.
 - `vld-form` marks the `<form>` whose named fields supply `data`. It is on the space itself, or on the single form inside it.
 - `vld-error="name"` marks where the error for that `path` renders. An empty value (`vld-error=""`) catches errors with `path: null`.
-- `vld-error-tpl`, on a `<template>` inside the space, gives the error markup. Optional: a default is used when it is missing.
+- `vld-error-tpl`, on the space, holds a selector. The matched element's inner HTML is the error markup. Without it nothing renders.
 
 ## Methods
 
@@ -248,6 +241,7 @@ The core is headless: `Validate` and the registries, no DOM. Rendering lives in 
 - `Vld.Form.Validate(root, rules, data, tpl, attr)` validates and shows the errors under the fields in one call, and returns `Promise<boolean>`, `true` when the data passed. A default for a component that holds its own `data`: `if (!(await Vld.Form.Validate(form, rules, data))) return;`.
 - `Vld.Form.Submit(ctx, event, rules, data)` resolves the space from `ctx`, defaults `data` to `FormData` off the space's `[vld-form]` when omitted, then does the same validate-and-show. Returns `Promise<boolean>`.
 - `Vld.Form.Clear(root, attr)` empties every `[vld-error]` inside `root` without validating. It clears messages on their own, for example when closing or reopening a dialog.
+- `Vld.ByPath(errors)` turns the error list into `{ path: message }`, ready to write into message elements with Val.
 - `Vld.Rule` holds the rule registry. Add to it directly to register a new one.
 - `Vld.Msg` holds the built-in messages, keyed by rule. Swap the whole object to change language; `{name}` placeholders are filled from the rule's named arguments.
-- `Vld.msg(key, args)` reads `Vld.Msg[key]` and fills its `{name}` placeholders from `args`. Built-in rules use it; custom rules can too.
+- `Vld.Format(key, args)` reads `Vld.Msg[key]` and fills its `{name}` placeholders from `args`. Built-in rules use it; custom rules can too.

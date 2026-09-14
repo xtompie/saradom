@@ -58,7 +58,7 @@
                     const rules = [ [...space.all('[kanban-rule]')].flatMap(el => eval(el.attr('kanban-rule'))()) ];
                     const value = form.val();
                     const errors = await Vld.Validate(rules, value);
-                    space.one('[kanban-errors]').val(Vld.byPath(errors));
+                    space.one('[kanban-errors]').val(Vld.ByPath(errors));
                     if (errors.length) return;
                     const { anchor, mode } = modal.val();
                     mode === 'edit' ? anchor.val(value) : anchor.vappend([value]);

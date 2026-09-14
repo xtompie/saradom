@@ -1,12 +1,5 @@
 ---
-slug: util
 title: "Util"
-type: page
-tags: [util]
-related: [val, dom-state]
-track: tools
-order: 30
-status: draft
 ---
 
 # Util
@@ -34,7 +27,7 @@ dom.one('[todo-add]');    // first match in the document
 el.all('[todo-item]');    // array of matches inside el
 el.one('[todo-add]');     // first match inside el
 el.allfd('[todo-item]');  // matches inside el, without descending into a match
-el.up('[todo-space]');    // el if it matches, else the nearest ancestor that does
+el.up('[todo-space]');    // el if it matches, else the nearest ancestor that does; body when none
 el.up();                  // the parent
 ```
 
@@ -43,7 +36,7 @@ el.up();                  // the parent
 ```javascript
 el.attr('data-status');                     // read
 el.attr('data-status', 'done');             // set
-el.attr('data-status', null);               // remove
+el.attr('data-status', null);               // remove; false removes too
 el.attrt('data-status', 'done', 'active');  // toggle between two values
 el.flag('hidden');                          // read as a boolean
 el.flag('hidden', true);                    // add the attribute; false removes it
@@ -88,6 +81,7 @@ arr.none();    // true when empty
 ## Misc
 
 ```javascript
+el.run('todo-onchange'); // eval the attribute; if it is a function, call it with this = el
 el.cls();                // its classList
 event.combo('Ctrl+s');   // true when the key combo matches
 'a long title'.cut(6);   // 'a long...'
